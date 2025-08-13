@@ -1,0 +1,40 @@
+# Build results
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.dbmdl
+*.jfm
+*.opendb
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Secrets
+**/appsettings.Development.json
+**/appsettings.*.local.json
+secrets.json
+
+# Publish artifacts
+*.pubxml
+*.Publish.xml
+
+# EF Core Migrations snapshots cache
+**/Migrations/*Designer.cs
+
+# Node (si usás bundling con npm)
+node_modules/
