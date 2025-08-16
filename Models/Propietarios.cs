@@ -1,28 +1,25 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InmobiliariaMvc.Models;
+namespace Inmobiliaria10.Models;
 
 public class Propietario
 {
-    public long Id { get; set; }
+    [Key]
+    public int IdPropietario { get; set; }
 
     [Required, StringLength(20)]
-    public string Dni { get; set; } = null!;
+    public string Documento { get; set; } = null!;
 
     [Required, StringLength(100)]
-    public string Apellido { get; set; } = null!;
+    [Display(Name = "Apellido y Nombres")]
+    public string ApellidoNombres { get; set; } = null!;
 
-    [Required, StringLength(100)]
-    public string Nombre { get; set; } = null!;
+    [StringLength(255)]
+    public string? Domicilio { get; set; }
 
-    [EmailAddress, StringLength(120)]
-    public string? Email { get; set; }
-
-    [StringLength(30)]
+    [StringLength(50)]
     public string? Telefono { get; set; }
 
-    [Display(Name="Dirección de contacto"), StringLength(200)]
-    public string? DireccionContacto { get; set; }
-
-
+    [EmailAddress, StringLength(100)]
+    public string? Email { get; set; }
 }
