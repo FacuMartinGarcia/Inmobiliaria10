@@ -12,7 +12,8 @@ public class PropietarioRepo : IPropietarioRepo
 
     public PropietarioRepo(IConfiguration cfg)
     {
-        _cs = cfg.GetConnectionString("DefaultConnection")!;
+         _cs = cfg.GetConnectionString("Inmogenial")
+            ?? throw new InvalidOperationException("Falta ConnectionStrings:Inmogenial");
     }
 
     private MySqlConnection Conn() => new MySqlConnection(_cs);
