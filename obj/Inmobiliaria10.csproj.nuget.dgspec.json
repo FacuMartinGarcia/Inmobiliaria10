@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ROMA\\Documents\\Desarrollo de Software\\Segundo año\\PROGRAMACION 2 .NET\\Inmobiliaria10\\Inmobiliaria10.csproj": {}
+    "C:\\Users\\SMK\\Documents\\GitHub\\Inmobiliaria10\\Inmobiliaria10.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ROMA\\Documents\\Desarrollo de Software\\Segundo año\\PROGRAMACION 2 .NET\\Inmobiliaria10\\Inmobiliaria10.csproj": {
+    "C:\\Users\\SMK\\Documents\\GitHub\\Inmobiliaria10\\Inmobiliaria10.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ROMA\\Documents\\Desarrollo de Software\\Segundo año\\PROGRAMACION 2 .NET\\Inmobiliaria10\\Inmobiliaria10.csproj",
+        "projectUniqueName": "C:\\Users\\SMK\\Documents\\GitHub\\Inmobiliaria10\\Inmobiliaria10.csproj",
         "projectName": "Inmobiliaria10",
-        "projectPath": "C:\\Users\\ROMA\\Documents\\Desarrollo de Software\\Segundo año\\PROGRAMACION 2 .NET\\Inmobiliaria10\\Inmobiliaria10.csproj",
-        "packagesPath": "C:\\Users\\ROMA\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ROMA\\Documents\\Desarrollo de Software\\Segundo año\\PROGRAMACION 2 .NET\\Inmobiliaria10\\obj\\",
+        "projectPath": "C:\\Users\\SMK\\Documents\\GitHub\\Inmobiliaria10\\Inmobiliaria10.csproj",
+        "packagesPath": "C:\\Users\\SMK\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\SMK\\Documents\\GitHub\\Inmobiliaria10\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\ROMA\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\SMK\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -43,6 +43,16 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[9.4.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
