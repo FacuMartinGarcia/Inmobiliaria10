@@ -57,6 +57,11 @@ __pycache__/
 .vscode/*
 /obj/Debug/net9.0
 obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
+obj/Debug/net9.0/Inmobiliaria10.assets.cache
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
+obj/Inmobiliaria10.csproj.nuget.g.props
+obj/project.assets.json
 =======
 
 # Otros artefactos comunes
@@ -73,11 +78,6 @@ obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
 *.builds
 *.pidb
 >>>>>>> 7f2e971f13352765d486699201ad467088f2cbe6
-obj/Debug/net9.0/Inmobiliaria10.assets.cache
-obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
-obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
-obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
-obj/Inmobiliaria10.csproj.nuget.g.props
-obj/project.assets.json
+
 
 
