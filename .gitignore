@@ -263,3 +263,6 @@ paket-files/
 __pycache__/
 *.pyc
 .vscode/*
+/obj/Debug/net9.0
+/obj/Debug/net9.0
+obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
