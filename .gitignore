@@ -67,3 +67,11 @@ __pycache__/
 *.sbr
 *.builds
 *.pidb
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+obj/Debug/net9.0/Inmobiliaria10.assets.cache
+obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
+obj/Inmobiliaria10.csproj.nuget.dgspec.json
+obj/Inmobiliaria10.csproj.nuget.g.props
+obj/project.assets.json
+obj/project.nuget.cache
