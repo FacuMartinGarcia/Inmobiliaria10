@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InmobiliariaMvc.Models;
+namespace Inmobiliaria10.Models;
 
 public class Inquilino
 {
