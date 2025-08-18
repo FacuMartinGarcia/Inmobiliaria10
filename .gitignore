@@ -56,7 +56,6 @@ __pycache__/
 <<<<<<< HEAD
 .vscode/*
 /obj/Debug/net9.0
-/obj/Debug/net9.0
 obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
 =======
 
@@ -80,8 +79,5 @@ obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
 obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
 obj/Inmobiliaria10.csproj.nuget.g.props
 obj/project.assets.json
-obj/project.assets.json
-obj/project.assets.json
-/obj
-/obj/Debug/net9.0
-/obj/Debug/net9.0
+
+

@@ -18,7 +18,7 @@ public class PropietarioRepo : IPropietarioRepo
 
     private MySqlConnection Conn() => new MySqlConnection(_cs);
 
-    public async Task<IEnumerable<Propietario>> GetAllAsync(string? q = null)
+    public async Task<IEnumerable<Propietario>> ObtenerTodoAsync(string? q = null)
     {
         var list = new List<Propietario>();
         await using var cn = Conn();
@@ -50,7 +50,7 @@ public class PropietarioRepo : IPropietarioRepo
         return list;
     }
 
-    public async Task<Propietario?> GetByIdAsync(int id)
+    public async Task<Propietario?> ObtenerPorIdAsync(int id)
     {
         await using var cn = Conn();
         await cn.OpenAsync();
@@ -73,7 +73,7 @@ public class PropietarioRepo : IPropietarioRepo
         return null;
     }
 
-    public async Task<int> CreateAsync(Propietario p)
+    public async Task<int> CrearAsync(Propietario p)
     {
         await using var cn = Conn();
         await cn.OpenAsync();
@@ -90,7 +90,7 @@ public class PropietarioRepo : IPropietarioRepo
         return id;
     }
 
-    public async Task<bool> UpdateAsync(Propietario p)
+    public async Task<bool> ModificarAsync(Propietario p)
     {
         await using var cn = Conn();
         await cn.OpenAsync();
@@ -108,7 +108,7 @@ public class PropietarioRepo : IPropietarioRepo
         return rows > 0;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> BorrarAsync(int id)
     {
         await using var cn = Conn();
         await cn.OpenAsync();
