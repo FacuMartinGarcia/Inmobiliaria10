@@ -17,7 +17,7 @@ public class PropietariosController : Controller
     // GET: /Propietarios
     public async Task<IActionResult> Index(string? q)
     {
-        var lista = await _repo.GetAllAsync(q);
+        var lista = await _repo.ObtenerTodoAsync(q);
         ViewBag.q = q;
         return View(lista);
     }
@@ -25,7 +25,7 @@ public class PropietariosController : Controller
     // GET: /Propietarios/Details/5
     public async Task<IActionResult> Details(int id)
     {
-        var p = await _repo.GetByIdAsync(id);
+        var p = await _repo.ObtenerPorIdAsync(id);
         if (p == null) return NotFound();
         return View(p);
     }
@@ -42,7 +42,7 @@ public class PropietariosController : Controller
 
         if (!ModelState.IsValid) return View(p);
 
-        p.IdPropietario = await _repo.CreateAsync(p);
+        p.IdPropietario = await _repo.CrearAsync(p);
         TempData["ok"] = "Propietario creado.";
         return RedirectToAction(nameof(Details), new { id = p.IdPropietario });
     }
@@ -50,7 +50,7 @@ public class PropietariosController : Controller
     // GET: /Propietarios/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
-        var p = await _repo.GetByIdAsync(id);
+        var p = await _repo.ObtenerPorIdAsync(id);
         if (p == null) return NotFound();
         return View(p);
     }
@@ -66,7 +66,7 @@ public class PropietariosController : Controller
 
         if (!ModelState.IsValid) return View(p);
 
-        var ok = await _repo.UpdateAsync(p);
+        var ok = await _repo.ModificarAsync(p);
         if (!ok) return NotFound();
 
         TempData["ok"] = "Propietario actualizado.";
@@ -76,7 +76,7 @@ public class PropietariosController : Controller
     // GET: /Propietarios/Delete/5
     public async Task<IActionResult> Delete(int id)
     {
-        var p = await _repo.GetByIdAsync(id);
+        var p = await _repo.ObtenerPorIdAsync(id);
         if (p == null) return NotFound();
         return View(p);
     }
@@ -85,7 +85,7 @@ public class PropietariosController : Controller
     [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var ok = await _repo.DeleteAsync(id);
+        var ok = await _repo.BorrarAsync(id);
         if (!ok) return NotFound();
         TempData["ok"] = "Propietario eliminado.";
         return RedirectToAction(nameof(Index));

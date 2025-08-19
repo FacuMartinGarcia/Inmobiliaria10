@@ -56,4 +56,3 @@ public class Inquilino
     public string? Telefono { get; set; }
     
 }
-
