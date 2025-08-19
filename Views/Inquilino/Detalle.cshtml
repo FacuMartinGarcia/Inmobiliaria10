@@ -1,0 +1,31 @@
+@model Inmobiliaria10.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Detalle Inquilino";
+}
+
+<h2>Detalle del Inquilino</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Documento</dt>
+        <dd class="col-sm-10">@Model.Documento</dd>
+
+        <dt class="col-sm-2">Apellido y Nombres</dt>
+        <dd class="col-sm-10">@Model.ApellidoNombres</dd>
+
+        <dt class="col-sm-2">Domicilio</dt>
+        <dd class="col-sm-10">@Model.Domicilio</dd>
+
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10">@Model.Telefono</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+    </dl>
+</div>
+
+<p>
+    <a asp-action="Editar" asp-route-id="@Model.IdInquilino" class="btn btn-warning">Editar</a> |
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</p>

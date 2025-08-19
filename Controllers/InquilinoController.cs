@@ -10,7 +10,6 @@ namespace Inmobiliaria10.Controllers
 
         public InquilinoController(IConfiguration config)
         {
-            //Usar la cadena de conexion de appsetting
             var conn = config.GetConnectionString("Inmogenial");
             repo = new InquilinoRepo(conn!);
         }
@@ -42,12 +41,29 @@ namespace Inmobiliaria10.Controllers
         [HttpPost]
         public IActionResult Crear(Inquilino i)
         {
-            if (!ModelState.IsValid) // Usa las validaciones del modelo
+            if (!ModelState.IsValid)
                 return View(i);
 
-            int idGenerado = repo.Agregar(i); 
-            return RedirectToAction("Detalle", new { id = idGenerado });
+            try
+            {
+                repo.Agregar(i);
+                TempData["Mensaje"] = "Inquilino creado correctamente";
+                return RedirectToAction("Index");
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                if (ex.Number == 1062)
+                {
+                    ModelState.AddModelError("Documento", "El documento ya existe en el sistema.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Error al guardar: " + ex.Message);
+                }
+                return View(i);
+            }
         }
+
 
         // GET: /Inquilino/Editar/5 - Trae los datos para editar
         public IActionResult Editar(int id)

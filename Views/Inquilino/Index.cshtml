@@ -7,7 +7,7 @@
 <h2>Inquilinos</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Nuevo Inquilino</a>
+    <a asp-action="Crear" class="btn btn-primary">Nuevo Inquilino</a>
 </p>
 
 <table class="table table-striped">
@@ -31,11 +31,27 @@
             <td>@item.Telefono</td>
             <td>@item.Email</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdInquilino">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdInquilino">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdInquilino">Eliminar</a>
+                <a asp-action="Editar" asp-route-id="@item.IdInquilino">Editar</a> |
+                <a asp-action="Detalle" asp-route-id="@item.IdInquilino">Detalles</a> |
+                <a asp-action="Eliminar" asp-route-id="@item.IdInquilino">Eliminar</a>
             </td>
         </tr>
     }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        @if (TempData["Mensaje"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: '@TempData["Mensaje"]'
+                });
+            </text>
+        }
+    </script>
+}
