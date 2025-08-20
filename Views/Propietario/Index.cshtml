@@ -31,9 +31,16 @@
             <td>@item.Telefono</td>
             <td>@item.Email</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdPropietario">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.IdPropietario">Detalles</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdPropietario">Eliminar</a>
+                <a class="btn btn-primary" asp-action="Editar" asp-route-id="@item.IdPropietario" title="Editar">
+					<i class="fa-solid fa-pen"></i>
+				</a>
+				<a class="btn btn-danger" asp-action="Borrar" asp-route-id="@item.IdPropietario" title="Borrar">
+					<i class="fa-solid fa-trash-can"></i>
+				</a>
+                <a class="btn btn-info" asp-action="Detalles" asp-route-id="@item.IdPropietario" title="Detalles">
+                    <i class="fa-solid fa-eye"></i>
+                </a> 
+                
             </td>
         </tr>
     }

@@ -5,10 +5,10 @@ namespace Inmobiliaria10.Data.Repositories;
 
 public interface IPropietarioRepo
 {
-    Task<IEnumerable<Propietario>> ObtenerTodoAsync(string? q = null);
-    Task<Propietario?> ObtenerPorIdAsync(int id);
-    Task<int> CrearAsync(Propietario p);
-    Task<bool> ModificarAsync(Propietario p);
-    Task<bool> BorrarAsync(int id);
-    Task<bool> ExistsDocumentoAsync(string documento, int? exceptId = null);
+    Task<IEnumerable<Propietario>> ObtenerTodo(string? q = null);
+    Task<Propietario?> ObtenerPorId(int id);
+    Task<int> Crear(Propietario p);
+    Task<bool> Modificar(Propietario p);
+    Task<bool> Borrar(int id);
+    Task<bool> ExistsDocumento(string documento, int? exceptId = null);
 }

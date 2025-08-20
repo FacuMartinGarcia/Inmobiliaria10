@@ -1,50 +1,201 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@{
+    var appName = "Inmobiliaria10";
+    var isAuth = User?.Identity?.IsAuthenticated ?? false;
+    var userName = User?.Identity?.Name ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Inmobiliaria10</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - @appName</title>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Font Awesome (opcional para íconos del sidebar) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          integrity="sha512-SWLK..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Site styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Inmobiliaria10.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand navbar-light bg-white border-bottom box-shadow">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Inmobiliaria10</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+                <!-- Botón para plegar/mostrar sidebar -->
+                <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
+                        aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <!-- Brand -->
+                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">
+                    @appName
+                </a>
+
+                <div class="ms-auto d-flex align-items-center">
+                    <!-- Enlaces de navegación superiores (opcionales) -->
+                    <ul class="navbar-nav me-3">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
                     </ul>
+
+                    <!-- Login / Usuario -->
+                    @* Si tenés Identity, podés usar el parcial por convención *@
+                    @* <partial name="_LoginPartial" /> *@
+
+                    @if (isAuth)
+                    {
+                        <div class="dropdown">
+                            <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" id="userMenu"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-regular fa-user"></i> @userName
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li>
+                                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                        Perfil
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form class="px-3 py-1" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post">
+                                        <button type="submit" class="btn btn-link p-0">Cerrar sesión</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login">Ingresar</a>
+                            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <!-- CONTENEDOR PRINCIPAL CON SIDEBAR + CONTENT -->
+    <div class="container-fluid flex-grow-1">
+        <div class="row flex-nowrap">
+
+            <!-- SIDEBAR (colapsable horizontal) -->
+            <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
+                <div class="sidebar-inner d-flex flex-column h-100">
+                    <div class="p-3 border-bottom">
+                        <span class="text-muted text-uppercase small">Menú</span>
+                    </div>
+                    <ul class="nav nav-pills flex-column p-2">
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                                <i class="fa-solid fa-house"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2">
+                            <span class="text-muted small ps-2">Gestión</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietarios" asp-action="Index">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span>Propietarios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilinos" asp-action="Index">
+                                <i class="fa-solid fa-users"></i>
+                                <span>Inquilinos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inmuebles" asp-action="Index">
+                                <i class="fa-solid fa-building"></i>
+                                <span>Inmuebles</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Contratos" asp-action="Index">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <span>Contratos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Pagos" asp-action="Index">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>Pagos</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="mt-auto p-3 border-top small text-muted">
+                        © @DateTime.Now.Year - @appName
+                    </div>
+                </div>
+            </nav>
+
+            <!-- CONTENIDO -->
+            <main id="content" class="col py-3">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- FOOTER (opcional si querés uno global) -->
+    <footer class="border-top footer text-muted mt-auto">
         <div class="container">
-            &copy; 2025 - Inmobiliaria10 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; @DateTime.Now.Year - @appName -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Tu JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Script para recordar el estado del sidebar -->
+    <script>
+        (function () {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('btnSidebarToggle');
+            const key = 'sidebar-collapsed';
+
+            // Restaurar estado
+            const wasCollapsed = localStorage.getItem(key) === 'true';
+            if (wasCollapsed) {
+                // Forzar colapso sin animación inicial
+                sidebar.classList.remove('show');
+            }
+
+            // Guardar estado al hacer toggle
+            btn?.addEventListener('click', function () {
+                const willBeCollapsed = sidebar.classList.contains('show'); // está abierto -> va a cerrarse
+                // Esperar fin de animación y guardar
+                setTimeout(() => {
+                    localStorage.setItem(key, String(!willBeCollapsed));
+                }, 350);
+            });
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
