@@ -139,5 +139,21 @@ namespace Inmobiliaria10.Repositories
             conn.Close();
             return i;
         }
+
+        public int Borrar(int id)
+        {
+            int filas = 0;
+            using var conn = new MySqlConnection(connectionString);
+            var sql = "DELETE FROM inquilinos WHERE id_inquilino = @id";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            conn.Open();
+            filas = cmd.ExecuteNonQuery();
+            conn.Close();
+
+            return filas; 
+        }
+
     }
 }

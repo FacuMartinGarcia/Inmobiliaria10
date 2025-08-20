@@ -1,0 +1,19 @@
+@model Inmobiliaria10.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Eliminar Inquilino";
+}
+
+<h2>Eliminar Inquilino</h2>
+
+<h3>¿Seguro que querés eliminar este inquilino?</h3>
+
+<div>
+    <strong>@Model.ApellidoNombres</strong> (@Model.Documento)
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdInquilino" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

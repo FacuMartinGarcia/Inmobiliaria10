@@ -14,7 +14,7 @@ namespace Inmobiliaria10.Controllers
             repo = new InquilinoRepo(conn!);
         }
 
-        // GET: /Inquilino - Muestra todos los inquilinos (método listarTodos)
+        // GET: /Inquilino - Muestra todos los inquilinos
         public IActionResult Index()
         {
             var lista = repo.ListarTodos();
@@ -39,6 +39,7 @@ namespace Inmobiliaria10.Controllers
 
         // POST: /Inquilino/Crear - Recibe los datos y los guarda
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Crear(Inquilino i)
         {
             if (!ModelState.IsValid)
@@ -63,7 +64,6 @@ namespace Inmobiliaria10.Controllers
                 return View(i);
             }
         }
-
 
         // GET: /Inquilino/Editar/5 - Trae los datos para editar
         public IActionResult Editar(int id)
@@ -94,5 +94,37 @@ namespace Inmobiliaria10.Controllers
             TempData["Mensaje"] = "El inquilino se actualizó correctamente.";
             return RedirectToAction("Index");
         }
+
+        // GET: /Inquilino/Eliminar/5 - Muestra confirmación de borrado
+        public IActionResult Borrar(int id)
+        {
+            var inq = repo.ObtenerPorId(id);
+            if (inq == null)
+                return NotFound();
+
+            return View(inq); 
+        }
+
+        // POST: /Inquilino/Eliminar/5 - Realiza el borrado
+        [HttpPost, ActionName("Borrar")]
+        [ValidateAntiForgeryToken]
+        public IActionResult BorrarConfirmado(int id)
+        {
+            var inq = repo.ObtenerPorId(id);
+            if (inq == null)
+                return NotFound();
+
+            try
+            {
+                repo.Borrar(id);
+                TempData["Mensaje"] = "Inquilino eliminado correctamente.";
             }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo eliminar el inquilino: " + ex.Message;
+            }
+
+            return RedirectToAction("Index");
+        }
+    }
 }
