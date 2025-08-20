@@ -2,26 +2,33 @@
 for details on configuring this project to bundle and minify static web assets. */
 /* Sidebar layout */
 .sidebar {
-    width: 260px;                 /* ancho cuando está abierto */
-}
-.sidebar:not(.show) {
-    width: 0 !important;          /* colapsado */
+  width: 260px;                 /* ancho cuando está abierto */
+  transition: width .35s ease;  /* animación suave */
+  overflow: hidden;             /* que no “escape” contenido al colapsar */
 }
 
+/* Bootstrap a veces cambia display; para collapse horizontal
+   queremos manejar sólo el width, así que aseguramos display:block */
+.sidebar.collapse { display: block; }
+
+/* Estado colapsado */
+.sidebar:not(.show) { width: 0 !important; }
+
+/* Interior y alto completo (pegado bajo la navbar) */
 .sidebar-inner {
-    background: #f8f9fa;
-    border-right: 1px solid rgba(0,0,0,.05);
-    min-height: 100%;
+  background: #f8f9fa;
+  border-right: 1px solid rgba(0,0,0,.05);
+  position: sticky;
+  top: 56px;                    /* altura aprox. de la navbar */
+  height: calc(100vh - 56px);
+  overflow-y: auto;
 }
 
-/* Enlaces del sidebar */
-.sidebar .nav-link {
-    color: #333;
-}
+/* Opcional: mejorar hover/activo en links */
+.sidebar .nav-link { color: #333; }
 .sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-    background: #e9ecef;
-}
+.sidebar .nav-link.active { background: #e9ecef; }
+
 
 /* Asegurar que el contenido use todo el ancho cuando el sidebar está colapsado (Bootstrap ya lo maneja con collapse-horizontal) */
 @media (max-width: 767.98px) {

@@ -59,10 +59,12 @@
                     @if (isAuth)
                     {
                         <div class="dropdown">
-                            <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" id="userMenu"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-regular fa-user"></i> @userName
-                            </a>
+                            <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
+                                    aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menú">
+                            <i class="fa-solid fa-bars"></i>
+                            </button>
+
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                 <li>
                                     <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
@@ -97,9 +99,6 @@
             <!-- SIDEBAR (colapsable horizontal) -->
             <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
                 <div class="sidebar-inner d-flex flex-column h-100">
-                    <div class="p-3 border-bottom">
-                        <span class="text-muted text-uppercase small">Menú</span>
-                    </div>
                     <ul class="nav nav-pills flex-column p-2">
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
@@ -107,18 +106,14 @@
                                 <span>Dashboard</span>
                             </a>
                         </li>
-
-                        <li class="nav-item mt-2">
-                            <span class="text-muted small ps-2">Gestión</span>
-                        </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietarios" asp-action="Index">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
                                 <i class="fa-solid fa-user-tie"></i>
                                 <span>Propietarios</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilinos" asp-action="Index">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilino" asp-action="Index">
                                 <i class="fa-solid fa-users"></i>
                                 <span>Inquilinos</span>
                             </a>
@@ -143,9 +138,6 @@
                         </li>
                     </ul>
 
-                    <div class="mt-auto p-3 border-top small text-muted">
-                        © @DateTime.Now.Year - @appName
-                    </div>
                 </div>
             </nav>
 
