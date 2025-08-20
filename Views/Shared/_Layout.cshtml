@@ -42,7 +42,7 @@
                 </a>
 
                 <div class="ms-auto d-flex align-items-center">
-                    <!-- Enlaces de navegación superiores (opcionales) -->
+                    <!-- 
                     <ul class="navbar-nav me-3">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
@@ -50,7 +50,8 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
-                    </ul>
+                    </ul> 
+                    -->
 
                     <!-- Login / Usuario -->
                     @* Si tenés Identity, podés usar el parcial por convención *@
@@ -80,13 +81,15 @@
                             </ul>
                         </div>
                     }
+                    <!--
                     else
                     {
                         <div class="d-flex gap-2">
-                            <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login">Ingresar</a>
-                            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
+                            <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login">Cambiar Contraseña</a>
+                            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Cerrar Se</a>
                         </div>
                     }
+                    -->
                 </div>
             </div>
         </nav>
@@ -100,12 +103,14 @@
             <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
                 <div class="sidebar-inner d-flex flex-column h-100">
                     <ul class="nav nav-pills flex-column p-2">
+                        <!--
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
                                 <i class="fa-solid fa-house"></i>
-                                <span>Dashboard</span>
+                                <span>Gestión</span>
                             </a>
                         </li>
+                        -->
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
                                 <i class="fa-solid fa-user-tie"></i>

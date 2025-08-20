@@ -113,5 +113,31 @@ namespace Inmobiliaria10.Repositories
             conn.Close();
             return i;
         }
+        public Inquilino? ObtenerPorDocumento(string documento)
+        {
+            Inquilino? i = null;
+            using var conn = new MySqlConnection(connectionString);
+            var sql = @"SELECT id_inquilino, documento, apellido_nombres, domicilio, telefono, email 
+                        FROM inquilinos 
+                        WHERE documento = @doc";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@doc", documento);
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                i = new Inquilino
+                {
+                    IdInquilino = reader.GetInt32("id_inquilino"),
+                    Documento = reader.GetString("documento"),
+                    ApellidoNombres = reader.GetString("apellido_nombres"),
+                    Domicilio = reader.GetString("domicilio"),
+                    Telefono = reader.GetString("telefono"),
+                    Email = reader.GetString("email")
+                };
+            }
+            conn.Close();
+            return i;
+        }
     }
 }

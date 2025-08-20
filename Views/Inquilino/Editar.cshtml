@@ -1,13 +1,14 @@
 @model Inmobiliaria10.Models.Inquilino
 
 @{
-    ViewData["Title"] = "Nuevo Inquilino";
+    ViewData["Title"] = "Editar Inquilino";
 }
 
-<h2>Nuevo Inquilino</h2>
+<h2>Editar Inquilino</h2>
 
-<form asp-action="Crear" method="post">
-    
+<form asp-action="Editar" method="post">
+    <input type="hidden" asp-for="IdInquilino" />
+
     <div class="mb-3">
         <label asp-for="Documento" class="form-label"></label>
         <input asp-for="Documento" class="form-control" autocomplete="off" />
@@ -39,7 +40,7 @@
     </div>
 
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
         <a asp-action="Index" class="btn btn-secondary">Volver</a>
     </div>
 </form>

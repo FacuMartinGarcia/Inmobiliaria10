@@ -77,13 +77,22 @@ namespace Inmobiliaria10.Controllers
 
         // POST: /Inquilino/Editar/5 - Valida y guarda
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Editar(Inquilino i)
         {
             if (!ModelState.IsValid)
                 return View(i);
 
+            var existente = repo.ObtenerPorDocumento(i.Documento);
+            if (existente != null && existente.IdInquilino != i.IdInquilino)
+            {
+                ModelState.AddModelError("Documento", "El documento ya está registrado en otro inquilino.");
+                return View(i);
+            }
+
             repo.Actualizar(i);
-            return RedirectToAction("Detalle", new { id = i.IdInquilino });
+            TempData["Mensaje"] = "El inquilino se actualizó correctamente.";
+            return RedirectToAction("Index");
         }
-    }
+            }
 }
