@@ -1,5 +1,5 @@
 ﻿@{
-    var appName = "Inmobiliaria10";
+    var appName = "InnovaPropiedades";
     var isAuth = User?.Identity?.IsAuthenticated ?? false;
     var userName = User?.Identity?.Name ?? "";
 }
@@ -26,8 +26,13 @@
 
     <!-- NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand navbar-light bg-white border-bottom box-shadow">
+        <nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
             <div class="container-fluid">
+
+                <!-- Brand -->
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    @appName
+                </a>
 
                 <!-- Botón para plegar/mostrar sidebar -->
                 <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
@@ -35,11 +40,6 @@
                         aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-
-                <!-- Brand -->
-                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">
-                    @appName
-                </a>
 
                 <div class="ms-auto d-flex align-items-center">
                     <!-- 
