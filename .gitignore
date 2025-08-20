@@ -53,16 +53,6 @@ node_modules/
 # Python si aparece
 __pycache__/
 *.pyc
-<<<<<<< HEAD
-.vscode/*
-/obj/Debug/net9.0
-obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
-obj/Debug/net9.0/Inmobiliaria10.assets.cache
-obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
-obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
-obj/Inmobiliaria10.csproj.nuget.g.props
-obj/project.assets.json
-=======
 
 # Otros artefactos comunes
 *.dbmdl
@@ -77,7 +67,11 @@ obj/project.assets.json
 *.sbr
 *.builds
 *.pidb
->>>>>>> 7f2e971f13352765d486699201ad467088f2cbe6
-
-
-
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+obj/Debug/net9.0/Inmobiliaria10.assets.cache
+obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
+obj/Inmobiliaria10.csproj.nuget.dgspec.json
+obj/Inmobiliaria10.csproj.nuget.g.props
+obj/project.assets.json
+obj/project.nuget.cache

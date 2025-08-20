@@ -30,7 +30,7 @@ public class Inquilino
     [Display(Name = "DNI")]
     public string Documento { get; set; } = null!;
 
-    [Required, StringLength(100)]
+    [Required(ErrorMessage = "Debe ingresar apellido y nombres"), StringLength(100)]
     [Display(Name = "Apellido y Nombres")]
     public string ApellidoNombres
     {
@@ -38,7 +38,7 @@ public class Inquilino
         set => _apellidoNombres = (value ?? string.Empty).ToUpper();
     }
 
-    [Required, StringLength(255)]
+    [Required(ErrorMessage = "Debe ingresar domicilio"), StringLength(255)]
     [Display(Name = "Domicilio")]
     public string Domicilio
     {
