@@ -1,0 +1,85 @@
+# =========================
+# Visual Studio / .NET
+# =========================
+
+# Archivos de usuario
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Carpetas de compilación
+**/[Bb]in/
+**/[Oo]bj/
+**/[Dd]ebug*/
+**/[Rr]elease*/
+**/[Rr]eleases/
+[Bb]uild/
+[Bb]ld/
+
+# Cachés / logs / temporales
+.vs/
+*.log
+*.cache
+*.tmp
+*.tmp_proj
+~$*
+*~
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+# Publicación
+*.publishsettings
+*.pubxml
+*.publishproj
+PublishScripts/
+publish/
+
+# Bases de datos (SQL Server)
+*.mdf
+*.ldf
+*.dbmdl
+
+# IDEs
+.vscode/
+.idea/
+*.sln.iml
+
+# Node / Python (si aparecen)
+node_modules/
+__pycache__/
+*.pyc
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Otros artefactos comunes
+[Ll]og/
+*.pdb
+*.ilk
+*.obj
+*.tli
+*.tlh
+*.tlb
+*.meta
+*.rsp
+*.sbr
+*.builds
+*.pidb
+TestResult*/
+*.coverage
+*.coveragexml
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+obj/Debug/net9.0/Inmobiliaria10.assets.cache
+obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
+obj/Inmobiliaria10.csproj.nuget.dgspec.json
+obj/Inmobiliaria10.csproj.nuget.g.props
