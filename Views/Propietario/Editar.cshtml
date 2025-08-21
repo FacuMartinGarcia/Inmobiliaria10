@@ -4,27 +4,75 @@
     ViewData["Title"] = "Editar Propietario";
 }
 
-<h2>Editar Propietario</h2>
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-warning text-white text-center">
+                <h4 class="card-title">Editar Propietario</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Editar" method="post">
+                    <input type="hidden" asp-for="IdPropietario" />
+                    
+                    <div class="form-group">
+                        <label asp-for="Documento"></label>
+                        <input asp-for="Documento" class="form-control" />
+                        <span asp-validation-for="Documento" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="ApellidoNombres"></label>
+                        <input asp-for="ApellidoNombres" class="form-control" />
+                        <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Domicilio"></label>
+                        <input asp-for="Domicilio" class="form-control" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Telefono"></label>
+                        <input asp-for="Telefono" class="form-control" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-control" />
+                    </div>
+                    
+                    <div class="mt-3">
+                         <button type="submit" class="btn btn-success">Guardar</button>
+                         <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                   
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
+<<<<<<< HEAD
+=======
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="IdPropietario" />
     <div class="form-group">
         <label asp-for="Documento"></label>
-        <input asp-for="Documento" class="form-control" />
+        <input asp-for="Documento" class="form-control"  autocomplete="off"  />
         <span asp-validation-for="Documento" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="ApellidoNombres"></label>
-        <input asp-for="ApellidoNombres" class="form-control" />
+        <input asp-for="ApellidoNombres" class="form-control" autocomplete="off" />
         <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Domicilio"></label>
-        <input asp-for="Domicilio" class="form-control" />
+        <input asp-for="Domicilio" class="form-control" autocomplete="off" />
     </div>
     <div class="form-group">
         <label asp-for="Telefono"></label>
-        <input asp-for="Telefono" class="form-control" />
+        <input asp-for="Telefono" class="form-control" autocomplete="off"  />
     </div>
     <div class="form-group">
         <label asp-for="Email"></label>
@@ -33,6 +81,7 @@
     <button type="submit" class="btn btn-success">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
+>>>>>>> 522f45b3378969936abd09a9f3de462b65066cef
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
