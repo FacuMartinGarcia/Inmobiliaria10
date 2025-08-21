@@ -7,7 +7,7 @@
 <h2>Propietarios</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Nuevo Propietario</a>
+    <a asp-action="Crear" class="btn btn-primary">Nuevo Propietario</a>
 </p>
 
 <table class="table table-striped">
@@ -46,3 +46,20 @@
     }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        @if (TempData["Mensaje"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: '@TempData["Mensaje"]'
+                });
+            </text>
+        }
+    </script>
+}
+

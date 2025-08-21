@@ -76,3 +76,6 @@ obj/Inmobiliaria10.csproj.nuget.g.props
 obj/project.assets.json
 obj/project.nuget.cache
 
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfo.cs
+*.cache
+*.cs
