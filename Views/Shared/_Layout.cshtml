@@ -29,17 +29,19 @@
         <nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
             <div class="container-fluid">
 
-                <!-- Brand -->
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
-                    @appName
-                </a>
-
+               
                 <!-- Botón para plegar/mostrar sidebar -->
                 <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
                         type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
                         aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
                     <i class="fa-solid fa-bars"></i>
                 </button>
+
+                 <!-- Brand -->
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    @appName
+                </a>
+
 
                 <div class="ms-auto d-flex align-items-center">
                     <!-- 
@@ -147,9 +149,17 @@
             </nav>
 
             <!-- CONTENIDO -->
-            <main id="content" class="col py-3">
-                @RenderBody()
+            <!-- CONTENIDO -->
+            <main id="content" class="col py-3"
+                style="
+                    background:
+                    linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)),
+                    url('/img/edificio1.webp') center/cover no-repeat;
+                    min-height: 100vh;">
+            @RenderBody()
             </main>
+
+
         </div>
     </div>
 
