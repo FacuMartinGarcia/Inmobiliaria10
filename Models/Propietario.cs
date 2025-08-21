@@ -16,7 +16,7 @@ namespace Inmobiliaria10.Models
         [Display(Name = "DNI")]
         public string Documento { get; set; } = null!;
 
-        [Required, StringLength(100)]
+        [Required(ErrorMessage = "El apellido y nombre es obligatorio"), StringLength(100)]
         [Display(Name = "Apellido y Nombres")]
         public string ApellidoNombres
         {

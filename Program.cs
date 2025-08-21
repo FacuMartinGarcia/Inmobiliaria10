@@ -1,6 +1,8 @@
 using Inmobiliaria10.Data;
 using Inmobiliaria10.Data.Repositories;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
@@ -8,7 +10,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
 
 // (Opcional) si querés inyectar Database en otras clases
-builder.Services.AddSingleton<Database>();
+//builder.Services.AddSingleton<Database>();
+builder.Services.AddScoped<Database>();
 
 var app = builder.Build();
 
@@ -20,20 +23,22 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();          // en lugar de MapStaticAssets
+app.UseStaticFiles();        
 app.UseRouting();
 app.UseAuthorization();
+
+app.UseStatusCodePagesWithReExecute("/Home/MostrarCodigo", "?code={0}");
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
-// --- Test de conexión a MySQL (opcional) ---
+
 try
 {
     using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<Database>(); // ctor Database(IConfiguration)
+    var db = scope.ServiceProvider.GetRequiredService<Database>(); 
     using var conn = db.GetConnection();
     conn.Open();
     Console.WriteLine("Conexión abierta correctamente a MySQL.");

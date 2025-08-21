@@ -28,4 +28,14 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    public IActionResult MostrarCodigo(int code)
+    {
+        if (code == 404)
+        {
+            return View("EnConstruccion");
+        }
+
+        return View("Error");
+    }
 }
