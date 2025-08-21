@@ -29,3 +29,19 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* site.css */
+#content{
+  position: relative;
+  z-index: 0;              /* crea contexto de apilado */
+  background: url('/img/edificio1.webp') center/cover no-repeat;
+  min-height: 100vh;
+}
+
+#content::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+  z-index: -1;             /* detrás de los hijos */
+}

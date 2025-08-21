@@ -1,13 +1,13 @@
 ﻿/* --- Fondo para Navbar y Sidebar --- */
 .navbar,
 .sidebar-inner {
-    background-color: #11aa47 !important; /* Tono verde oscuro */
+    background-color: #e6c66e !important; 
 }
 
 /* --- Texto para Navbar (blanco y negrita) --- */
 .navbar .navbar-brand,
 .navbar .nav-link {
-    color: #ffffff !important;
+    color: #0c0c0c !important;
     font-weight: bold;
 }
 
@@ -19,12 +19,12 @@
     align-items: center;       /* centra ícono y texto verticalmente */
     gap: 12px;                 /* separación ícono-texto */
     padding: .6rem 1rem;
-    color: #ffffff !important;
+    color: #0c0c0c !important;
     font-weight: 700 !important; /* Fuerza negrita */
 }
 
 .sidebar .nav-link i {
-    color: #ffffff !important;
+    color: #0c0c0c !important;
     font-weight: bold !important; 
     margin-right: 8px;
     vertical-align: middle; 
@@ -36,8 +36,8 @@
 /* --- Efecto Hover/Activo para links del Sidebar --- */
 .sidebar .nav-link:hover,
 .sidebar .nav-link.active {
-    background-color: #11aa47 !important;
-    color: #ffffff; /* Asegura que el texto siga blanco */
+    background-color: #e6c66e !important;
+    color: #0c0c0c; /* Asegura que el texto siga blanco */
 }
 
 /* Sidebar layout */
@@ -46,7 +46,7 @@
     left: 0;                  /* pegado al margen izquierdo */
     width: 260px;             /* ancho */
     height: calc(100vh - 56px); /* ocupa toda la altura de la ventana menos la navbar */
-    background-color: #11aa47;   /* verde */
+    background-color: #e6c66e;   /* verde */
     overflow-y: hidden;      
     transition: width .35s ease;             /* que no “escape” contenido al colapsar */
 }
@@ -64,7 +64,7 @@
 
 /* Interior y alto completo (pegado bajo la navbar) */
 .sidebar-inner {
-    border-right: 1px solid #11aa47; /* Borde que combina con el fondo oscuro */
+    border-right: 1px solid #e6c66e; /* Borde que combina con el fondo oscuro */
     position: sticky;
     top: 56px;                      /* altura aprox. de la navbar */
     height: calc(100vh - 56px);
@@ -81,27 +81,27 @@ a.navbar-brand {
 }
 
 a {
-    color: #ffffff;
+    color: #0c0c0c;
 }
 
 .btn-primary {
-    color: #fff;
+    color: #0c0c0c;
     background-color: #1b6ec2;
     border-color: #1861ac;
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-    color: #fff;
+    color: #0c0c0c;
     background-color: #1b6ec2;
     border-color: #1861ac;
 }
 
 .border-top {
-    border-top: 1px solid #e5e5e5;
+    border-top: 1px solid #0c0c0c;
 }
 
 .border-bottom {
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #0c0c0c;
 }
 
 .box-shadow {
