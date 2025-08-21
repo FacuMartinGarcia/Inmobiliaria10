@@ -15,7 +15,6 @@ public class PropietarioRepo : IPropietarioRepo
          _cs = cfg.GetConnectionString("Inmogenial")
             ?? throw new InvalidOperationException("Falta ConnectionStrings:Inmogenial");
     }
-
     private MySqlConnection Conn() => new MySqlConnection(_cs);
     public async Task<IList<Propietario>> ObtenerTodo(string? q = null)
     {
@@ -50,14 +49,13 @@ public class PropietarioRepo : IPropietarioRepo
                 IdPropietario   = rd.GetInt32(oId),
                 Documento       = rd.GetString(oDoc),
                 ApellidoNombres = rd.GetString(oApe),
-                Domicilio       = rd.IsDBNull(oDom)  ? null : rd.GetString(oDom),
-                Telefono        = rd.IsDBNull(oTel)  ? null : rd.GetString(oTel),
-                Email           = rd.IsDBNull(oMail) ? null : rd.GetString(oMail),
+                Domicilio       = rd.IsDBNull(oDom)  ? string.Empty : rd.GetString(oDom),
+                Telefono        = rd.IsDBNull(oTel)  ? string.Empty : rd.GetString(oTel),
+                Email           = rd.IsDBNull(oMail) ? string.Empty : rd.GetString(oMail),
             });
         }
         return list;
     }
-
     public IList<Propietario> ObtenerLista(int paginaNro, int tamPagina)
     {
         if (paginaNro < 1) paginaNro = 1;
@@ -92,14 +90,13 @@ public class PropietarioRepo : IPropietarioRepo
                 IdPropietario   = rd.GetInt32(oId),
                 Documento       = rd.GetString(oDoc),
                 ApellidoNombres = rd.GetString(oApe),
-                Domicilio       = rd.IsDBNull(oDom)  ? null : rd.GetString(oDom),
-                Telefono        = rd.IsDBNull(oTel)  ? null : rd.GetString(oTel),
-                Email           = rd.IsDBNull(oMail) ? null : rd.GetString(oMail),
+                Domicilio       = rd.IsDBNull(oDom) ? string.Empty : rd.GetString(oDom),
+                Telefono        = rd.IsDBNull(oTel)  ? string.Empty : rd.GetString(oTel),
+                Email           = rd.IsDBNull(oMail) ? string.Empty : rd.GetString(oMail),
             });
         }
         return res;
     }
-
     public int ObtenerCantidad()
     {
         using var cn = Conn();
@@ -109,7 +106,6 @@ public class PropietarioRepo : IPropietarioRepo
         var obj = cmd.ExecuteScalar();
         return Convert.ToInt32(obj);
     }
-
     public async Task<Propietario?> ObtenerPorId(int id)
     {
         await using var cn = Conn();
@@ -125,9 +121,9 @@ public class PropietarioRepo : IPropietarioRepo
                 IdPropietario = rd.GetInt32("id_propietario"),
                 Documento = rd.GetString("documento"),
                 ApellidoNombres = rd.GetString("apellido_nombres"),
-                Domicilio = rd.IsDBNull("domicilio") ? null : rd.GetString("domicilio"),
-                Telefono = rd.IsDBNull("telefono") ? null : rd.GetString("telefono"),
-                Email = rd.IsDBNull("email") ? null : rd.GetString("email"),
+                Domicilio = rd.IsDBNull("domicilio") ? string.Empty : rd.GetString("domicilio"),
+                Telefono = rd.IsDBNull("telefono") ? string.Empty: rd.GetString("telefono"),
+                Email = rd.IsDBNull("email") ? string.Empty : rd.GetString("email"),
             };
         }
         return null;
@@ -167,7 +163,6 @@ public class PropietarioRepo : IPropietarioRepo
             throw new Exception("Error al crear propietario.", ex);
         }
     }
-
     public async Task<bool> Modificar(Propietario p)
     {
 
