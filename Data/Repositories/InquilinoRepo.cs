@@ -4,7 +4,7 @@ using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Repositories
 {
-    public class InquilinoRepo
+    public class InquilinoRepo 
     {
         private readonly string connectionString;
 

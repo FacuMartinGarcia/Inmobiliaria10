@@ -15,11 +15,11 @@ public class PropietarioController : Controller
     }
 
     // GET: /Propietarios
-    public async Task<IActionResult> Index(string? q)
+    public async Task<IActionResult> Index(string? q, int page = 1, int pageSize = 10)
     {
-        var lista = await _repo.ObtenerTodo(q);
-        ViewBag.q = q;
-        return View(lista);
+        var data = await _repo.BuscarPaginado(q, page, pageSize);
+        var vm = new PropietarioIndexVm { Data = data };
+        return View(vm);
     }
 
     // GET: /Propietarios/Details/5

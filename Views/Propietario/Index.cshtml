@@ -1,65 +1,104 @@
-@model IEnumerable<Inmobiliaria10.Models.Propietario>
-
+@model Inmobiliaria10.Models.PropietarioIndexVm
 @{
     ViewData["Title"] = "Propietarios";
+    var pr = Model.Data;
 }
 
-<h2>Propietarios</h2>
+<h1 class="mb-3">Propietarios</h1>
 
-<p>
-    <a asp-action="Crear" class="btn btn-primary">Nuevo Propietario</a>
-</p>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-sm-6 col-lg-4">
+        <input type="text" name="q" value="@pr.Query" class="form-control" placeholder="Buscar por nombre o documento" />
+    </div>
+    <div class="col-auto">
+        <select name="pageSize" class="form-select" onchange="this.form.submit()">
+            @foreach (var size in Model.PageSizeOptions)
+            {
+                <option value="@size" selected="@(size == pr.PageSize ? "selected" : null)">@size por página</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index","Propietario")">Limpiar</a>
+    </div>
+    <div class="col text-end">
+        <a class="btn btn-success" href="@Url.Action("Crear","Propietario")">+ Nuevo</a>
+    </div>
+</form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(m => m.Documento)</th>
-            <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th>
-            <th>@Html.DisplayNameFor(m => m.Domicilio)</th>
-            <th>@Html.DisplayNameFor(m => m.Telefono)</th>
-            <th>@Html.DisplayNameFor(m => m.Email)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.Documento</td>
-            <td>@item.ApellidoNombres</td>
-            <td>@item.Domicilio</td>
-            <td>@item.Telefono</td>
-            <td>@item.Email</td>
-            <td>
-                <a class="btn btn-primary" asp-action="Editar" asp-route-id="@item.IdPropietario" title="Editar">
-					<i class="fa-solid fa-pen"></i>
-				</a>
-				<a class="btn btn-danger" asp-action="Borrar" asp-route-id="@item.IdPropietario" title="Borrar">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>
-                <a class="btn btn-info" asp-action="Detalles" asp-route-id="@item.IdPropietario" title="Detalles">
-                    <i class="fa-solid fa-eye"></i>
-                </a> 
-                
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        @if (TempData["Mensaje"] != null)
-        {
-            <text>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: '@TempData["Mensaje"]'
-                });
-            </text>
-        }
-    </script>
+@if (pr.Items.Count == 0)
+{
+    <div class="alert alert-info">No se encontraron propietarios.</div>
 }
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Apellido y Nombres</th>
+                    <th>Domicilio</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in pr.Items)
+                {
+                    <tr>
+                        <td>@p.Documento</td>
+                        <td>@p.ApellidoNombres</td>
+                        <td>@p.Domicilio</td>
+                        <td>@p.Telefono</td>
+                        <td>@p.Email</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-primary" href="@Url.Action("Detalles","Propietario", new { id = p.IdPropietario })">Detalles</a>
+                            <a class="btn btn-sm btn-warning" href="@Url.Action("Editar","Propietario", new { id = p.IdPropietario })">Editar</a>
+                            <a class="btn btn-sm btn-danger" href="@Url.Action("Borrar","Propietario", new { id = p.IdPropietario })">Borrar</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
+    <!-- Paginación -->
+    <nav aria-label="Paginación">
+        <ul class="pagination">
+            @{
+                string qs(int page)
+                {
+                    var qp = new Dictionary<string, string?> {
+                        ["q"] = pr.Query,
+                        ["page"] = page.ToString(),
+                        ["pageSize"] = pr.PageSize.ToString()
+                    };
+                    var query = string.Join("&", qp.Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+                                                   .Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value!)}"));
+                    return Url.Action("Index","Propietario") + "?" + query;
+                }
+
+                var prevDisabled = pr.Page <= 1 ? "disabled" : "";
+                var nextDisabled = pr.Page >= pr.TotalPages ? "disabled" : "";
+            }
+            <li class="page-item @prevDisabled">
+                <a class="page-link" href="@(pr.Page <= 1 ? "#" : qs(pr.Page - 1))">Anterior</a>
+            </li>
+
+            @for (int i = 1; i <= pr.TotalPages; i++)
+            {
+                var active = pr.Page == i ? "active" : "";
+                <li class="page-item @active">
+                    <a class="page-link" href="@qs(i)">@i</a>
+                </li>
+            }
+
+            <li class="page-item @nextDisabled">
+                <a class="page-link" href="@(pr.Page >= pr.TotalPages ? "#" : qs(pr.Page + 1))">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+}

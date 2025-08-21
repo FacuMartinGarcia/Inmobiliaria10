@@ -40,14 +40,22 @@ namespace Inmobiliaria10.Models
         [StringLength(100)]
         [Display(Name = "Email")]
         public string? Email { get; set; }
-            
+
         public override string ToString()
-		{
-			var res = $"{ApellidoNombres}";
-			if(!String.IsNullOrEmpty(Documento)) {
-				res += $" ({Documento})";
-			}
-			return res;
-		}
+        {
+            var res = $"{ApellidoNombres}";
+            if (!String.IsNullOrEmpty(Documento))
+            {
+                res += $" ({Documento})";
+            }
+            return res;
+        }
+
+    }
+    
+    public class PropietarioIndexVm
+    {
+        public PagedResult<Propietario> Data { get; set; } = new PagedResult<Propietario>();
+        public int[] PageSizeOptions { get; set; } = new[] { 5, 10, 20, 50 };
     }
 }

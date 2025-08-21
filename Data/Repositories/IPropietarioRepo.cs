@@ -1,4 +1,3 @@
-// Repositories/IPropietarioRepository.cs
 using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Data.Repositories;
@@ -10,7 +9,6 @@ public interface IPropietarioRepo
     Task<int> Crear(Propietario p);
     Task<bool> Modificar(Propietario p);
     Task<bool> Borrar(int id);
-    IList<Propietario> ObtenerLista(int paginaNro, int tamPagina);
-    int ObtenerCantidad();
     Task<bool> ExistsDocumento(string documento, int? exceptId = null);
+    Task<PagedResult<Propietario>> BuscarPaginado(string? q, int page, int pageSize);
 }
