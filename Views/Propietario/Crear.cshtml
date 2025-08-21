@@ -4,34 +4,77 @@
     ViewData["Title"] = "Nuevo Propietario";
 }
 
-<h2>Nuevo Propietario</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6"> <!-- ancho medio en pantallas medianas -->
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">Nuevo Propietario</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Crear" method="post">
+                        <div class="form-group mb-3">
+                            <label asp-for="Documento" class="form-label"></label>
+                            <input asp-for="Documento" class="form-control" />
+                            <span asp-validation-for="Documento" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="ApellidoNombres" class="form-label"></label>
+                            <input asp-for="ApellidoNombres" class="form-control" />
+                            <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Domicilio" class="form-label"></label>
+                            <input asp-for="Domicilio" class="form-control" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Telefono" class="form-label"></label>
+                            <input asp-for="Telefono" class="form-control" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<<<<<<< HEAD
+=======
 <form asp-action="Crear" method="post">
     <div class="form-group">
         <label asp-for="Documento"></label>
-        <input asp-for="Documento" class="form-control" />
+        <input asp-for="Documento" class="form-control" autocomplete="off"  />
         <span asp-validation-for="Documento" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="ApellidoNombres"></label>
-        <input asp-for="ApellidoNombres" class="form-control" />
+        <input asp-for="ApellidoNombres" class="form-control" autocomplete="off"  />
         <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Domicilio"></label>
-        <input asp-for="Domicilio" class="form-control" />
+        <input asp-for="Domicilio" class="form-control" autocomplete="off"  />
     </div>
     <div class="form-group">
         <label asp-for="Telefono"></label>
-        <input asp-for="Telefono" class="form-control" />
+        <input asp-for="Telefono" class="form-control" autocomplete="off"  />
     </div>
     <div class="form-group">
         <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
+        <input asp-for="Email" class="form-control" autocomplete="off"  />
     </div>
     <button type="submit" class="btn btn-success">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
+>>>>>>> 522f45b3378969936abd09a9f3de462b65066cef
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
