@@ -4,16 +4,34 @@
     ViewData["Title"] = "Eliminar Inquilino";
 }
 
-<h2>Eliminar Inquilino</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card form-card">
+                <h2 class="form-title">@ViewData["Title"]</h2>
 
-<h3>¿Seguro que querés eliminar este inquilino?</h3>
+                <div class="card-body text-center">
+                    <h4 class="mb-4">¿Seguro que querés eliminar este inquilino?</h4>
 
-<div>
-    <strong>@Model.ApellidoNombres</strong> (@Model.Documento)
+                    <p class="mb-4">
+                        <strong>@Model.ApellidoNombres</strong>  
+                        <br />
+                        <span class="text-muted">(@Model.Documento)</span>
+                    </p>
+
+                    <form asp-action="Borrar" method="post" class="d-flex justify-content-center gap-3">
+                        <input type="hidden" asp-for="IdInquilino" />
+
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="fa-solid fa-trash me-2"></i> Eliminar
+                        </button>
+
+                        <a asp-action="Index" class="btn btn-back px-4">
+                            <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<form asp-action="Borrar" method="post">
-    <input type="hidden" asp-for="IdInquilino" />
-    <button type="submit" class="btn btn-danger">Eliminar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>

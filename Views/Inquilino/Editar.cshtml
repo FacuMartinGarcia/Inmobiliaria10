@@ -4,63 +4,63 @@
     ViewData["Title"] = "Editar Inquilino";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-10 offset-md-1 d-flex justify-content-center align-items-start pt-5">
-            <div class="card shadow-lg border-0 rounded-4 p-5" style="background-color: #f0fff4; width: 600px;">
-                <h2 class="mb-4 fw-bold text-center" style="color:#eec0559c;">@ViewData["Title"]</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6"> 
+            <div class="card form-card">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Editar" method="post">
+                        <input type="hidden" asp-for="IdInquilino" />
 
-                <form asp-action="Editar" method="post">
-                    <input type="hidden" asp-for="IdInquilino" />
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Documento" class="form-label w-100 text-center"></label>
+                                <input asp-for="Documento" class="form-control text-center" autocomplete="off"/>
+                                <span asp-validation-for="Documento" class="text-danger"></span>
+                            </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4 mb-3">
-                            <label for="Documento" class="form-label text-center w-100">Documento</label>
-                            <input asp-for="Documento" class="form-control rounded-3 text-center" id="Documento" autocomplete="off"/>
-                            <span asp-validation-for="Documento" class="text-danger"></span>
+                            <div class="col-md-8">
+                                <label asp-for="ApellidoNombres" class="form-label w-100 text-center"></label>
+                                <input asp-for="ApellidoNombres" class="form-control text-center" 
+                                       oninput="this.value = this.value.toUpperCase()" autocomplete="off"/>
+                                <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
+                            </div>
                         </div>
 
-                        <div class="col-md-8 mb-3">
-                            <label for="ApellidoNombres" class="form-label text-center w-100">Apellido y Nombre</label>
-                            <input asp-for="ApellidoNombres" class="form-control rounded-3 text-center" 
-                                   id="ApellidoNombres" oninput="this.value = this.value.toUpperCase()" autocomplete="off"/>
-                            <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="Domicilio" class="form-label text-center w-100">Domicilio</label>
-                        <input asp-for="Domicilio" class="form-control rounded-3 text-center" 
-                               id="Domicilio" oninput="this.value = this.value.toUpperCase()" autocomplete="off"/>
-                        <span asp-validation-for="Domicilio" class="text-danger"></span>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6 mb-3">
-                            <label for="Telefono" class="form-label text-center w-100">Teléfono</label>
-                            <input asp-for="Telefono" class="form-control rounded-3 text-center" id="Telefono" autocomplete="off"/>
-                            <span asp-validation-for="Telefono" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="Domicilio" class="form-label w-100 text-center"></label>
+                            <input asp-for="Domicilio" class="form-control text-center" 
+                                   oninput="this.value = this.value.toUpperCase()" autocomplete="off"/>
+                            <span asp-validation-for="Domicilio" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="Email" class="form-label text-center w-100">Email</label>
-                            <input asp-for="Email" class="form-control rounded-3 text-center" id="Email" autocomplete="off"/>
-                            <span asp-validation-for="Email" class="text-danger"></span>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Telefono" class="form-label w-100 text-center"></label>
+                                <input asp-for="Telefono" class="form-control text-center" autocomplete="off"/>
+                                <span asp-validation-for="Telefono" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label w-100 text-center"></label>
+                                <input asp-for="Email" class="form-control text-center" autocomplete="off"/>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="d-flex justify-content-center gap-3 mt-4">
-
-                        <button type="submit" class="btn rounded-3 px-4 py-2 shadow-sm" 
-                                style="background-color:#d7b66b; color:white; border:none;">
-                            <i class="fa-solid fa-floppy-disk me-2"></i> Guardar cambios
-                        </button>
-
-                        <a asp-action="Index" class="btn btn-secondary rounded-3 px-4 py-2 shadow-sm">
-                            <i class="fa-solid fa-arrow-left me-2"></i> Volver
-                        </a>
-                    </div>
-                </form>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
