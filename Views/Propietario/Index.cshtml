@@ -4,28 +4,43 @@
     var pr = Model.Data;
 }
 
-<h1 class="mb-3">Propietarios</h1>
+<div class="text-center mb-3">
+    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Propietarios</h2>
+</div>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-sm-6 col-lg-4">
+<form method="get" class="row g-2 align-items-center mb-3">
+
+    <!-- Campo de búsqueda -->
+    <div class="col-md-4">
         <input type="text" name="q" value="@pr.Query" class="form-control" placeholder="Buscar por nombre o documento" />
     </div>
-    <div class="col-auto">
+
+    <!-- Selección de tamaño de página -->
+    <div class="col-md-2">
         <select name="pageSize" class="form-select" onchange="this.form.submit()">
             @foreach (var size in Model.PageSizeOptions)
             {
-                <option value="@size" selected="@(size == pr.PageSize ? "selected" : null)">@size por página</option>
+                <option value="@size" selected="@(size == pr.PageSize ? "selected" : null)">
+                    @size por página
+                </option>
             }
         </select>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-primary" type="submit">Buscar</button>
-        <a class="btn btn-outline-secondary" href="@Url.Action("Index","Propietario")">Limpiar</a>
-    </div>
-    <div class="col text-end">
-        <a class="btn btn-success" href="@Url.Action("Crear","Propietario")">+ Nuevo</a>
+
+    <!-- Botones de acción -->
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary me-2" type="submit">
+            <i class="fa fa-search"></i> Buscar
+        </button>
+        <a class="btn btn-outline-secondary me-2" href="@Url.Action("Index","Propietario")">
+            <i class="fa fa-eraser"></i> Limpiar
+        </a>
+        <a asp-action="Crear" class="btn btn-success">
+            <i class="fa fa-plus"></i> Nuevo Propietario
+        </a>
     </div>
 </form>
+
 
 @if (pr.Items.Count == 0)
 {
@@ -35,7 +50,7 @@ else
 {
     <div class="table-responsive">
         <table class="table table-sm table-striped align-middle">
-            <thead>
+            <thead class="table-light">
                 <tr>
                     <th>Documento</th>
                     <th>Apellido y Nombres</th>
@@ -55,9 +70,12 @@ else
                         <td>@p.Telefono</td>
                         <td>@p.Email</td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-primary" href="@Url.Action("Detalles","Propietario", new { id = p.IdPropietario })">Detalles</a>
-                            <a class="btn btn-sm btn-warning" href="@Url.Action("Editar","Propietario", new { id = p.IdPropietario })">Editar</a>
-                            <a class="btn btn-sm btn-danger" href="@Url.Action("Borrar","Propietario", new { id = p.IdPropietario })">Borrar</a>
+                            <a class="btn btn-sm btn-warning" href="@Url.Action("Editar","Propietario", 
+                            new { id = p.IdPropietario })"><i class="fa-solid fa-pen"></i></a>
+                            <a class="btn btn-sm btn-danger" href="@Url.Action("Borrar","Propietario", 
+                            new { id = p.IdPropietario })"><i class="fa-solid fa-trash-can"></i></a>
+                            <a class="btn btn-sm btn-primary" href="@Url.Action("Detalles","Propietario", 
+                            new { id = p.IdPropietario })"><i class="fa-solid fa-eye"></i></a>
                         </td>
                     </tr>
                 }
@@ -101,4 +119,20 @@ else
             </li>
         </ul>
     </nav>
+}
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        @if (TempData["Mensaje"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    //text: '@TempData.Peek("Mensaje")'
+                    text: '@TempData["Mensaje"]'
+                });
+            </text>
+        }
+    </script>
 }

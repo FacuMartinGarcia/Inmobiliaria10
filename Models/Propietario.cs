@@ -32,7 +32,7 @@ namespace Inmobiliaria10.Models
             set => _domicilio = (value ?? string.Empty).ToUpper();
         }
 
-        [StringLength(50)]
+        [Required, StringLength(50)]
         [RegularExpression("^[0-9]*$", ErrorMessage = "El teléfono solo puede contener números")]
         public string? Telefono { get; set; }
 

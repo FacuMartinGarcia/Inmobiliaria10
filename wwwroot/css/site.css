@@ -30,10 +30,10 @@ body {
   text-align: start;
 }
 
-/* site.css */
+/* fondo */
 #content{
   position: relative;
-  z-index: 0;              /* crea contexto de apilado */
+  z-index: 0;             
   background: url('/img/edificio1.webp') center/cover no-repeat;
   min-height: 100vh;
 }
@@ -42,6 +42,67 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,.25);
-  z-index: -1;             /* detrás de los hijos */
+  z-index: -1;           
+}
+
+/* Formularios */
+.form-card {
+    background-color: #EEC055 !important; /* Fondo sólido */
+    width: 600px;
+    padding: 2rem;
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 .25rem .5rem rgba(0, 0, 0, .18);
+}
+
+.form-title {
+    margin-bottom: 1.5rem;
+    font-weight: 700;       /* más grueso */
+    text-align: center;
+    color: #523A02;
+    font-size: 2rem;        /* más grande (≈32px) */
+    letter-spacing: 1px;  
+}
+
+.form-label {
+    font-weight: bold;
+    color: #523A02; /* Color sólido */
+    text-align: center;   /* Centra el texto */
+    display: block;       /* Ocupa todo el ancho */
+}
+
+.form-control {
+    border-radius: .5rem;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .1);
+    text-align: center;   /* Centra el contenido del input */
+}
+
+
+/* Botón Guardar */
+.btn-save {
+    background-color: #523a029c;
+    color: white;
+    border: none;
+    border-radius: .5rem;
+    padding: .5rem 1.5rem;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .1);
+}
+
+.btn-save:hover {
+    background-color: #c9a653;
+    color: white;
+}
+
+/* Botón Volver */
+.btn-back {
+    background-color: #6c757d; /* gris Bootstrap */
+    color: white;
+    border-radius: .5rem;
+    padding: .5rem 1.5rem;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .1);
+}
+
+.btn-back:hover {
+    background-color: #5a6268;
+    color: white;
 }

@@ -6,40 +6,53 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6"> <!-- ancho medio en pantallas medianas --
-            <div class="card shadow-lg border-0 rounded-3">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">Nuevo Propietario</h4>
+        <div class="col-md-6"> 
+            <div class="card form-card">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">Nuevo Propietario</h4>
                 </div>
                 <div class="card-body">
                     <form asp-action="Crear" method="post">
-                        <div class="form-group mb-3">
-                            <label asp-for="Documento" class="form-label"></label>
-                            <input asp-for="Documento" class="form-control" />
-                            <span asp-validation-for="Documento" class="text-danger" autocomplete="off"></span>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Documento" class="form-label w-100 text-center"></label>
+                                <input asp-for="Documento" class="form-control text-center" autocomplete="off" />
+                                <span asp-validation-for="Documento" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ApellidoNombres" class="form-label w-100 text-center"></label>
+                                <input asp-for="ApellidoNombres" class="form-control text-center" autocomplete="off" />
+                                <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label asp-for="ApellidoNombres" class="form-label"></label>
-                            <input asp-for="ApellidoNombres" class="form-control" />
-                            <span asp-validation-for="ApellidoNombres" class="text-danger" autocomplete="off"></span>
+
+                        <div class="mb-3">
+                            <label asp-for="Domicilio" class="form-label w-100 text-center"></label>
+                            <input asp-for="Domicilio" class="form-control text-center" autocomplete="off" />
+                            <span asp-validation-for="Domicilio" class="text-danger"></span>
                         </div>
-                        <div class="form-group mb-3">
-                            <label asp-for="Domicilio" class="form-label"></label>
-                            <input asp-for="Domicilio" class="form-control" autocomplete="off"/>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Telefono" class="form-label w-100 text-center"></label>
+                                <input asp-for="Telefono" class="form-control text-center" autocomplete="off" />
+                                <span asp-validation-for="Telefono" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label w-100 text-center"></label>
+                                <input asp-for="Email" class="form-control text-center" autocomplete="off" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label asp-for="Telefono" class="form-label"></label>
-                            <input asp-for="Telefono" class="form-control" autocomplete="off" />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" autocomplete="off" />
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-success">Guardar</button>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-back"><i class="fa-solid fa-arrow-left me-2"></i> Cancelar</a>
+                            <button type="submit" class="btn btn-save"><i class="fa-solid fa-floppy-disk me-2"></i> Guardar</button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>
