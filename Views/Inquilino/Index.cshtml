@@ -2,49 +2,86 @@
 
 @{
     ViewData["Title"] = "Inquilinos";
+    int paginaActual = ViewData["PaginaActual"] != null ? Convert.ToInt32(ViewData["PaginaActual"]) : 1;
+    int totalPaginas = ViewData["TotalPaginas"] != null ? Convert.ToInt32(ViewData["TotalPaginas"]) : 1;
 }
 
-<h2>Inquilinos</h2>
+<div class="text-center mb-3">
+    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Inquilinos</h2>
+</div>
 
-<p>
-    <a asp-action="Crear" class="btn btn-primary">Nuevo Inquilino</a>
-</p>
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="Crear" class="btn btn-success">
+        <i class="fa-solid fa-plus"></i> Nuevo Inquilino
+    </a>
+</div>
 
-<table class="table table-striped">
-    <thead>
+<table class="table table-hover table-striped align-middle">
+    <thead class="table-light">
         <tr>
-            <th>@Html.DisplayNameFor(m => m.Documento)</th>
-            <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th>
-            <th>@Html.DisplayNameFor(m => m.Domicilio)</th>
-            <th>@Html.DisplayNameFor(m => m.Telefono)</th>
+            <th>@Html.DisplayNameFor(m => m.Documento)</th> 
+            <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th> 
+            <th>@Html.DisplayNameFor(m => m.Domicilio)</th> 
+            <th>@Html.DisplayNameFor(m => m.Telefono)</th> 
             <th>@Html.DisplayNameFor(m => m.Email)</th>
-            <th></th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.Documento</td>
-            <td>@item.ApellidoNombres</td>
-            <td>@item.Domicilio</td>
-            <td>@item.Telefono</td>
-            <td>@item.Email</td>
-            <td>
-                <a class="btn btn-primary" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                </a>
-				<a class="btn btn-danger" asp-action="Borrar" asp-route-id="@item.IdInquilino" title="Borrar">
-					<i class="fa-solid fa-trash-can"></i>
-				</a>                
-                <a class="btn btn-info" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
-            </td>
-        </tr>
-    }
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Documento</td>
+                    <td>@item.ApellidoNombres</td>
+                    <td>@item.Domicilio</td>
+                    <td>@item.Telefono</td>
+                    <td>@item.Email</td>
+                    <td class="text-center">
+                        <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a class="btn btn-sm btn-danger" asp-action="Borrar" asp-route-id="@item.IdInquilino" title="Borrar">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>                
+                        <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay inquilinos registrados</td>
+            </tr>
+        }
     </tbody>
 </table>
+
+@if (totalPaginas > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" href="?pagina=@(paginaActual - 1)">« Anterior</a>
+            </li>
+
+            @for (int i = 1; i <= totalPaginas; i++)
+            {
+                <li class="page-item @(i == paginaActual ? "active" : "")">
+                    <a class="page-link" href="?pagina=@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                <a class="page-link" href="?pagina=@(paginaActual + 1)">Siguiente »</a>
+            </li>
+        </ul>
+    </nav>
+}
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -55,6 +92,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Éxito',
+                    //text: '@TempData.Peek("Mensaje")'
                     text: '@TempData["Mensaje"]'
                 });
             </text>

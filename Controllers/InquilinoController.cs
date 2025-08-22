@@ -15,10 +15,23 @@ namespace Inmobiliaria10.Controllers
         }
 
         // GET: /Inquilino - Muestra todos los inquilinos
+        /*
         public IActionResult Index()
         {
             var lista = repo.ListarTodos();
             return View(lista);
+        }
+        */
+        // GET: /Inquilino - Mostrar todos pero paginado
+        public IActionResult Index(int pagina = 1)
+        {
+            int cantidadPorPagina = 8; 
+            var resultado = repo.ListarTodosPaginado(pagina, cantidadPorPagina);
+
+            ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
+            ViewData["PaginaActual"] = pagina;
+
+            return View(resultado.registros);
         }
 
         // GET: /Inquilino/Detalle/5 - Muestra un inquilino en particular
@@ -91,7 +104,7 @@ namespace Inmobiliaria10.Controllers
             }
 
             repo.Actualizar(i);
-            TempData["Mensaje"] = "El inquilino se actualizó correctamente.";
+            TempData["Mensaje"] = "El inquilino ha sido actualizado correctamente.";
             return RedirectToAction("Index");
         }
 

@@ -87,6 +87,49 @@ namespace Inmobiliaria10.Repositories
             return lista;
         }
 
+        public (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(
+            int pagina, 
+            int cantidadPorPagina)
+        {
+            var lista = new List<Inquilino>();
+            using var conn = new MySqlConnection(connectionString);
+
+            int offset = (pagina - 1) * cantidadPorPagina;
+
+            var sql = @"SELECT * FROM inquilinos 
+                        ORDER BY apellido_nombres 
+                        LIMIT @cantidad OFFSET @offset";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@cantidad", cantidadPorPagina);
+            cmd.Parameters.AddWithValue("@offset", offset);
+
+            conn.Open();
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var i = new Inquilino
+                {
+                    IdInquilino = reader.GetInt32("id_inquilino"),
+                    Documento = reader.GetString("documento"),
+                    ApellidoNombres = reader.GetString("apellido_nombres"),
+                    Domicilio = reader.GetString("domicilio"),
+                    Telefono = reader.IsDBNull("telefono") ? null : reader.GetString("telefono"),
+                    Email = reader.IsDBNull("email") ? null : reader.GetString("email")
+                };
+                lista.Add(i);
+            }
+            reader.Close();
+
+            var sqlTotal = "SELECT COUNT(*) FROM inquilinos";
+            using var cmdTotal = new MySqlCommand(sqlTotal, conn);
+            int totalRegistros = Convert.ToInt32(cmdTotal.ExecuteScalar());
+
+            conn.Close();
+            return (lista, totalRegistros);
+        }
+
+
         public Inquilino? ObtenerPorId(int id)
         {
             Inquilino? i = null;
@@ -132,8 +175,8 @@ namespace Inmobiliaria10.Repositories
                     Documento = reader.GetString("documento"),
                     ApellidoNombres = reader.GetString("apellido_nombres"),
                     Domicilio = reader.GetString("domicilio"),
-                    Telefono = reader.GetString("telefono"),
-                    Email = reader.GetString("email")
+                    Telefono = reader.IsDBNull("telefono") ? null : reader.GetString("telefono"),
+                    Email = reader.IsDBNull("email") ? null : reader.GetString("email")
                 };
             }
             conn.Close();
