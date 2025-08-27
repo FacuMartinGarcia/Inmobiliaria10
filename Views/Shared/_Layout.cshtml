@@ -29,7 +29,6 @@
         <nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
             <div class="container-fluid">
 
-               
                 <!-- Botón para plegar/mostrar sidebar -->
                 <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
                         type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
@@ -37,37 +36,21 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
-                 <!-- Brand -->
+                <!-- Brand -->
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
                     <span class="fw-bold">@appName</span>
                     <img src="~/img/logoOk.png" alt="Logo" style="height:40px;" />
                 </a>
 
-
-
                 <div class="ms-auto d-flex align-items-center">
-                    <!-- 
-                    <ul class="navbar-nav me-3">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
-                        </li>
-                    </ul> 
-                    -->
-
                     <!-- Login / Usuario -->
-                    @* Si tenés Identity, podés usar el parcial por convención *@
-                    @* <partial name="_LoginPartial" /> *@
-
                     @if (isAuth)
                     {
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
                                     type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
                                     aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menú">
-                            <i class="fa-solid fa-bars"></i>
+                                <i class="fa-solid fa-bars"></i>
                             </button>
 
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
@@ -85,15 +68,6 @@
                             </ul>
                         </div>
                     }
-                    <!--
-                    else
-                    {
-                        <div class="d-flex gap-2">
-                            <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login">Cambiar Contraseña</a>
-                            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Cerrar Se</a>
-                        </div>
-                    }
-                    -->
                 </div>
             </div>
         </nav>
@@ -107,14 +81,7 @@
             <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
                 <div class="sidebar-inner d-flex flex-column h-100">
                     <ul class="nav nav-pills flex-column p-2">
-                        <!--
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
-                                <i class="fa-solid fa-house"></i>
-                                <span>Gestión</span>
-                            </a>
-                        </li>
-                        -->
+                        <!-- Menús existentes -->
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
                                 <i class="fa-solid fa-user-tie"></i>
@@ -145,12 +112,31 @@
                                 <span>Pagos</span>
                             </a>
                         </li>
-                    </ul>
 
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapsed" data-bs-toggle="collapse" href="#menuSistema" role="button" aria-expanded="false" aria-controls="menuSistema">
+                                <i class="fa-solid fa-cogs"></i>
+                                <span>Sistema</span>
+                                <i class="fa-solid fa-chevron-down ms-auto"></i>
+                            </a>
+                            <div class="collapse" id="menuSistema">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Usuario" asp-action="Index">Usuarios</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="InmuebleTipo" asp-action="Index">Tipos de Inmuebles</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="InmuebleUso" asp-action="Index">Usos de Inmuebles</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </nav>
 
-            <!-- CONTENIDO -->
             <!-- CONTENIDO -->
             <main id="content" class="col py-3"
                 style="
@@ -158,9 +144,8 @@
                     linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)),
                     url('/img/edificio1.webp') center/cover no-repeat;
                     min-height: 100vh;">
-            @RenderBody()
+                @RenderBody()
             </main>
-
 
         </div>
     </div>
@@ -173,31 +158,29 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Tu JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <!-- Script para recordar el estado del sidebar -->
+
     <script>
         (function () {
             const sidebar = document.getElementById('sidebar');
             const btn = document.getElementById('btnSidebarToggle');
             const key = 'sidebar-collapsed';
 
-            // Restaurar estado
             const wasCollapsed = localStorage.getItem(key) === 'true';
             if (wasCollapsed) {
-                // Forzar colapso sin animación inicial
+
                 sidebar.classList.remove('show');
             }
 
-            // Guardar estado al hacer toggle
+
             btn?.addEventListener('click', function () {
-                const willBeCollapsed = sidebar.classList.contains('show'); // está abierto -> va a cerrarse
-                // Esperar fin de animación y guardar
+                const willBeCollapsed = sidebar.classList.contains('show'); 
+
                 setTimeout(() => {
                     localStorage.setItem(key, String(!willBeCollapsed));
                 }, 350);

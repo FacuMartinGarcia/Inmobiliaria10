@@ -1,4 +1,3 @@
-// Repositories/IInquilinoRepo.cs
 using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Repositories;

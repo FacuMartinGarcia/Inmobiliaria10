@@ -1,0 +1,104 @@
+@model IEnumerable<Inmobiliaria10.Models.InmuebleUso>
+
+@{
+    ViewData["Title"] = "Usos de Inmuebles";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - InnovaPropiedades</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .container-custom {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .page-title {
+            color: #e6dabe;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .table-custom {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .table-custom thead th {
+            background-color: #f8f9fa;
+            color: #212529;
+            text-align: left;
+            vertical-align: middle;
+            padding: 12px 10px;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .table-custom tbody td {
+            padding: 10px;
+            vertical-align: middle;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-custom">
+        <div class="text-center mb-3">
+            <h2 class="fw-bold mb-0" style="color:#ddb350;">Listado de Usos de Inmuebles</h2>
+        </div>
+        
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-action="Crear" class="btn btn-success">
+                <i class="fa-solid fa-plus"></i> Nuevo Uso de Inmueble
+            </a>
+        </div>
+
+        <table class="table table-hover table-striped align-middle table-custom">
+            <thead class="table-light">
+                <tr>
+                    <th>Id</th>
+                    <th>Uso</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var uso in Model)
+                {
+                    <tr>
+                        <td>@uso.IdUso</td>
+                        <td>@uso.DenominacionUso</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@uso.IdUso" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" asp-action="Borrar" asp-route-id="@uso.IdUso" title="Borrar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>                
+                            <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@uso.IdUso" title="Detalles">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
