@@ -2,28 +2,23 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using Inmobiliaria10.Models;
 
-namespace Inmobiliaria10.Repositories
+namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleTipoRepo 
+    public class InmuebleTipoRepo : RepositorioBase, IInmuebleTipoRepo
     {
-        private readonly string connectionString;
-
-        public InmuebleTipoRepo(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
+        public InmuebleTipoRepo(IConfiguration cfg) : base(cfg) { }
 
         public int Agregar(InmuebleTipo i)
         {
-            int idGenerado = 0;
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = @"INSERT INTO inmuebles_tipos (denominacion_tipo) VALUES (@denom);
                         SELECT LAST_INSERT_ID();";
+
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo); 
+            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo);
+
             conn.Open();
-            idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            conn.Close();
+            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
             return idGenerado;
         }
 
@@ -31,12 +26,13 @@ namespace Inmobiliaria10.Repositories
         {
             var inmuebleTipos = new List<InmuebleTipo>();
 
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = "SELECT * FROM inmuebles_tipos";
+
             using var cmd = new MySqlCommand(sql, conn);
             conn.Open();
-            using var reader = cmd.ExecuteReader();
 
+            using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 var inmuebleTipo = new InmuebleTipo
@@ -47,7 +43,6 @@ namespace Inmobiliaria10.Repositories
                 inmuebleTipos.Add(inmuebleTipo);
             }
 
-            conn.Close();
             return inmuebleTipos;
         }
     }

@@ -1,17 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Models;
-using Inmobiliaria10.Repositories;
+using Inmobiliaria10.Data.Repositories;
 
 namespace Inmobiliaria10.Controllers
 {
     public class InmuebleTipoController : Controller
     {
-        private readonly InmuebleTipoRepo repo;
+        private readonly IInmuebleTipoRepo repo;
 
-        public InmuebleTipoController(IConfiguration config)
+        public InmuebleTipoController(IInmuebleTipoRepo repo)
         {
-            var conn = config.GetConnectionString("Inmogenial");
-            repo = new InmuebleTipoRepo(conn!);
+            this.repo = repo;
         }
 
         public IActionResult Index()
@@ -35,7 +34,5 @@ namespace Inmobiliaria10.Controllers
             repo.Agregar(tipo);
             return RedirectToAction(nameof(Index));
         }
-
-
     }
 }
