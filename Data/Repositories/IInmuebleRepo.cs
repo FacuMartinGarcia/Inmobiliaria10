@@ -1,5 +1,5 @@
 using Inmobiliaria10.Models;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 
 namespace Inmobiliaria10.Data.Repositories
 {

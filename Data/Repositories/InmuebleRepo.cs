@@ -2,21 +2,16 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using Inmobiliaria10.Models;
 
-namespace Inmobiliaria10.Repositories
+namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleRepo
+    public class InmuebleRepo: RepositorioBase, IInmuebleRepo
     {
-        private readonly string connectionString;
-
-        public InmuebleRepo(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
+        public InmuebleRepo(IConfiguration cfg) : base(cfg) { }
 
         public int Agregar(Inmueble i)
         {
             int idGenerado = 0;
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = @"INSERT INTO inmuebles 
                         (id_propietario, id_uso, id_tipo, direccion, piso, depto, lat, lon, ambientes, precio, activo, created_at, updated_at)
                         VALUES (@idPropietario, @idUso, @idTipo, @direccion, @piso, @depto, @lat, @lon, @ambientes, @precio, @activo, @createdAt, @updatedAt);
@@ -39,15 +34,13 @@ namespace Inmobiliaria10.Repositories
 
             conn.Open();
             idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            conn.Close();
-
             return idGenerado;
         }
 
         public int Actualizar(Inmueble i)
         {
             int filas = 0;
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = @"UPDATE inmuebles SET
                             id_propietario = @idPropietario,
                             id_uso = @idUso,
@@ -80,23 +73,21 @@ namespace Inmobiliaria10.Repositories
 
             conn.Open();
             filas = cmd.ExecuteNonQuery();
-            conn.Close();
-
             return filas;
         }
 
         public List<Inmueble> ListarTodos()
         {
             var lista = new List<Inmueble>();
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
 
             var sql = @"
                 SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.nombre AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.nombre AS tipo_nombre
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
                 FROM inmuebles i
-                LEFT JOIN inmueble_usos u ON i.id_uso = u.id_uso
-                LEFT JOIN inmueble_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+                LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
             ";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -106,7 +97,6 @@ namespace Inmobiliaria10.Repositories
             {
                 lista.Add(Map(reader));
             }
-            conn.Close();
             return lista;
         }
 
@@ -115,17 +105,17 @@ namespace Inmobiliaria10.Repositories
             int pagina, int cantidadPorPagina)
         {
             var lista = new List<Inmueble>();
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
 
             int offset = (pagina - 1) * cantidadPorPagina;
 
             var sql = @"
                 SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.nombre AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.nombre AS tipo_nombre
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
                 FROM inmuebles i
-                LEFT JOIN inmueble_usos u ON i.id_uso = u.id_uso
-                LEFT JOIN inmueble_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+                LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
                 ORDER BY i.direccion
                 LIMIT @cantidad OFFSET @offset
             ";
@@ -146,22 +136,21 @@ namespace Inmobiliaria10.Repositories
             using var cmdTotal = new MySqlCommand(sqlTotal, conn);
             int totalRegistros = Convert.ToInt32(cmdTotal.ExecuteScalar());
 
-            conn.Close();
             return (lista, totalRegistros);
         }
 
         public Inmueble? ObtenerPorId(int id)
         {
             Inmueble? i = null;
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
 
             var sql = @"
                 SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.nombre AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.nombre AS tipo_nombre
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
                 FROM inmuebles i
-                LEFT JOIN inmueble_usos u ON i.id_uso = u.id_uso
-                LEFT JOIN inmueble_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+                LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
                 WHERE i.id_inmueble = @id
             ";
 
@@ -174,7 +163,6 @@ namespace Inmobiliaria10.Repositories
             {
                 i = Map(reader);
             }
-            conn.Close();
             return i;
         }
 
@@ -182,15 +170,13 @@ namespace Inmobiliaria10.Repositories
         public int Borrar(int id)
         {
             int filas = 0;
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = "DELETE FROM inmuebles WHERE id_inmueble = @id";
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
             conn.Open();
             filas = cmd.ExecuteNonQuery();
-            conn.Close();
-
             return filas;
         }
 

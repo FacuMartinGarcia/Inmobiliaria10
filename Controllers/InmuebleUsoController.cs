@@ -1,26 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Models;
-using Inmobiliaria10.Repositories;
+using Inmobiliaria10.Data.Repositories;
 
 namespace Inmobiliaria10.Controllers
 {
     public class InmuebleUsoController : Controller
     {
-        private readonly InmuebleUsoRepo repo;
+        private readonly IInmuebleUsoRepo repo;
 
-        public InmuebleUsoController(IConfiguration config)
+        public InmuebleUsoController(IInmuebleUsoRepo repo)
         {
-            var conn = config.GetConnectionString("Inmogenial");
-            repo = new InmuebleUsoRepo(conn!);
+            this.repo = repo;
         }
 
         public IActionResult Index()
         {
-            var lista = repo.MostrarTodosInmuebleUsos();
-            return View(lista);
+            var usos = repo.MostrarTodosInmuebleUsos();
+            return View(usos);
         }
 
-        [HttpGet]
+        public IActionResult Detalle(int id)
+        {
+            var uso = repo.ObtenerPorId(id);
+            if (uso == null)
+                return NotFound();
+
+            return View(uso);
+        }
+
         public IActionResult Crear()
         {
             return View();
@@ -28,14 +35,66 @@ namespace Inmobiliaria10.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Crear(InmuebleUso u)
+        public IActionResult Crear(InmuebleUso uso)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(uso);
+
+            try
             {
-                repo.Agregar(u);
+                repo.Agregar(uso);
                 return RedirectToAction(nameof(Index));
             }
-            return View(u);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("DenominacionUso", ex.Message);
+                return View(uso);
+            }
+        }
+
+        public IActionResult Editar(int id)
+        {
+            var uso = repo.ObtenerPorId(id);
+            if (uso == null)
+                return NotFound();
+
+            return View(uso);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Editar(InmuebleUso uso)
+        {
+            if (!ModelState.IsValid)
+                return View(uso);
+
+            try
+            {
+                repo.Editar(uso);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("DenominacionUso", ex.Message);
+                return View(uso);
+            }
+        }
+
+        public IActionResult Eliminar(int id)
+        {
+            var uso = repo.ObtenerPorId(id);
+            if (uso == null)
+                return NotFound();
+
+            return View(uso);
+        }
+
+        [HttpPost, ActionName("Eliminar")]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarConfirmado(int id)
+        {
+            repo.Eliminar(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

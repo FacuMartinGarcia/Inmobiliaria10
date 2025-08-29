@@ -1,0 +1,35 @@
+@model Inmobiliaria10.Models.InmuebleUso
+
+@{
+    ViewData["Title"] = "Detalle de Uso de Inmueble";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6"> 
+            <div class="card form-card">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body text-center">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID</dt>
+                        <dd class="col-sm-8">@Model.IdUso</dd>
+
+                        <dt class="col-sm-4">Denominación</dt>
+                        <dd class="col-sm-8">@Model.DenominacionUso</dd>
+                    </dl>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-back">
+                            <i class="fa-solid fa-arrow-left me-2"></i> Volver
+                        </a>
+                        <a asp-action="Editar" asp-route-id="@Model.IdUso" class="btn btn-save">
+                            <i class="fa-solid fa-pen-to-square me-2"></i> Editar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

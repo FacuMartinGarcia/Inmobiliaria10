@@ -8,8 +8,30 @@ namespace Inmobiliaria10.Data.Repositories
     {
         public InmuebleTipoRepo(IConfiguration cfg) : base(cfg) { }
 
+        public bool ExisteDenominacion(string denominacion, int? idExcluir = null)
+        {
+            using var conn = Conn();
+            var sql = "SELECT COUNT(*) FROM inmuebles_tipos WHERE denominacion_tipo = @denom";
+
+            if (idExcluir.HasValue)
+                sql += " AND id_tipo <> @id"; 
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@denom", denominacion);
+
+            if (idExcluir.HasValue)
+                cmd.Parameters.AddWithValue("@id", idExcluir.Value);
+
+            conn.Open();
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            return count > 0;
+        }
+
         public int Agregar(InmuebleTipo i)
         {
+            if (ExisteDenominacion(i.DenominacionTipo))
+                throw new Exception("Ya existe un tipo con esa denominación");
+
             using var conn = Conn();
             var sql = @"INSERT INTO inmuebles_tipos (denominacion_tipo) VALUES (@denom);
                         SELECT LAST_INSERT_ID();";
@@ -20,6 +42,55 @@ namespace Inmobiliaria10.Data.Repositories
             conn.Open();
             int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
             return idGenerado;
+        }
+
+        public void Editar(InmuebleTipo i)
+        {
+            if (ExisteDenominacion(i.DenominacionTipo, i.IdTipo))
+                throw new Exception("Ya existe otro tipo con esa denominación");
+
+            using var conn = Conn();
+            var sql = "UPDATE inmuebles_tipos SET denominacion_tipo = @denom WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo);
+            cmd.Parameters.AddWithValue("@id", i.IdTipo);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        public void Eliminar(int id)
+        {
+            using var conn = Conn();
+            var sql = "DELETE FROM inmuebles_tipos WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        public InmuebleTipo? ObtenerPorId(int id)
+        {
+            using var conn = Conn();
+            var sql = "SELECT * FROM inmuebles_tipos WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return new InmuebleTipo
+                {
+                    IdTipo = reader.GetInt32("id_tipo"),
+                    DenominacionTipo = reader.GetString("denominacion_tipo"),
+                };
+            }
+            return null;
         }
 
         public List<InmuebleTipo> MostrarTodosInmuebleTipos()

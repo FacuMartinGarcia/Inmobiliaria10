@@ -18,6 +18,14 @@ namespace Inmobiliaria10.Controllers
             var tipos = repo.MostrarTodosInmuebleTipos();
             return View(tipos);
         }
+        public IActionResult Detalle(int id)
+        {
+            var tipo = repo.ObtenerPorId(id);
+            if (tipo == null)
+                return NotFound();
+
+            return View(tipo);
+        }
 
         public IActionResult Crear()
         {
@@ -31,7 +39,60 @@ namespace Inmobiliaria10.Controllers
             if (!ModelState.IsValid)
                 return View(tipo);
 
-            repo.Agregar(tipo);
+            try
+            {
+                repo.Agregar(tipo);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("DenominacionTipo", ex.Message);
+                return View(tipo);
+            }
+        }
+
+        public IActionResult Editar(int id)
+        {
+            var tipo = repo.ObtenerPorId(id);
+            if (tipo == null)
+                return NotFound();
+
+            return View(tipo);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Editar(InmuebleTipo tipo)
+        {
+            if (!ModelState.IsValid)
+                return View(tipo);
+
+            try
+            {
+                repo.Editar(tipo);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("DenominacionTipo", ex.Message);
+                return View(tipo);
+            }
+        }
+
+        public IActionResult Eliminar(int id)
+        {
+            var tipo = repo.ObtenerPorId(id);
+            if (tipo == null)
+                return NotFound();
+
+            return View(tipo);
+        }
+
+        [HttpPost, ActionName("Eliminar")]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarConfirmado(int id)
+        {
+            repo.Eliminar(id);
             return RedirectToAction(nameof(Index));
         }
     }
