@@ -1,0 +1,125 @@
+@model Inmobiliaria10.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Nuevo Inmueble";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card form-card">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Crear" method="post">
+                        <!-- Propietario -->
+                        <div class="mb-3">
+                            <label asp-for="IdPropietario" class="form-label w-100 text-center">Propietario</label>
+                            <select id="propietario" asp-for="IdPropietario" class="form-select text-center" asp-items="ViewBag.Propietarios">
+                                <option value="">-- Seleccione Propietario --</option>
+                            </select>
+                            <span asp-validation-for="IdPropietario" class="text-danger"></span>
+                        </div>
+
+                        <!-- Uso -->
+                        <div class="mb-3">
+                            <label asp-for="IdUso" class="form-label w-100 text-center">Uso</label>
+                            <select id="uso" asp-for="IdUso" class="form-select text-center" asp-items="ViewBag.Usos">
+                                <option value="">-- Seleccione Uso --</option>
+                            </select>
+                            <span asp-validation-for="IdUso" class="text-danger"></span>
+                        </div>
+
+                        <!-- Tipo -->
+                        <div class="mb-3">
+                            <label asp-for="IdTipo" class="form-label w-100 text-center">Tipo</label>
+                            <select id="tipo" asp-for="IdTipo" class="form-select text-center" asp-items="ViewBag.Tipos">
+                                <option value="">-- Seleccione Tipo --</option>
+                            </select>
+                            <span asp-validation-for="IdTipo" class="text-danger"></span>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="mb-3">
+                            <label asp-for="Direccion" class="form-label w-100 text-center"></label>
+                            <input asp-for="Direccion" class="form-control text-center" autocomplete="off"/>
+                            <span asp-validation-for="Direccion" class="text-danger"></span>
+                        </div>
+
+                        <!-- Piso -->
+                        <div class="mb-3">
+                            <label asp-for="Piso" class="form-label w-100 text-center"></label>
+                            <input asp-for="Piso" class="form-control text-center" autocomplete="off"/>
+                            <span asp-validation-for="Piso" class="text-danger"></span>
+                        </div>
+
+                        <!-- Depto -->
+                        <div class="mb-3">
+                            <label asp-for="Depto" class="form-label w-100 text-center"></label>
+                            <input asp-for="Depto" class="form-control text-center" autocomplete="off"/>
+                            <span asp-validation-for="Depto" class="text-danger"></span>
+                        </div>
+
+                        <!-- Ambientes -->
+                        <div class="mb-3">
+                            <label asp-for="Ambientes" class="form-label w-100 text-center"></label>
+                            <input asp-for="Ambientes" type="number" class="form-control text-center"/>
+                            <span asp-validation-for="Ambientes" class="text-danger"></span>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="mb-3">
+                            <label asp-for="Precio" class="form-label w-100 text-center"></label>
+                            <input asp-for="Precio" type="number" step="0.01" class="form-control text-center"/>
+                            <span asp-validation-for="Precio" class="text-danger"></span>
+                        </div>
+
+                        <!-- Latitud -->
+                        <div class="mb-3">
+                            <label asp-for="Lat" class="form-label w-100 text-center">Latitud</label>
+                            <input asp-for="Lat" type="number" step="0.000001" class="form-control text-center"/>
+                            <span asp-validation-for="Lat" class="text-danger"></span>
+                        </div>
+
+                        <!-- Longitud -->
+                        <div class="mb-3">
+                            <label asp-for="Lon" class="form-label w-100 text-center">Longitud</label>
+                            <input asp-for="Lon" type="number" step="0.000001" class="form-control text-center"/>
+                            <span asp-validation-for="Lon" class="text-danger"></span>
+                        </div>
+
+                        <!-- Activo -->
+                        <div class="mb-3 form-check text-center">
+                            <input asp-for="Activo" class="form-check-input"/>
+                            <label asp-for="Activo" class="form-check-label">Activo</label>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+    <script>
+        new TomSelect("#propietario", { create: false, sortField: { field: "text", direction: "asc" } });
+        new TomSelect("#uso", { create: false, sortField: { field: "text", direction: "asc" } });
+        new TomSelect("#tipo", { create: false, sortField: { field: "text", direction: "asc" } });
+    </script>
+}

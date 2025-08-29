@@ -2,41 +2,108 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using Inmobiliaria10.Models;
 
-namespace Inmobiliaria10.Repositories
+namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleTipoRepo 
+    public class InmuebleTipoRepo : RepositorioBase, IInmuebleTipoRepo
     {
-        private readonly string connectionString;
+        public InmuebleTipoRepo(IConfiguration cfg) : base(cfg) { }
 
-        public InmuebleTipoRepo(string connectionString)
+        public bool ExisteDenominacion(string denominacion, int? idExcluir = null)
         {
-            this.connectionString = connectionString;
+            using var conn = Conn();
+            var sql = "SELECT COUNT(*) FROM inmuebles_tipos WHERE denominacion_tipo = @denom";
+
+            if (idExcluir.HasValue)
+                sql += " AND id_tipo <> @id"; 
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@denom", denominacion);
+
+            if (idExcluir.HasValue)
+                cmd.Parameters.AddWithValue("@id", idExcluir.Value);
+
+            conn.Open();
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            return count > 0;
         }
 
         public int Agregar(InmuebleTipo i)
         {
-            int idGenerado = 0;
-            using var conn = new MySqlConnection(connectionString);
+            if (ExisteDenominacion(i.DenominacionTipo))
+                throw new Exception("Ya existe un tipo con esa denominación");
+
+            using var conn = Conn();
             var sql = @"INSERT INTO inmuebles_tipos (denominacion_tipo) VALUES (@denom);
                         SELECT LAST_INSERT_ID();";
+
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo); 
+            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo);
+
             conn.Open();
-            idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            conn.Close();
+            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
             return idGenerado;
+        }
+
+        public void Editar(InmuebleTipo i)
+        {
+            if (ExisteDenominacion(i.DenominacionTipo, i.IdTipo))
+                throw new Exception("Ya existe otro tipo con esa denominación");
+
+            using var conn = Conn();
+            var sql = "UPDATE inmuebles_tipos SET denominacion_tipo = @denom WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@denom", i.DenominacionTipo);
+            cmd.Parameters.AddWithValue("@id", i.IdTipo);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        public void Eliminar(int id)
+        {
+            using var conn = Conn();
+            var sql = "DELETE FROM inmuebles_tipos WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        public InmuebleTipo? ObtenerPorId(int id)
+        {
+            using var conn = Conn();
+            var sql = "SELECT * FROM inmuebles_tipos WHERE id_tipo = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return new InmuebleTipo
+                {
+                    IdTipo = reader.GetInt32("id_tipo"),
+                    DenominacionTipo = reader.GetString("denominacion_tipo"),
+                };
+            }
+            return null;
         }
 
         public List<InmuebleTipo> MostrarTodosInmuebleTipos()
         {
             var inmuebleTipos = new List<InmuebleTipo>();
 
-            using var conn = new MySqlConnection(connectionString);
+            using var conn = Conn();
             var sql = "SELECT * FROM inmuebles_tipos";
+
             using var cmd = new MySqlCommand(sql, conn);
             conn.Open();
-            using var reader = cmd.ExecuteReader();
 
+            using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 var inmuebleTipo = new InmuebleTipo
@@ -47,7 +114,6 @@ namespace Inmobiliaria10.Repositories
                 inmuebleTipos.Add(inmuebleTipo);
             }
 
-            conn.Close();
             return inmuebleTipos;
         }
     }

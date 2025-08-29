@@ -1,32 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Models;
-using Inmobiliaria10.Repositories;
+using Inmobiliaria10.Data.Repositories;
 
 namespace Inmobiliaria10.Controllers
 {
     public class InquilinoController : Controller
     {
-        private readonly InquilinoRepo repo;
+        private readonly IInquilinoRepo _repo;
 
-        public InquilinoController(IConfiguration config)
+        public InquilinoController(IInquilinoRepo repo)
         {
-            var conn = config.GetConnectionString("Inmogenial");
-            repo = new InquilinoRepo(conn!);
+            _repo = repo;
         }
 
-        // GET: /Inquilino - Muestra todos los inquilinos
-        /*
-        public IActionResult Index()
-        {
-            var lista = repo.ListarTodos();
-            return View(lista);
-        }
-        */
         // GET: /Inquilino - Mostrar todos pero paginado
         public IActionResult Index(int pagina = 1)
         {
             int cantidadPorPagina = 8; 
-            var resultado = repo.ListarTodosPaginado(pagina, cantidadPorPagina);
+            var resultado = _repo.ListarTodosPaginado(pagina, cantidadPorPagina);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
@@ -37,7 +28,7 @@ namespace Inmobiliaria10.Controllers
         // GET: /Inquilino/Detalle/5 - Muestra un inquilino en particular
         public IActionResult Detalle(int id)
         {
-            var inq = repo.ObtenerPorId(id);
+            var inq = _repo.ObtenerPorId(id);
             if (inq == null)
                 return NotFound();
 
@@ -60,7 +51,7 @@ namespace Inmobiliaria10.Controllers
 
             try
             {
-                repo.Agregar(i);
+                _repo.Agregar(i);
                 TempData["Mensaje"] = "Inquilino creado correctamente";
                 return RedirectToAction("Index");
             }
@@ -81,7 +72,7 @@ namespace Inmobiliaria10.Controllers
         // GET: /Inquilino/Editar/5 - Trae los datos para editar
         public IActionResult Editar(int id)
         {
-            var inq = repo.ObtenerPorId(id);
+            var inq = _repo.ObtenerPorId(id);
             if (inq == null)
                 return NotFound();
 
@@ -96,14 +87,14 @@ namespace Inmobiliaria10.Controllers
             if (!ModelState.IsValid)
                 return View(i);
 
-            var existente = repo.ObtenerPorDocumento(i.Documento);
+            var existente = _repo.ObtenerPorDocumento(i.Documento);
             if (existente != null && existente.IdInquilino != i.IdInquilino)
             {
                 ModelState.AddModelError("Documento", "El documento ya está registrado en otro inquilino.");
                 return View(i);
             }
 
-            repo.Actualizar(i);
+            _repo.Actualizar(i);
             TempData["Mensaje"] = "El inquilino ha sido actualizado correctamente.";
             return RedirectToAction("Index");
         }
@@ -111,7 +102,7 @@ namespace Inmobiliaria10.Controllers
         // GET: /Inquilino/Eliminar/5 - Muestra confirmación de borrado
         public IActionResult Borrar(int id)
         {
-            var inq = repo.ObtenerPorId(id);
+            var inq = _repo.ObtenerPorId(id);
             if (inq == null)
                 return NotFound();
 
@@ -123,13 +114,13 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult BorrarConfirmado(int id)
         {
-            var inq = repo.ObtenerPorId(id);
+            var inq = _repo.ObtenerPorId(id);
             if (inq == null)
                 return NotFound();
 
             try
             {
-                repo.Borrar(id);
+                _repo.Borrar(id);
                 TempData["Mensaje"] = "Inquilino eliminado correctamente.";
             }
             catch (Exception ex)

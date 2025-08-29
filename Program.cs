@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
+builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
+builder.Services.AddScoped<IInmuebleRepo, InmuebleRepo>();
+builder.Services.AddScoped<IInmuebleTipoRepo, InmuebleTipoRepo>();
+builder.Services.AddScoped<IInmuebleUsoRepo, InmuebleUsoRepo>();
 
 // (Opcional) si querés inyectar Database en otras clases
 //builder.Services.AddSingleton<Database>();
