@@ -1,35 +1,61 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Inmobiliaria10.Models
 {
-    public class Contrato
+    public class Contrato : IValidatableObject
     {
-        public int IdContrato { get; set; }          // PK
-        public DateTime? FechaFirma { get; set; }    // NULL
-        public int IdInmueble { get; set; }          // FK inmuebles
-        public int IdInquilino { get; set; }         // FK inquilinos
-        public DateTime FechaInicio { get; set; }    // NOT NULL (DATE)
-        public DateTime FechaFin { get; set; }       // NOT NULL (DATE)
-        public DateTime? Rescision { get; set; }     // NULL (DATE)
-        public decimal? MontoMulta { get; set; }     // NULL DEC(15,2)
-        public int CreatedBy { get; set; }           // FK usuarios
-        public DateTime CreatedAt { get; set; }      // DEFAULT NOW
-        public DateTime? DeletedAt { get; set; }     // NULL
-        public int? DeletedBy { get; set; }          // NULL FK usuarios
+        public int IdContrato { get; set; }
 
-        // Navigación opcional
-        // public Inmueble? Inmueble { get; set; }
-        // public Inquilino? Inquilino { get; set; }
-        // public Usuario? Creador { get; set; }
-        // public Usuario? Eliminador { get; set; }
-    }
+        [DataType(DataType.Date)]
+        public DateTime? FechaFirma { get; set; }
 
-    public class ContratoAudit
-    {
-        public long IdAudit { get; set; }            // PK (bigint)
-        public int IdContrato { get; set; }          // FK contratos (ON DELETE CASCADE)
-        public string Accion { get; set; } = "";     // varchar(12) (ej: INSERT/UPDATE/DELETE)
-        public DateTime AccionAt { get; set; }       // DEFAULT NOW
-        public int? AccionBy { get; set; }           // NULL FK usuarios
-        public string? OldData { get; set; }         // longtext (JSON con antes)
-        public string? NewData { get; set; }         // longtext (JSON con después)
+        [Required, Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un inmueble válido.")]
+        public int IdInmueble { get; set; }
+
+        [Required, Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un inquilino válido.")]
+        public int IdInquilino { get; set; }
+
+        [Required, DataType(DataType.Date)]
+        public DateTime FechaInicio { get; set; }
+
+        [Required, DataType(DataType.Date)]
+        public DateTime FechaFin { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime? Rescision { get; set; }
+
+        [Column(TypeName = "decimal(15,2)")]
+        [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "La multa no puede ser negativa.")]
+        public decimal? MontoMulta { get; set; }
+
+        [Required, Range(1, int.MaxValue)]
+        public int CreatedBy { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? DeletedAt { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "DeletedBy debe ser válido si DeletedAt tiene valor.")]
+        public int? DeletedBy { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // 1) Fin después de inicio
+            if (FechaFin <= FechaInicio)
+                yield return new ValidationResult("La fecha de fin debe ser posterior a la fecha de inicio.", new[] { nameof(FechaFin) });
+
+            // 2) Firma (si existe) no después del inicio
+            if (FechaFirma.HasValue && FechaFirma.Value.Date > FechaInicio.Date)
+                yield return new ValidationResult("La fecha de firma no puede ser posterior al inicio del contrato.", new[] { nameof(FechaFirma) });
+
+            // 3) Rescisión (si existe) dentro del intervalo
+            if (Rescision.HasValue && (Rescision.Value.Date < FechaInicio.Date || Rescision.Value.Date > FechaFin.Date))
+                yield return new ValidationResult("La rescisión debe estar dentro del período del contrato.", new[] { nameof(Rescision) });
+
+            // 4) Si hay DeletedAt, debe haber DeletedBy
+            if (DeletedAt.HasValue && (!DeletedBy.HasValue || DeletedBy.Value <= 0))
+                yield return new ValidationResult("Si el contrato está eliminado, 'DeletedBy' es obligatorio.", new[] { nameof(DeletedBy) });
+        }
     }
 }
