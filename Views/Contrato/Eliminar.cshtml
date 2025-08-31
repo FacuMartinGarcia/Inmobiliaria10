@@ -1,0 +1,18 @@
+@model Inmobiliaria10.Models.Contrato
+@{
+    ViewData["Title"]="Eliminar contrato";
+}
+<h2 class="mb-3">¿Seguro que querés eliminar este contrato?</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Inmueble</dt><dd class="col-sm-9">@Model.IdInmueble</dd>
+    <dt class="col-sm-3">Inquilino</dt><dd class="col-sm-9">@Model.IdInquilino</dd>
+    <dt class="col-sm-3">Inicio</dt><dd class="col-sm-9">@Model.FechaInicio:yyyy-MM-dd</dd>
+    <dt class="col-sm-3">Fin</dt><dd class="col-sm-9">@Model.FechaFin:yyyy-MM-dd</dd>
+</dl>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdContrato" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

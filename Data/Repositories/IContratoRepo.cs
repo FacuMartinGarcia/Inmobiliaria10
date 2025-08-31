@@ -37,5 +37,11 @@ namespace Inmobiliaria10.Data.Repositories
             DateTime? rescision = null,
             int? excludeContratoId = null,
             CancellationToken ct = default);
+
+        // --------- Soporte para selects en el Controller (sin EF) ----------
+        Task<IReadOnlyList<(int Id, string Direccion)>> GetInmueblesAsync(CancellationToken ct = default);
+        Task<IReadOnlyList<(int Id, string Nombre)>> GetInquilinosAsync(CancellationToken ct = default);
+        Task<IReadOnlyList<ContratoAudit>> GetAuditoriaAsync(int contratoId, CancellationToken ct = default);
+
     }
 }

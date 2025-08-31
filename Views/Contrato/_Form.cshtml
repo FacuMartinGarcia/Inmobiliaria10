@@ -1,0 +1,50 @@
+@model Inmobiliaria10.Models.Contrato
+
+<div class="form-card mx-auto">
+    <h1 class="form-title">Contrato</h1>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Inmueble</label>
+        @Html.DropDownListFor(m => m.IdInmueble, (SelectList)ViewBag.Inmuebles, "Seleccione...", new { @class="form-control" })
+        <span asp-validation-for="IdInmueble" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Inquilino</label>
+        @Html.DropDownListFor(m => m.IdInquilino, (SelectList)ViewBag.Inquilinos, "Seleccione...", new { @class="form-control" })
+        <span asp-validation-for="IdInquilino" class="text-danger small"></span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label">Fecha firma</label>
+            <input asp-for="FechaFirma" type="date" class="form-control" />
+            <span asp-validation-for="FechaFirma" class="text-danger small"></span>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Monto multa</label>
+            <input asp-for="MontoMulta" class="form-control" inputmode="decimal" placeholder="0,00" />
+            <span asp-validation-for="MontoMulta" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12 col-md-6">
+            <label class="form-label">Fecha inicio</label>
+            <input asp-for="FechaInicio" type="date" class="form-control" />
+            <span asp-validation-for="FechaInicio" class="text-danger small"></span>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Fecha fin</label>
+            <input asp-for="FechaFin" type="date" class="form-control" />
+            <span asp-validation-for="FechaFin" class="text-danger small"></span>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Rescisión (opcional)</label>
+            <input asp-for="Rescision" type="date" class="form-control" />
+            <span asp-validation-for="Rescision" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
