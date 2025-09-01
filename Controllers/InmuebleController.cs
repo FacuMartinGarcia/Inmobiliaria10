@@ -26,14 +26,14 @@ namespace Inmobiliaria10.Controllers
 
         public IActionResult Index(int pagina = 1)
         {
-            int cantidadPorPagina = 10;
-            var (registros, totalRegistros) = _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina);
+            int cantidadPorPagina = 8;
 
-            int totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+            var resultado = _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina);
+
+            ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
-            ViewData["TotalPaginas"] = totalPaginas;
+            return View(resultado.registros);
 
-            return View(registros);
         }
 
         public IActionResult Detalle(int id)
@@ -49,7 +49,11 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> Crear()
         {
             await CargarSelectsAsync();
-            return View();
+            var inmueble = new Inmueble
+            { 
+                Activo = true
+            };
+            return View(inmueble);
         }
 
         [HttpPost]
@@ -93,7 +97,7 @@ namespace Inmobiliaria10.Controllers
         }
 
 
-        public IActionResult Borrar(int id)
+        public IActionResult Eliminar(int id)
         {
             var inmueble = _repoInmueble.ObtenerPorId(id);
             if (inmueble == null)
@@ -102,11 +106,11 @@ namespace Inmobiliaria10.Controllers
             return View(inmueble);
         }
 
-        [HttpPost, ActionName("Borrar")]
+        [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
-        public IActionResult BorrarConfirmado(int id)
+        public IActionResult EliminarConfirmado(int id)
         {
-            _repoInmueble.Borrar(id);
+            _repoInmueble.Eliminar(id);
             TempData["Mensaje"] = "Inmueble eliminado correctamente";
             return RedirectToAction("Index");
         }
@@ -114,7 +118,7 @@ namespace Inmobiliaria10.Controllers
 
         private async Task CargarSelectsAsync()
         {
-            // ACA ES ASINCRONICO
+
             var propietarios = await _repoPropietario.ObtenerTodo();
             ViewBag.Propietarios = propietarios
                 .Select(p => new SelectListItem

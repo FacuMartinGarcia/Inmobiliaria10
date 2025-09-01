@@ -1,0 +1,43 @@
+@model Inmobiliaria10.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Eliminar Inmueble";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6"> 
+            <div class="card form-card border-danger">
+                <div class="card-header form-card-header bg-danger text-white">
+                    <h4 class="form-title text-white">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5>¿Seguro que deseas eliminar este inmueble?</h5>
+                    
+                    <p class="mt-2">
+                        <strong>Dirección:</strong> @Model.Direccion
+                    </p>
+                    <p class="mt-2">
+                        <strong>Tipo:</strong> @Model.Tipo?.DenominacionTipo
+                    </p>
+                    <p class="mt-2">
+                        <strong>Propietario:</strong> @Model.Propietario?.ApellidoNombres
+                    </p>
+
+                    <form asp-action="Eliminar" method="post">
+                        <input type="hidden" asp-for="IdInmueble" />
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa-solid fa-trash me-2"></i> Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

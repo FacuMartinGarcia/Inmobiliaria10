@@ -14,15 +14,15 @@ namespace Inmobiliaria10.Models
         [Display(Name = "Cód Inmueble")]
         public int IdInmueble { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Debe seleccionar un Propietario") ]
         [Display(Name = "Propietario")]
         public int IdPropietario { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Debe seleccionar un uso para el inmueble")]
         [Display(Name = "Uso")]
         public int IdUso { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Debe seleccionar un tipo de inmueble")]
         [Display(Name = "Tipo")]
         public int IdTipo { get; set; }
 
@@ -61,11 +61,12 @@ namespace Inmobiliaria10.Models
         [Display(Name = "Longitud")]
         public decimal? Lon { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "El número de ambientes debe ser al menos 1")]
         [Display(Name = "Ambientes")]
-        public int? Ambientes { get; set; }
+        public int? Ambientes { get; set; } = 1;
 
-        [Display(Name = "Precio")]
         [Range(0, double.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a 0")]
+        [Display(Name = "Precio")]
         public decimal? Precio { get; set; }
 
         [Display(Name = "Activo")]
@@ -77,7 +78,11 @@ namespace Inmobiliaria10.Models
         [Display(Name = "Actualizado")]
         public DateTime UpdatedAt { get; set; }
 
+        [ForeignKey(nameof(IdPropietario))]
+        public Propietario? Propietario { get; set; }
+     
         [ForeignKey(nameof(IdTipo))]
+     
         public InmuebleTipo? Tipo { get; set; }
 
         [ForeignKey(nameof(IdUso))]
