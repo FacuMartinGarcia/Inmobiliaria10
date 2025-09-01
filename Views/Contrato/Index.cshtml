@@ -1,0 +1,98 @@
+@model IEnumerable<Inmobiliaria10.Models.Contrato>
+@{
+    ViewData["Title"] = "Contratos";
+
+    var total = (int?)ViewBag.Total ?? 0;
+    var page = (int?)ViewBag.Page ?? 1;
+    var pageSize = (int?)ViewBag.PageSize ?? 20;
+    var totalPages = (int)Math.Ceiling((double)total / pageSize);
+
+    // Lee los filtros actuales desde la query
+    var inmuebleSel = Context.Request.Query["inmueble"].ToString();
+    var inquilinoSel = Context.Request.Query["inquilino"].ToString();
+    var soloActivosSel = (bool?)ViewBag.SoloActivos;
+}
+
+<h2 class="mb-3">Contratos</h2>
+
+@if (TempData["Ok"] is string okMsg)
+{
+    <div class="alert alert-success">@okMsg</div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <label class="form-label">Inmueble</label>
+        @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos", new { @class="form-select" })
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Inquilino</label>
+        @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos", new { @class="form-select" })
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="soloActivos" value="true" @(soloActivosSel==true?"checked":"") />
+            <label class="form-check-label">Solo activos</label>
+        </div>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+    </div>
+</form>
+
+<p>
+    <a class="btn btn-success" asp-action="Crear" asp-route-inmueble="@inmuebleSel" asp-route-inquilino="@inquilinoSel">Nuevo contrato</a>
+</p>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Inmueble</th>
+            <th>Inquilino</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Rescisión</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in Model)
+    {
+        <tr>
+            <td>@c.IdContrato</td>
+            <td>@c.IdInmueble</td>
+            <td>@c.IdInquilino</td>
+            <td>@c.FechaInicio.ToString("yyyy-MM-dd")</td>
+            <td>@c.FechaFin.ToString("yyyy-MM-dd")</td>
+            <td>@(c.Rescision?.ToString("yyyy-MM-dd") ?? "-")</td>
+            <td class="text-nowrap">
+                <a class="btn btn-sm btn-outline-secondary" asp-action="Detalles" asp-route-id="@c.IdContrato">Ver</a>
+                <a class="btn btn-sm btn-outline-primary" asp-action="Editar" asp-route-id="@c.IdContrato">Editar</a>
+                <a class="btn btn-sm btn-outline-danger" asp-action="Eliminar" asp-route-id="@c.IdContrato">Eliminar</a>
+                <a class="btn btn-sm btn-outline-dark" asp-action="Auditoria" asp-route-id="@c.IdContrato">Auditoría</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (totalPages > 1)
+{
+    <nav aria-label="Paginación">
+        <ul class="pagination">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i==page ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@pageSize"
+                       asp-route-inmueble="@inmuebleSel"
+                       asp-route-inquilino="@inquilinoSel"
+                       asp-route-soloActivos="@(soloActivosSel?.ToString().ToLower())">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

@@ -1,6 +1,6 @@
 using Inmobiliaria10.Data;
 using Inmobiliaria10.Data.Repositories;
-
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,9 +12,7 @@ builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
 builder.Services.AddScoped<IInmuebleRepo, InmuebleRepo>();
 builder.Services.AddScoped<IInmuebleTipoRepo, InmuebleTipoRepo>();
 builder.Services.AddScoped<IInmuebleUsoRepo, InmuebleUsoRepo>();
-
-// (Opcional) si querés inyectar Database en otras clases
-//builder.Services.AddSingleton<Database>();
+builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
 builder.Services.AddScoped<Database>();
 
 var app = builder.Build();
@@ -29,13 +27,18 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();        
 app.UseRouting();
-app.UseAuthorization();
-
+app.UseAuthentication();
+//app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/Home/MostrarCodigo", "?code={0}");
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
+);
+app.MapControllerRoute(
+    name: "contratos-alias",
+    pattern: "Contratos/{action=Index}/{id?}",
+    defaults: new { controller = "Contrato" }
 );
 
 

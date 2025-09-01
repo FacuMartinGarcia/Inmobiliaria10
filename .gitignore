@@ -91,3 +91,6 @@ obj/Inmobiliaria10.csproj.nuget.dgspec.json
 obj/Inmobiliaria10.csproj.nuget.g.props
 obj/project.assets.json
 obj/project.nuget.cache
+/bin/
+/obj/
+/.vs/
