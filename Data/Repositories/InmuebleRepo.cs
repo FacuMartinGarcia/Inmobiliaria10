@@ -82,12 +82,15 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = Conn();
 
             var sql = @"
-                SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
+                SELECT i.*,
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
+                    p.id_propietario, p.documento, p.apellido_nombres, p.domicilio, 
+                    p.telefono, p.email
                 FROM inmuebles i
                 LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
                 LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
             ";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -110,12 +113,15 @@ namespace Inmobiliaria10.Data.Repositories
             int offset = (pagina - 1) * cantidadPorPagina;
 
             var sql = @"
-                SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
+                SELECT i.*,
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
+                    p.id_propietario, p.documento, p.apellido_nombres, p.domicilio, 
+                    p.telefono, p.email
                 FROM inmuebles i
                 LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
                 LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
                 ORDER BY i.direccion
                 LIMIT @cantidad OFFSET @offset
             ";
@@ -145,12 +151,15 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = Conn();
 
             var sql = @"
-                SELECT i.*, 
-                    u.id_uso AS uso_id_uso, u.denominacion_uso AS uso_nombre,
-                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS tipo_nombre
+                SELECT i.*,
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
+                    p.id_propietario, p.documento, p.apellido_nombres, p.domicilio, 
+                    p.telefono, p.email
                 FROM inmuebles i
                 LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
                 LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
                 WHERE i.id_inmueble = @id
             ";
 
@@ -167,7 +176,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
 
 
-        public int Borrar(int id)
+        public int Eliminar(int id)
         {
             int filas = 0;
             using var conn = Conn();
@@ -186,16 +195,25 @@ namespace Inmobiliaria10.Data.Repositories
             {
                 IdInmueble = reader.GetInt32("id_inmueble"),
                 IdPropietario = reader.GetInt32("id_propietario"),
+                Propietario = new Propietario
+                {
+                    IdPropietario = reader.GetInt32("id_propietario"),
+                    Documento = reader.GetString("documento"),
+                    ApellidoNombres = reader.GetString("apellido_nombres"),
+                    Domicilio = reader.GetString("domicilio"),
+                    Telefono = reader.IsDBNull(reader.GetOrdinal("telefono")) ? null : reader.GetString("telefono"),
+                    Email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email")
+                },
                 IdUso = reader.GetInt32("id_uso"),
                 Uso = new InmuebleUso
                 {
-                    IdUso = reader.GetInt32("id_uso"),
-                    DenominacionUso= reader.GetString("denominacion_uso")
+                    IdUso = reader.GetInt32("uso_id_uso"),
+                    DenominacionUso = reader.GetString("denominacion_uso")
                 },
                 IdTipo = reader.GetInt32("id_tipo"),
                 Tipo = new InmuebleTipo
                 {
-                    IdTipo = reader.GetInt32("id_tipo"),
+                    IdTipo = reader.GetInt32("tipo_id_tipo"),
                     DenominacionTipo = reader.GetString("denominacion_tipo")
                 },
                 Direccion = reader.GetString("direccion"),
@@ -210,6 +228,7 @@ namespace Inmobiliaria10.Data.Repositories
                 UpdatedAt = reader.GetDateTime("updated_at")
             };
         }
+
 
     }
 }

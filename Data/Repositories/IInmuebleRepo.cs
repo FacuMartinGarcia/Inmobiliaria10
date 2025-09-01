@@ -7,7 +7,7 @@ namespace Inmobiliaria10.Data.Repositories
     {
         int Agregar(Inmueble inmueble);
         int Actualizar(Inmueble inmueble);
-        int Borrar(int id);
+        int Eliminar(int id);
         Inmueble? ObtenerPorId(int id);
         List<Inmueble> ListarTodos();
         (List<Inmueble> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina);
