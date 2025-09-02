@@ -8,26 +8,55 @@
     var pageSize = (int?)ViewBag.PageSize ?? 20;
     var totalPages = (int)Math.Ceiling((double)total / pageSize);
 
-    // Lee filtros actuales
-    var tipoSel = Context.Request.Query["tipo"].ToString();
-    var inmuebleSel = Context.Request.Query["inmueble"].ToString();
+    // Filtros actuales
+    var tipoSel      = Context.Request.Query["tipo"].ToString();
+    var inmuebleSel  = Context.Request.Query["inmueble"].ToString();
     var inquilinoSel = Context.Request.Query["inquilino"].ToString();
     var soloActivosSel = (bool?)ViewBag.SoloActivos;
 
-    // Diccionarios para mostrar texto legible en la grilla
+    // Mapas para mostrar texto legible
     var inmList = (IEnumerable<SelectListItem>)ViewBag.Inmuebles;
-    var inmMap = inmList?.ToDictionary(x => x.Value, x => x.Text) 
-                 ?? new Dictionary<string,string>();
+    var inmMap = inmList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
+
     var inqList = (IEnumerable<SelectListItem>)ViewBag.Inquilinos;
-    var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) 
-                 ?? new Dictionary<string,string>();
+    var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
+
+    var firstId = Model?.FirstOrDefault()?.IdContrato ?? 0;
+    var hayContratos = firstId > 0;
 }
 
-<h2 class="mb-3">Contratos</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Contratos</h2>
+
+    <div class="d-flex gap-2">
+        <!-- Auditoría (negro) => al primer contrato de la página; deshabilitado si no hay -->
+        @if (hayContratos)
+        {
+            <a class="btn btn-dark" asp-action="Auditoria" asp-route-id="@firstId" title="Auditoría del primer contrato listado">Auditoría</a>
+        }
+        else
+        {
+            <a class="btn btn-dark disabled" aria-disabled="true" tabindex="-1" title="No hay contratos para auditar">Auditoría</a>
+        }
+
+        <!-- Nuevo contrato (verde, como estaba) -->
+        <a class="btn btn-success"
+           asp-action="Crear"
+           asp-route-tipo="@tipoSel"
+           asp-route-inmueble="@inmuebleSel"
+           asp-route-inquilino="@inquilinoSel">
+            Nuevo contrato
+        </a>
+    </div>
+</div>
 
 @if (TempData["Ok"] is string okMsg)
 {
     <div class="alert alert-success">@okMsg</div>
+}
+@if (TempData["Err"] is string errMsg)
+{
+    <div class="alert alert-danger">@errMsg</div>
 }
 
 <form method="get" class="row g-2 mb-3">
@@ -50,17 +79,10 @@
         </div>
     </div>
     <div class="col-6 col-md-1 d-flex align-items-end">
-        <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+        <!-- Botón filtrar en negro -->
+        <button class="btn btn-dark w-100" type="submit">Filtrar</button>
     </div>
 </form>
-
-<p>
-    <a class="btn btn-success"
-       asp-action="Crear"
-       asp-route-tipo="@tipoSel"
-       asp-route-inmueble="@inmuebleSel"
-       asp-route-inquilino="@inquilinoSel">Nuevo contrato</a>
-</p>
 
 <table class="table table-striped align-middle">
     <thead>
@@ -71,7 +93,7 @@
             <th>Inicio</th>
             <th>Fin</th>
             <th>Rescisión</th>
-            <th></th>
+            <th class="text-end">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -86,11 +108,15 @@
             <td>@c.FechaInicio.ToString("yyyy-MM-dd")</td>
             <td>@c.FechaFin.ToString("yyyy-MM-dd")</td>
             <td>@(c.Rescision?.ToString("yyyy-MM-dd") ?? "-")</td>
-            <td class="text-nowrap">
-                <a class="btn btn-sm btn-outline-secondary" asp-action="Detalles" asp-route-id="@c.IdContrato">Ver</a>
-                <a class="btn btn-sm btn-outline-primary" asp-action="Editar" asp-route-id="@c.IdContrato">Editar</a>
-                <a class="btn btn-sm btn-outline-danger" asp-action="Eliminar" asp-route-id="@c.IdContrato">Eliminar</a>
-                <a class="btn btn-sm btn-outline-dark" asp-action="Auditoria" asp-route-id="@c.IdContrato">Auditoría</a>
+            <td class="text-end">
+                <div class="btn-group" role="group" aria-label="acciones">
+                    <a class="btn btn-sm btn-primary" title="Ver"
+                       asp-action="Detalles" asp-route-id="@c.IdContrato"><i class="fa-solid fa-eye"></i></a>
+                    <a class="btn btn-sm btn-warning" title="Editar"
+                       asp-action="Editar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-pen"></i></a>
+                    <a class="btn btn-sm btn-danger" title="Dar de baja"
+                       asp-action="Eliminar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-trash-can"></i></a>
+                </div>
             </td>
         </tr>
     }
@@ -127,9 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
   tipo.addEventListener('change', async () => {
     const idTipo = tipo.value;
     comboInm.innerHTML = '<option value="">Todos</option>';
-
     if(!idTipo){ return; }
-
     try{
       const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
       if(!resp.ok) throw new Error('Error HTTP ' + resp.status);

@@ -5,48 +5,48 @@
     @Html.AntiForgeryToken()
     @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-    <!-- Tipo (filtra Inmueble) -->
+    <!-- Fila 1: Tipo + Inquilino -->
     <div class="col-12 col-lg-6">
-        <label class="form-label fw-semibold">Tipo</label>
-        @* ViewBag.Tipos: SelectList(IdTipo, DenominacionTipo) *@
+        <label class="form-label">Tipo de inmueble</label>
         @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Seleccione tipo",
             new { @class = "form-select", id = "tipoSelect" })
     </div>
 
-    <!-- Inmueble (Dirección + Piso + Dpto) -->
     <div class="col-12 col-lg-6">
-        <label class="form-label fw-semibold">Inmueble</label>
-        @* ViewBag.Inmuebles: SelectList(IdInmueble, Texto) ya filtrada por tipo si corresponde *@
-        @Html.DropDownListFor(m => m.IdInmueble, (SelectList)ViewBag.Inmuebles,
-            "Seleccione inmueble", new { @class = "form-select", id = "inmuebleSelect" })
-        @Html.ValidationMessageFor(m => m.IdInmueble, "", new { @class = "text-danger" })
-    </div>
-
-    <!-- Inquilino -->
-    <div class="col-12 col-lg-6">
-        <label class="form-label fw-semibold">Inquilino</label>
+        <label class="form-label">Inquilino</label>
         @Html.DropDownListFor(m => m.IdInquilino, (SelectList)ViewBag.Inquilinos,
             "Seleccione inquilino", new { @class = "form-select" })
         @Html.ValidationMessageFor(m => m.IdInquilino, "", new { @class = "text-danger" })
     </div>
 
-    <!-- Fechas -->
-    <div class="col-12 col-md-3">
-        <label class="form-label fw-semibold">Fecha inicio</label>
+    <!-- Fila 2: Inmueble (Dirección + Piso + Dpto) -->
+    <div class="col-12">
+        <label class="form-label">Inmueble (Dirección · Piso · Dpto)</label>
+        @Html.DropDownListFor(m => m.IdInmueble, (SelectList)ViewBag.Inmuebles,
+            "Seleccione inmueble", new { @class = "form-select", id = "inmuebleSelect" })
+        @Html.ValidationMessageFor(m => m.IdInmueble, "", new { @class = "text-danger" })
+    </div>
+
+    <!-- Fila 3: Fechas -->
+    <div class="col-12 col-md-6">
+        <label class="form-label">Fecha inicio</label>
         @Html.TextBoxFor(m => m.FechaInicio, "{0:yyyy-MM-dd}",
             new { @class = "form-control", type = "date" })
         @Html.ValidationMessageFor(m => m.FechaInicio, "", new { @class = "text-danger" })
     </div>
 
-    <div class="col-12 col-md-3">
-        <label class="form-label fw-semibold">Fecha fin</label>
+    <div class="col-12 col-md-6">
+        <label class="form-label">Fecha fin</label>
         @Html.TextBoxFor(m => m.FechaFin, "{0:yyyy-MM-dd}",
             new { @class = "form-control", type = "date" })
         @Html.ValidationMessageFor(m => m.FechaFin, "", new { @class = "text-danger" })
     </div>
 
-    <div class="col-12 d-flex gap-2 mt-2">
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    <!-- Fila 4: Botones centrados y separados -->
+    <div class="col-12">
+        <div class="d-flex justify-content-center gap-3 mt-4 pt-1">
+            <button type="submit" class="btn btn-save px-4">Guardar</button>
+            <a asp-action="Index" class="btn btn-back px-4">Cancelar</a>
+        </div>
     </div>
 </form>

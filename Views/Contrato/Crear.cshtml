@@ -1,18 +1,14 @@
 @model Inmobiliaria10.Models.Contrato
 @{
-    ViewData["Title"] = "Nuevo contrato";
-    // Para precargar la cascada si viene ?tipo= o si se reenvió por error:
+    // Para precargar la cascada si viene ?tipo= o si el POST volvió con error:
     var tipoSel = (string)(ViewBag.TipoSel?.ToString() ?? Context.Request.Query["tipo"].ToString());
     var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
 }
 
-<h2 class="mb-3">Nuevo contrato</h2>
+<div class="d-flex justify-content-center">
+    <div class="form-card w-100" style="max-width: 900px;">
+        <div class="form-title">Nuevo contrato</div>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-light">
-        <strong>Complete los datos</strong>
-    </div>
-    <div class="card-body">
         @await Html.PartialAsync("_Form", Model)
     </div>
 </div>
@@ -45,10 +41,10 @@
             }
         }
 
-        // Cascada
+        // Cascada: cambia tipo => recarga inmueble
         tipo.addEventListener('change', () => cargarInmueblesPorTipo(tipo.value, ""));
 
-        // Precarga (si viene tipo o si el POST volvió con error)
+        // Precarga si viene ?tipo= o si el POST volvió con error
         const preTipo = '@tipoSel';
         const preInm  = '@inmSel';
         if (preTipo) {
