@@ -1,50 +1,52 @@
 @model Inmobiliaria10.Models.Contrato
+@using Microsoft.AspNetCore.Mvc.Rendering
 
-<div class="form-card mx-auto">
-    <h1 class="form-title">Contrato</h1>
+<form asp-controller="Contrato" asp-action="Crear" method="post" class="row g-3" novalidate>
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-    <div class="mb-3">
-        <label class="form-label">Inmueble</label>
-        @Html.DropDownListFor(m => m.IdInmueble, (SelectList)ViewBag.Inmuebles, "Seleccione...", new { @class="form-control" })
-        <span asp-validation-for="IdInmueble" class="text-danger small"></span>
+    <!-- Tipo (filtra Inmueble) -->
+    <div class="col-12 col-lg-6">
+        <label class="form-label fw-semibold">Tipo</label>
+        @* ViewBag.Tipos: SelectList(IdTipo, DenominacionTipo) *@
+        @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Seleccione tipo",
+            new { @class = "form-select", id = "tipoSelect" })
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Inquilino</label>
-        @Html.DropDownListFor(m => m.IdInquilino, (SelectList)ViewBag.Inquilinos, "Seleccione...", new { @class="form-control" })
-        <span asp-validation-for="IdInquilino" class="text-danger small"></span>
+    <!-- Inmueble (Dirección + Piso + Dpto) -->
+    <div class="col-12 col-lg-6">
+        <label class="form-label fw-semibold">Inmueble</label>
+        @* ViewBag.Inmuebles: SelectList(IdInmueble, Texto) ya filtrada por tipo si corresponde *@
+        @Html.DropDownListFor(m => m.IdInmueble, (SelectList)ViewBag.Inmuebles,
+            "Seleccione inmueble", new { @class = "form-select", id = "inmuebleSelect" })
+        @Html.ValidationMessageFor(m => m.IdInmueble, "", new { @class = "text-danger" })
     </div>
 
-    <div class="row g-3">
-        <div class="col-12 col-md-6">
-            <label class="form-label">Fecha firma</label>
-            <input asp-for="FechaFirma" type="date" class="form-control" />
-            <span asp-validation-for="FechaFirma" class="text-danger small"></span>
-        </div>
-        <div class="col-12 col-md-6">
-            <label class="form-label">Monto multa</label>
-            <input asp-for="MontoMulta" class="form-control" inputmode="decimal" placeholder="0,00" />
-            <span asp-validation-for="MontoMulta" class="text-danger small"></span>
-        </div>
+    <!-- Inquilino -->
+    <div class="col-12 col-lg-6">
+        <label class="form-label fw-semibold">Inquilino</label>
+        @Html.DropDownListFor(m => m.IdInquilino, (SelectList)ViewBag.Inquilinos,
+            "Seleccione inquilino", new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.IdInquilino, "", new { @class = "text-danger" })
     </div>
 
-    <div class="row g-3 mt-1">
-        <div class="col-12 col-md-6">
-            <label class="form-label">Fecha inicio</label>
-            <input asp-for="FechaInicio" type="date" class="form-control" />
-            <span asp-validation-for="FechaInicio" class="text-danger small"></span>
-        </div>
-        <div class="col-12 col-md-6">
-            <label class="form-label">Fecha fin</label>
-            <input asp-for="FechaFin" type="date" class="form-control" />
-            <span asp-validation-for="FechaFin" class="text-danger small"></span>
-        </div>
-        <div class="col-12">
-            <label class="form-label">Rescisión (opcional)</label>
-            <input asp-for="Rescision" type="date" class="form-control" />
-            <span asp-validation-for="Rescision" class="text-danger small"></span>
-        </div>
+    <!-- Fechas -->
+    <div class="col-12 col-md-3">
+        <label class="form-label fw-semibold">Fecha inicio</label>
+        @Html.TextBoxFor(m => m.FechaInicio, "{0:yyyy-MM-dd}",
+            new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.FechaInicio, "", new { @class = "text-danger" })
     </div>
-</div>
+
+    <div class="col-12 col-md-3">
+        <label class="form-label fw-semibold">Fecha fin</label>
+        @Html.TextBoxFor(m => m.FechaFin, "{0:yyyy-MM-dd}",
+            new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.FechaFin, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="col-12 d-flex gap-2 mt-2">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

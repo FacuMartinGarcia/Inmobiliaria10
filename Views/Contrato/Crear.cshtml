@@ -1,17 +1,59 @@
 @model Inmobiliaria10.Models.Contrato
 @{
     ViewData["Title"] = "Nuevo contrato";
+    // Para precargar la cascada si viene ?tipo= o si se reenvió por error:
+    var tipoSel = (string)(ViewBag.TipoSel?.ToString() ?? Context.Request.Query["tipo"].ToString());
+    var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
 }
-<div class="d-flex justify-content-center py-4">
-    <form asp-action="Crear" method="post" class="w-100" style="max-width: 720px;">
-        <partial name="_Form" model="Model" />
-        <div class="d-flex justify-content-center gap-2 mt-3">
-            <button type="submit" class="btn-save">Guardar</button>
-            <a asp-action="Index" class="btn-back">Volver</a>
-        </div>
-    </form>
+
+<h2 class="mb-3">Nuevo contrato</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <strong>Complete los datos</strong>
+    </div>
+    <div class="card-body">
+        @await Html.PartialAsync("_Form", Model)
+    </div>
 </div>
 
 @section Scripts{
-    <partial name="_ValidationScriptsPartial" />
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const tipo = document.getElementById('tipoSelect');
+        const comboInm = document.getElementById('inmuebleSelect');
+
+        async function cargarInmueblesPorTipo(idTipo, selectedValue){
+            comboInm.innerHTML = '<option value="">Seleccione inmueble</option>';
+            if(!idTipo) return;
+
+            try{
+                const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
+                if(!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json(); // [{id, texto}]
+                data.forEach(x => {
+                    const opt = document.createElement('option');
+                    opt.value = x.id;
+                    opt.textContent = x.texto;
+                    comboInm.appendChild(opt);
+                });
+                if (selectedValue) comboInm.value = selectedValue;
+            }catch(e){
+                console.error(e);
+            }
+        }
+
+        // Cascada
+        tipo.addEventListener('change', () => cargarInmueblesPorTipo(tipo.value, ""));
+
+        // Precarga (si viene tipo o si el POST volvió con error)
+        const preTipo = '@tipoSel';
+        const preInm  = '@inmSel';
+        if (preTipo) {
+            await cargarInmueblesPorTipo(preTipo, preInm);
+        }
+    });
+    </script>
 }

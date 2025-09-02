@@ -1,4 +1,5 @@
 @model IEnumerable<Inmobiliaria10.Models.Contrato>
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
     ViewData["Title"] = "Contratos";
 
@@ -7,10 +8,19 @@
     var pageSize = (int?)ViewBag.PageSize ?? 20;
     var totalPages = (int)Math.Ceiling((double)total / pageSize);
 
-    // Lee los filtros actuales desde la query
+    // Lee filtros actuales
+    var tipoSel = Context.Request.Query["tipo"].ToString();
     var inmuebleSel = Context.Request.Query["inmueble"].ToString();
     var inquilinoSel = Context.Request.Query["inquilino"].ToString();
     var soloActivosSel = (bool?)ViewBag.SoloActivos;
+
+    // Diccionarios para mostrar texto legible en la grilla
+    var inmList = (IEnumerable<SelectListItem>)ViewBag.Inmuebles;
+    var inmMap = inmList?.ToDictionary(x => x.Value, x => x.Text) 
+                 ?? new Dictionary<string,string>();
+    var inqList = (IEnumerable<SelectListItem>)ViewBag.Inquilinos;
+    var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) 
+                 ?? new Dictionary<string,string>();
 }
 
 <h2 class="mb-3">Contratos</h2>
@@ -21,27 +31,35 @@
 }
 
 <form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <label class="form-label">Inmueble</label>
-        @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos", new { @class="form-select" })
+    <div class="col-12 col-md-3">
+        <label class="form-label">Tipo</label>
+        @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos", new { @class="form-select", id="tipoSelect" })
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
+        <label class="form-label">Inmueble</label>
+        @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos", new { @class="form-select", id="inmuebleSelect" })
+    </div>
+    <div class="col-12 col-md-3">
         <label class="form-label">Inquilino</label>
         @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos", new { @class="form-select" })
     </div>
-    <div class="col-md-2 d-flex align-items-end">
+    <div class="col-6 col-md-1 d-flex align-items-end">
         <div class="form-check">
             <input class="form-check-input" type="checkbox" name="soloActivos" value="true" @(soloActivosSel==true?"checked":"") />
             <label class="form-check-label">Solo activos</label>
         </div>
     </div>
-    <div class="col-md-2 d-flex align-items-end">
+    <div class="col-6 col-md-1 d-flex align-items-end">
         <button class="btn btn-primary w-100" type="submit">Filtrar</button>
     </div>
 </form>
 
 <p>
-    <a class="btn btn-success" asp-action="Crear" asp-route-inmueble="@inmuebleSel" asp-route-inquilino="@inquilinoSel">Nuevo contrato</a>
+    <a class="btn btn-success"
+       asp-action="Crear"
+       asp-route-tipo="@tipoSel"
+       asp-route-inmueble="@inmuebleSel"
+       asp-route-inquilino="@inquilinoSel">Nuevo contrato</a>
 </p>
 
 <table class="table table-striped align-middle">
@@ -59,10 +77,12 @@
     <tbody>
     @foreach (var c in Model)
     {
+        var inmTxt = inmMap.TryGetValue(c.IdInmueble.ToString(), out var _inm) ? _inm : c.IdInmueble.ToString();
+        var inqTxt = inqMap.TryGetValue(c.IdInquilino.ToString(), out var _inq) ? _inq : c.IdInquilino.ToString();
         <tr>
             <td>@c.IdContrato</td>
-            <td>@c.IdInmueble</td>
-            <td>@c.IdInquilino</td>
+            <td>@inmTxt</td>
+            <td>@inqTxt</td>
             <td>@c.FechaInicio.ToString("yyyy-MM-dd")</td>
             <td>@c.FechaFin.ToString("yyyy-MM-dd")</td>
             <td>@(c.Rescision?.ToString("yyyy-MM-dd") ?? "-")</td>
@@ -88,6 +108,7 @@
                        asp-action="Index"
                        asp-route-page="@i"
                        asp-route-pageSize="@pageSize"
+                       asp-route-tipo="@tipoSel"
                        asp-route-inmueble="@inmuebleSel"
                        asp-route-inquilino="@inquilinoSel"
                        asp-route-soloActivos="@(soloActivosSel?.ToString().ToLower())">@i</a>
@@ -95,4 +116,34 @@
             }
         </ul>
     </nav>
+}
+
+@section Scripts{
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tipo = document.getElementById('tipoSelect');
+  const comboInm = document.getElementById('inmuebleSelect');
+
+  tipo.addEventListener('change', async () => {
+    const idTipo = tipo.value;
+    comboInm.innerHTML = '<option value="">Todos</option>';
+
+    if(!idTipo){ return; }
+
+    try{
+      const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
+      if(!resp.ok) throw new Error('Error HTTP ' + resp.status);
+      const data = await resp.json(); // [{id, texto}]
+      data.forEach(x => {
+        const opt = document.createElement('option');
+        opt.value = x.id;
+        opt.textContent = x.texto;
+        comboInm.appendChild(opt);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  });
+});
+</script>
 }
