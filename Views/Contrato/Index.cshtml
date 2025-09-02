@@ -1,5 +1,7 @@
 @model IEnumerable<Inmobiliaria10.Models.Contrato>
 @using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Linq
+
 @{
     ViewData["Title"] = "Contratos";
 
@@ -13,15 +15,18 @@
     var inmuebleSel  = Context.Request.Query["inmueble"].ToString();
     var inquilinoSel = Context.Request.Query["inquilino"].ToString();
     var soloActivosSel = (bool?)ViewBag.SoloActivos;
+    var soloActivosRoute = (soloActivosSel.HasValue && soloActivosSel.Value) ? "true" : null;
 
-    // Mapas para mostrar texto legible
+    // Mapas para mostrar texto legible en la grilla
     var inmList = (IEnumerable<SelectListItem>)ViewBag.Inmuebles;
     var inmMap = inmList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
 
     var inqList = (IEnumerable<SelectListItem>)ViewBag.Inquilinos;
     var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
 
-    var firstId = Model?.FirstOrDefault()?.IdContrato ?? 0;
+    // Id del primer contrato listado (para el botón Auditoría)
+    var firstId = 0;
+    foreach (var row in Model) { firstId = row.IdContrato; break; }
     var hayContratos = firstId > 0;
 }
 
@@ -29,17 +34,17 @@
     <h2 class="mb-0">Contratos</h2>
 
     <div class="d-flex gap-2">
-        <!-- Auditoría (negro) => al primer contrato de la página; deshabilitado si no hay -->
+        <!-- Auditoría (negro) -->
         @if (hayContratos)
         {
-            <a class="btn btn-dark" asp-action="Auditoria" asp-route-id="@firstId" title="Auditoría del primer contrato listado">Auditoría</a>
+            <a class="btn btn-dark" asp-action="Auditoria" asp-route-id="@firstId">Auditoría</a>
         }
         else
         {
-            <a class="btn btn-dark disabled" aria-disabled="true" tabindex="-1" title="No hay contratos para auditar">Auditoría</a>
+            <a class="btn btn-dark disabled" aria-disabled="true" tabindex="-1">Auditoría</a>
         }
 
-        <!-- Nuevo contrato (verde, como estaba) -->
+        <!-- Nuevo contrato (verde) -->
         <a class="btn btn-success"
            asp-action="Crear"
            asp-route-tipo="@tipoSel"
@@ -62,15 +67,18 @@
 <form method="get" class="row g-2 mb-3">
     <div class="col-12 col-md-3">
         <label class="form-label">Tipo</label>
-        @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos", new { @class="form-select", id="tipoSelect" })
+        @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos",
+            new { @class="form-select", id="tipoSelect" })
     </div>
     <div class="col-12 col-md-4">
         <label class="form-label">Inmueble</label>
-        @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos", new { @class="form-select", id="inmuebleSelect" })
+        @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos",
+            new { @class="form-select", id="inmuebleSelect" })
     </div>
     <div class="col-12 col-md-3">
         <label class="form-label">Inquilino</label>
-        @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos", new { @class="form-select" })
+        @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos",
+            new { @class="form-select", id="inquilinoSelect" })
     </div>
     <div class="col-6 col-md-1 d-flex align-items-end">
         <div class="form-check">
@@ -137,7 +145,7 @@
                        asp-route-tipo="@tipoSel"
                        asp-route-inmueble="@inmuebleSel"
                        asp-route-inquilino="@inquilinoSel"
-                       asp-route-soloActivos="@(soloActivosSel?.ToString().ToLower())">@i</a>
+                       asp-route-soloActivos="@soloActivosRoute">@i</a>
                 </li>
             }
         </ul>
@@ -145,29 +153,54 @@
 }
 
 @section Scripts{
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const tipo = document.getElementById('tipoSelect');
-  const comboInm = document.getElementById('inmuebleSelect');
+    <!-- jQuery + Select2 (solo para esta vista) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
 
-  tipo.addEventListener('change', async () => {
-    const idTipo = tipo.value;
-    comboInm.innerHTML = '<option value="">Todos</option>';
-    if(!idTipo){ return; }
-    try{
-      const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
-      if(!resp.ok) throw new Error('Error HTTP ' + resp.status);
-      const data = await resp.json(); // [{id, texto}]
-      data.forEach(x => {
-        const opt = document.createElement('option');
-        opt.value = x.id;
-        opt.textContent = x.texto;
-        comboInm.appendChild(opt);
+    <script>
+    $(function () {
+      // Inicializar Select2 en Inquilino e Inmueble
+      const $inq = $('#inquilinoSelect').select2({
+        width: '100%', placeholder: 'Todos', allowClear: true,
+        language: { noResults: ()=>'Sin resultados', searching:()=> 'Buscando…' }
       });
-    }catch(e){
-      console.error(e);
-    }
-  });
-});
-</script>
+
+      const $inm = $('#inmuebleSelect').select2({
+        width: '100%', placeholder: 'Todos', allowClear: true,
+        language: { noResults: ()=>'Sin resultados', searching:()=> 'Buscando…' }
+      });
+
+      // Cascada: Tipo -> Inmueble (refresca opciones y Select2)
+      $('#tipoSelect').on('change', async function () {
+        const idTipo = this.value;
+        const $sel = $('#inmuebleSelect');
+
+        // limpiar y deshabilitar mientras carga
+        $sel.prop('disabled', true);
+        $sel.empty().append(new Option('Todos', '', true, false));
+
+        try {
+          if (idTipo) {
+            const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json(); // [{id, texto}]
+            data.forEach(x => $sel.append(new Option(x.texto, x.id)));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+
+        // re-habilitar y refrescar Select2
+        $sel.prop('disabled', false).trigger('change.select2');
+      });
+    });
+    </script>
+
+    <!-- Ajuste visual para que Select2 tenga altura de form-control -->
+    <style>
+      .select2-container .select2-selection--single { height: 38px; }
+      .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px; }
+      .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
+    </style>
 }
