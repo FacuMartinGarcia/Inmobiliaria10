@@ -10,6 +10,6 @@ namespace Inmobiliaria10.Data.Repositories
         int Eliminar(int id);
         Inmueble? ObtenerPorId(int id);
         List<Inmueble> ListarTodos();
-        (List<Inmueble> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina);
+        (List<Inmueble> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina, string? searchString = null);
     }
 }

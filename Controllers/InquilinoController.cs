@@ -14,13 +14,14 @@ namespace Inmobiliaria10.Controllers
         }
 
         // GET: /Inquilino - Mostrar todos pero paginado
-        public IActionResult Index(int pagina = 1)
+        public IActionResult Index(int pagina = 1, string? searchString = null)
         {
             int cantidadPorPagina = 8; 
-            var resultado = _repo.ListarTodosPaginado(pagina, cantidadPorPagina);
+            var resultado = _repo.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
+            ViewData["SearchString"] = searchString;
 
             return View(resultado.registros);
         }

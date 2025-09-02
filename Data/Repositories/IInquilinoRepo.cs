@@ -7,10 +7,10 @@ public interface IInquilinoRepo
     int Agregar(Inquilino i);
     int Actualizar(Inquilino i);
     List<Inquilino> ListarTodos();
-    (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina);
+    (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina, string? searchString = null);
     Inquilino? ObtenerPorId(int id);
     Inquilino? ObtenerPorDocumento(string documento);
     int Borrar(int id);
-    //Task<bool> ExistsDocumentoAsync(string documento, int? exceptId = null);
+    
     
 }

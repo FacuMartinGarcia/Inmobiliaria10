@@ -24,14 +24,15 @@ namespace Inmobiliaria10.Controllers
             _repoTipo = repoTipo;
         }
 
-        public IActionResult Index(int pagina = 1)
+        public IActionResult Index(int pagina = 1, string? searchString = null)
         {
             int cantidadPorPagina = 8;
 
-            var resultado = _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina);
+            var resultado = _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
+            ViewData["SearchString"] = searchString;
             return View(resultado.registros);
 
         }
@@ -124,7 +125,7 @@ namespace Inmobiliaria10.Controllers
                 .Select(p => new SelectListItem
                 {
                     Value = p.IdPropietario.ToString(),
-                    Text = p.ApellidoNombres
+                    Text = $"{p.ApellidoNombres} - {p.Documento}"
                 })
                 .ToList();
 

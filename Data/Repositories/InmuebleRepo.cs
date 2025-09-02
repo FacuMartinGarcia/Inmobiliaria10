@@ -10,7 +10,6 @@ namespace Inmobiliaria10.Data.Repositories
 
         public int Agregar(Inmueble i)
         {
-            int idGenerado = 0;
             using var conn = Conn();
             var sql = @"INSERT INTO inmuebles 
                         (id_propietario, id_uso, id_tipo, direccion, piso, depto, lat, lon, ambientes, precio, activo, created_at, updated_at)
@@ -33,7 +32,7 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
 
             conn.Open();
-            idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
+            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
             return idGenerado;
         }
 
@@ -105,14 +104,23 @@ namespace Inmobiliaria10.Data.Repositories
 
 
         public (List<Inmueble> registros, int totalRegistros) ListarTodosPaginado(
-            int pagina, int cantidadPorPagina)
+            int pagina, int cantidadPorPagina, string? searchString = null)
         {
             var lista = new List<Inmueble>();
             using var conn = Conn();
 
             int offset = (pagina - 1) * cantidadPorPagina;
 
-            var sql = @"
+            string where = "";
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                where = @"WHERE i.direccion LIKE @search 
+                        OR i.ambientes LIKE @search
+                        OR t.denominacion_tipo LIKE @search 
+                        OR p.apellido_nombres LIKE @search";
+            }
+
+            var sql = $@"
                 SELECT i.*,
                     u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
                     t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
@@ -122,6 +130,7 @@ namespace Inmobiliaria10.Data.Repositories
                 LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
                 LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
                 LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
+                {where}
                 ORDER BY i.direccion
                 LIMIT @cantidad OFFSET @offset
             ";
@@ -130,16 +139,29 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@cantidad", cantidadPorPagina);
             cmd.Parameters.AddWithValue("@offset", offset);
 
+            if (!string.IsNullOrEmpty(searchString))
+                cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
+
             conn.Open();
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                lista.Add(Map(reader)); 
+                lista.Add(Map(reader));
             }
             reader.Close();
 
-            var sqlTotal = "SELECT COUNT(*) FROM inmuebles";
+            var sqlTotal = $@"
+                SELECT COUNT(*) 
+                FROM inmuebles i
+                LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
+                {where}";
+
             using var cmdTotal = new MySqlCommand(sqlTotal, conn);
+
+            if (!string.IsNullOrEmpty(searchString))
+                cmdTotal.Parameters.AddWithValue("@search", "%" + searchString + "%");
+
             int totalRegistros = Convert.ToInt32(cmdTotal.ExecuteScalar());
 
             return (lista, totalRegistros);

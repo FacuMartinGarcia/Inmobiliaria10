@@ -10,8 +10,20 @@
     <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Inquilinos</h2>
 </div>
 
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="d-flex justify-content-center mb-3">
+        <div class="input-group w-50">
+            <input type="text" name="searchString" value="@ViewData["SearchString"]"
+                class="form-control"
+                autocomplete="off"
+                placeholder="Buscar por documento, apellido y nombres..."/>
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+</form>
+
 <div class="d-flex justify-content-end mb-3">
-    <a asp-action="Crear" class="btn btn-success">
+    <a asp-action="Crear" class="btn btn-dark">
         <i class="fa-solid fa-plus"></i> Nuevo Inquilino
     </a>
 </div>

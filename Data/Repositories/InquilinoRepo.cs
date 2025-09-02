@@ -76,7 +76,7 @@ namespace Inmobiliaria10.Data.Repositories
             return lista;
         }
 
-        public (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina)
+        public (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina, string? searchString = null)
         {
             var lista = new List<Inquilino>();
             int totalRegistros = 0;
@@ -85,15 +85,27 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = Conn();
             conn.Open();
 
-            // obtener registros paginados
-            var sql = @"SELECT * FROM inquilinos 
+            string where = "";
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                where = @"WHERE apellido_nombres LIKE @search 
+                        OR documento LIKE @search
+                        OR telefono LIKE @search"; 
+            }
+
+            var sql = $@"SELECT * FROM inquilinos 
+                        {where}
                         ORDER BY apellido_nombres 
                         LIMIT @cantidad OFFSET @offset";
+
 
             using (var cmd = new MySqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@cantidad", cantidadPorPagina);
                 cmd.Parameters.AddWithValue("@offset", offset);
+                
+                if (!string.IsNullOrEmpty(searchString))
+                        cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
