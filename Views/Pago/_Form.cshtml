@@ -1,0 +1,45 @@
+@model Inmobiliaria10.Models.Pago
+
+<div class="form-card mx-auto">
+    <h1 class="form-title">Pago</h1>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Contrato</label>
+        <input asp-for="IdContrato" class="form-control" />
+        <span asp-validation-for="IdContrato" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Concepto</label>
+        @Html.DropDownListFor(m => m.IdConcepto, (SelectList)ViewBag.Conceptos, "Seleccione...",
+            new { @class = "form-control" })
+        <span asp-validation-for="IdConcepto" class="text-danger small"></span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Fecha pago</label>
+            <input asp-for="FechaPago" type="date" class="form-control" />
+            <span asp-validation-for="FechaPago" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Importe</label>
+            <input asp-for="Importe" class="form-control" inputmode="decimal" placeholder="0,00" />
+            <span asp-validation-for="Importe" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <label class="form-label">Detalle</label>
+        <input asp-for="Detalle" class="form-control" maxlength="100" />
+        <span asp-validation-for="Detalle" class="text-danger small"></span>
+    </div>
+
+    <div class="mt-3">
+        <label class="form-label">Motivo de anulación (opcional)</label>
+        <input asp-for="MotivoAnulacion" class="form-control" maxlength="255" />
+        <span asp-validation-for="MotivoAnulacion" class="text-danger small"></span>
+    </div>
+</div>

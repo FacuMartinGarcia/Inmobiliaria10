@@ -1,0 +1,22 @@
+@model Inmobiliaria10.Models.Pago
+@{
+    ViewData["Title"] = "Detalle de pago";
+}
+<div class="d-flex justify-content-center py-4">
+    <div class="form-card w-100" style="max-width: 720px;">
+        <h1 class="form-title">Pago #@Model.IdPago</h1>
+        <dl class="row">
+            <dt class="col-sm-4">Contrato</dt><dd class="col-sm-8">@Model.IdContrato</dd>
+            <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">@Model.FechaPago:yyyy-MM-dd</dd>
+            <dt class="col-sm-4">Concepto</dt><dd class="col-sm-8">@Model.IdConcepto</dd>
+            <dt class="col-sm-4">Importe</dt><dd class="col-sm-8">@Model.Importe:0.00</dd>
+            <dt class="col-sm-4">Detalle</dt><dd class="col-sm-8">@Model.Detalle</dd>
+            <dt class="col-sm-4">Motivo anulación</dt><dd class="col-sm-8">@Model.MotivoAnulacion</dd>
+        </dl>
+        <div class="d-flex justify-content-center gap-2">
+            <a class="btn btn-outline-primary" asp-action="Editar" asp-route-id="@Model.IdPago">Editar</a>
+            <a class="btn btn-outline-dark" asp-action="Auditoria" asp-route-id="@Model.IdPago">Auditoría</a>
+            <a class="btn-back" asp-action="Index">Volver</a>
+        </div>
+    </div>
+</div>

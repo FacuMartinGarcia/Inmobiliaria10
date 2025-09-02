@@ -1,0 +1,18 @@
+@model Inmobiliaria10.Models.Pago
+@{
+    ViewData["Title"] = "Eliminar pago";
+}
+<div class="d-flex justify-content-center py-4">
+    <div class="form-card w-100" style="max-width: 720px;">
+        <h1 class="form-title">¿Eliminar pago #@Model.IdPago?</h1>
+        <dl class="row">
+            <dt class="col-sm-4">Contrato</dt><dd class="col-sm-8">@Model.IdContrato</dd>
+            <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">@Model.FechaPago:yyyy-MM-dd</dd>
+            <dt class="col-sm-4">Importe</dt><dd class="col-sm-8">@Model.Importe:0.00</dd>
+        </dl>
+        <form asp-action="Borrar" asp-route-id="@Model.IdPago" method="post" class="d-flex justify-content-center gap-2">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a asp-action="Index" class="btn-back">Cancelar</a>
+        </form>
+    </div>
+</div>

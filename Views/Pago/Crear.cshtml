@@ -1,0 +1,17 @@
+@model Inmobiliaria10.Models.Pago
+@{
+    ViewData["Title"] = "Nuevo pago";
+}
+<div class="d-flex justify-content-center py-4">
+    <form asp-action="Crear" method="post" class="w-100" style="max-width: 720px;">
+        <partial name="_Form" model="Model" />
+        <div class="d-flex justify-content-center gap-2 mt-3">
+            <button type="submit" class="btn-save">Guardar</button>
+            <a asp-action="Index" class="btn-back">Volver</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
