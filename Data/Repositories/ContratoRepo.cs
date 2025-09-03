@@ -25,6 +25,7 @@ namespace Inmobiliaria10.Data.Repositories
                 IdInquilino = r.GetInt32("IdInquilino"),
                 FechaInicio = r.GetDateTime("FechaInicio"),
                 FechaFin = r.GetDateTime("FechaFin"),
+                MontoMensual = r.GetDecimal("MontoMensual"),
                 Rescision = r.IsDBNull(r.GetOrdinal("Rescision")) ? null : r.GetDateTime("Rescision"),
                 MontoMulta = r.IsDBNull(r.GetOrdinal("MontoMulta")) ? null : r.GetDecimal("MontoMulta"),
                 CreatedBy = r.GetInt32("CreatedBy"),
@@ -48,18 +49,19 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync(ct);
 
             var sql = @"
-                SELECT  c.id_contrato  AS IdContrato,
-                        c.fecha_firma  AS FechaFirma,
-                        c.id_inmueble  AS IdInmueble,
-                        c.id_inquilino AS IdInquilino,
-                        c.fecha_inicio AS FechaInicio,
-                        c.fecha_fin    AS FechaFin,
-                        c.rescision    AS Rescision,
-                        c.monto_multa  AS MontoMulta,
-                        c.created_by   AS CreatedBy,
-                        c.created_at   AS CreatedAt,
-                        c.deleted_at   AS DeletedAt,
-                        c.deleted_by   AS DeletedBy
+                SELECT  c.id_contrato   AS IdContrato,
+                        c.fecha_firma   AS FechaFirma,
+                        c.id_inmueble   AS IdInmueble,
+                        c.id_inquilino  AS IdInquilino,
+                        c.fecha_inicio  AS FechaInicio,
+                        c.fecha_fin     AS FechaFin,
+                        c.monto_mensual AS MontoMensual,
+                        c.rescision     AS Rescision,
+                        c.monto_multa   AS MontoMulta,
+                        c.created_by    AS CreatedBy,
+                        c.created_at    AS CreatedAt,
+                        c.deleted_at    AS DeletedAt,
+                        c.deleted_by    AS DeletedBy
                 FROM contratos c
                 WHERE c.id_contrato = @id;";
 
@@ -83,7 +85,6 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            // Filtros dinámicos (snake_case)
             var where = " WHERE 1=1 ";
             var pars = new List<MySqlParameter>();
 
@@ -104,27 +105,26 @@ namespace Inmobiliaria10.Data.Repositories
             else if (soloActivos == false)
                 where += " AND c.deleted_at IS NOT NULL ";
 
-            // Total
             var sqlCount = $"SELECT COUNT(*) FROM contratos c {where};";
             using (var cmdCount = new MySqlCommand(sqlCount, conn))
             {
                 cmdCount.Parameters.AddRange(pars.ToArray());
                 var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
 
-                // Items (alias -> PascalCase para MapContrato)
                 var sqlItems = $@"
-                    SELECT  c.id_contrato  AS IdContrato,
-                            c.fecha_firma  AS FechaFirma,
-                            c.id_inmueble  AS IdInmueble,
-                            c.id_inquilino AS IdInquilino,
-                            c.fecha_inicio AS FechaInicio,
-                            c.fecha_fin    AS FechaFin,
-                            c.rescision    AS Rescision,
-                            c.monto_multa  AS MontoMulta,
-                            c.created_by   AS CreatedBy,
-                            c.created_at   AS CreatedAt,
-                            c.deleted_at   AS DeletedAt,
-                            c.deleted_by   AS DeletedBy
+                    SELECT  c.id_contrato   AS IdContrato,
+                            c.fecha_firma   AS FechaFirma,
+                            c.id_inmueble   AS IdInmueble,
+                            c.id_inquilino  AS IdInquilino,
+                            c.fecha_inicio  AS FechaInicio,
+                            c.fecha_fin     AS FechaFin,
+                            c.monto_mensual AS MontoMensual,
+                            c.rescision     AS Rescision,
+                            c.monto_multa   AS MontoMulta,
+                            c.created_by    AS CreatedBy,
+                            c.created_at    AS CreatedAt,
+                            c.deleted_at    AS DeletedAt,
+                            c.deleted_by    AS DeletedBy
                     FROM contratos c
                     {where}
                     ORDER BY c.created_at DESC";
@@ -153,6 +153,8 @@ namespace Inmobiliaria10.Data.Repositories
             }
         }
 
+
+
         public async Task<int> CreateAsync(Contrato entity, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -165,10 +167,10 @@ namespace Inmobiliaria10.Data.Repositories
             var sql = @"
                 INSERT INTO contratos
                     (fecha_firma, id_inmueble, id_inquilino, fecha_inicio, fecha_fin,
-                     rescision, monto_multa, created_by, created_at, deleted_at, deleted_by)
+                     monto_mensual, rescision, monto_multa, created_by, created_at, deleted_at, deleted_by)
                 VALUES
                     (@FechaFirma, @IdInmueble, @IdInquilino, @FechaInicio, @FechaFin,
-                     @Rescision, @MontoMulta, @CreatedBy, @CreatedAt, NULL, NULL);
+                     @MontoMensual, @Rescision, @MontoMulta, @CreatedBy, @CreatedAt, NULL, NULL);
                 SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -178,6 +180,7 @@ namespace Inmobiliaria10.Data.Repositories
             AddParam(cmd, "@IdInquilino", entity.IdInquilino, MySqlDbType.Int32);
             AddParam(cmd, "@FechaInicio", entity.FechaInicio, MySqlDbType.DateTime);
             AddParam(cmd, "@FechaFin", entity.FechaFin, MySqlDbType.DateTime);
+            AddParam(cmd, "@MontoMensual", entity.MontoMensual, MySqlDbType.Decimal);
             AddParam(cmd, "@Rescision", entity.Rescision, MySqlDbType.DateTime);
             AddParam(cmd, "@MontoMulta", entity.MontoMulta, MySqlDbType.Decimal);
             AddParam(cmd, "@CreatedBy", entity.CreatedBy, MySqlDbType.Int32);
@@ -186,39 +189,47 @@ namespace Inmobiliaria10.Data.Repositories
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
             return id;
         }
+        
+        
+                public async Task UpdateAsync(Contrato entity, CancellationToken ct = default)
+                {
+                    using var conn = _db.GetConnection();
+                    await conn.OpenAsync(ct);
 
-        public async Task UpdateAsync(Contrato entity, CancellationToken ct = default)
-        {
-            using var conn = _db.GetConnection();
-            await conn.OpenAsync(ct);
+                    var overlap = await ExistsOverlapAsync(entity.IdInmueble, entity.FechaInicio, entity.FechaFin, entity.Rescision, entity.IdContrato, ct);
+                    if (overlap)
+                        throw new InvalidOperationException("La modificación genera un solapamiento con otro contrato del inmueble.");
 
-            var overlap = await ExistsOverlapAsync(entity.IdInmueble, entity.FechaInicio, entity.FechaFin, entity.Rescision, entity.IdContrato, ct);
-            if (overlap)
-                throw new InvalidOperationException("La modificación genera un solapamiento con otro contrato del inmueble.");
+                    var sql = @"
+                        UPDATE contratos
+                        SET fecha_firma=@FechaFirma,
+                            id_inmueble=@IdInmueble,
+                            id_inquilino=@IdInquilino,
+                            fecha_inicio=@FechaInicio,
+                            fecha_fin=@FechaFin,
+                            monto_mensual=@MontoMensual,
+                            rescision=@Rescision,
+                            monto_multa=@MontoMulta
+                        WHERE id_contrato=@IdContrato;";
 
-            var sql = @"
-                UPDATE contratos
-                SET fecha_firma=@FechaFirma,
-                    id_inmueble=@IdInmueble,
-                    id_inquilino=@IdInquilino,
-                    fecha_inicio=@FechaInicio,
-                    fecha_fin=@FechaFin,
-                    rescision=@Rescision,
-                    monto_multa=@MontoMulta
-                WHERE id_contrato=@IdContrato;";
+                    using var cmd = new MySqlCommand(sql, conn);
+                    AddParam(cmd, "@FechaFirma", entity.FechaFirma ?? (object)DBNull.Value, MySqlDbType.DateTime);
+                    AddParam(cmd, "@IdInmueble", entity.IdInmueble, MySqlDbType.Int32);
+                    AddParam(cmd, "@IdInquilino", entity.IdInquilino, MySqlDbType.Int32);
+                    AddParam(cmd, "@FechaInicio", entity.FechaInicio, MySqlDbType.DateTime);
+                    AddParam(cmd, "@FechaFin", entity.FechaFin, MySqlDbType.DateTime);
+                    AddParam(cmd, "@MontoMensual", entity.MontoMensual, MySqlDbType.Decimal);
+                    AddParam(cmd, "@Rescision", entity.Rescision ?? (object)DBNull.Value, MySqlDbType.DateTime);
+                    AddParam(cmd, "@MontoMulta", entity.MontoMulta ?? (object)DBNull.Value, MySqlDbType.Decimal);
+                    AddParam(cmd, "@IdContrato", entity.IdContrato, MySqlDbType.Int32);
 
-            using var cmd = new MySqlCommand(sql, conn);
-            AddParam(cmd, "@FechaFirma", entity.FechaFirma, MySqlDbType.DateTime);
-            AddParam(cmd, "@IdInmueble", entity.IdInmueble, MySqlDbType.Int32);
-            AddParam(cmd, "@IdInquilino", entity.IdInquilino, MySqlDbType.Int32);
-            AddParam(cmd, "@FechaInicio", entity.FechaInicio, MySqlDbType.DateTime);
-            AddParam(cmd, "@FechaFin", entity.FechaFin, MySqlDbType.DateTime);
-            AddParam(cmd, "@Rescision", entity.Rescision, MySqlDbType.DateTime);
-            AddParam(cmd, "@MontoMulta", entity.MontoMulta, MySqlDbType.Decimal);
-            AddParam(cmd, "@IdContrato", entity.IdContrato, MySqlDbType.Int32);
 
-            await cmd.ExecuteNonQueryAsync(ct);
-        }
+                    var filas = await cmd.ExecuteNonQueryAsync(ct);
+                    if (filas == 0)
+                    {
+                        throw new InvalidOperationException("No se actualizó ningún contrato. Verifique el ID.");
+                    }
+                }
 
         public async Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default)
         {
@@ -262,7 +273,6 @@ namespace Inmobiliaria10.Data.Repositories
                   AND c.deleted_at IS NULL
                   /**exclude**/
                   AND (
-                        -- solape inclusivo: [a1,a2] con [b1,b2] => b1 <= a2 AND a1 <= b2
                         DATE(c.fecha_inicio) <= LEAST(DATE(c.fecha_fin), COALESCE(DATE(c.rescision), DATE(c.fecha_fin)))
                         AND @Ini <= LEAST(DATE(c.fecha_fin), COALESCE(DATE(c.rescision), DATE(c.fecha_fin)))
                         AND DATE(c.fecha_inicio) <= @Fin
@@ -323,6 +333,7 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return list;
         }
+
         public async Task<IReadOnlyList<ContratoAudit>> GetAuditoriaAsync(int contratoId, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -360,8 +371,5 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return list;
         }
-
-
     }
-    
 }

@@ -4,6 +4,8 @@ using Inmobiliaria10.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Inmobiliaria10.Controllers
 {
@@ -24,7 +26,6 @@ namespace Inmobiliaria10.Controllers
         }
 
         // ------------------- INDEX -------------------
-        // /Contrato?tipo=1&inmueble=10&inquilino=2&soloActivos=true&page=1&pageSize=20
         public async Task<IActionResult> Index(
             int? tipo,
             int? inmueble,
@@ -34,7 +35,9 @@ namespace Inmobiliaria10.Controllers
             int pageSize = 20,
             CancellationToken ct = default)
         {
-            await CargarSelectsAsync(tipo, inmueble, inquilino, ct);
+            // Selects para filtro del index
+            await CargarSelectsIndexAsync(tipo, inmueble, inquilino, ct);
+            ViewBag.TipoSel = tipo;
 
             var (items, total) = await _repo.ListAsync(
                 idInmueble: inmueble,
@@ -48,18 +51,15 @@ namespace Inmobiliaria10.Controllers
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
             ViewBag.SoloActivos = soloActivos;
-            ViewBag.TipoSel = tipo;
 
             return View(items);
         }
 
         // ------------------- CREAR -------------------
         [HttpGet]
-        public async Task<IActionResult> Crear(int? tipo, int? inmueble, int? inquilino, CancellationToken ct = default)
+        public async Task<IActionResult> Crear(int? inmueble, int? inquilino, CancellationToken ct = default)
         {
-            // Pre-cargamos combos (si viene ?tipo= lo usamos para filtrar Inmuebles)
-            await CargarSelectsAsync(tipo, inmueble, inquilino, ct);
-            ViewBag.TipoSel = tipo; // para que el JS del form sepa el tipo seleccionado
+            await CargarSelectsAsync(inmueble, inquilino, ct);
 
             return View(new Contrato
             {
@@ -74,32 +74,18 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Contrato model, CancellationToken ct = default)
         {
-            // 1) leemos el tipo desde el form para reconstruir la cascada si falla
-            int? tipoForm = null;
-            if (int.TryParse(Request.Form["tipo"], out var _tipo)) tipoForm = _tipo;
-
-            if (!tipoForm.HasValue && model.IdInmueble > 0)
-            {
-                var inm = _repoInmueble.ObtenerPorId(model.IdInmueble); // sync en tu repo
-                tipoForm = inm?.IdTipo;
-            }
-
-            // 2) Asignar audit fields ANTES de validar y limpiar entradas previas del binder
             model.CreatedBy = GetUserIdOrDefault();
             model.CreatedAt = DateTime.UtcNow;
 
             ModelState.Remove(nameof(Contrato.CreatedBy));
             ModelState.Remove(nameof(Contrato.CreatedAt));
 
-            // 3) Validar y, si falla, reconstruir combos manteniendo tipo/inmueble/inq
             if (!ModelState.IsValid)
             {
-                await CargarSelectsAsync(tipoForm, model.IdInmueble, model.IdInquilino, ct);
-                ViewBag.TipoSel = tipoForm;
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }
 
-            // 4) Guardar
             try
             {
                 await _repo.CreateAsync(model, ct);
@@ -109,12 +95,10 @@ namespace Inmobiliaria10.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, "No se pudo guardar el contrato. " + ex.Message);
-                await CargarSelectsAsync(tipoForm, model.IdInmueble, model.IdInquilino, ct);
-                ViewBag.TipoSel = tipoForm;
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }
         }
-
 
         // ------------------- EDITAR -------------------
         [HttpGet]
@@ -123,12 +107,7 @@ namespace Inmobiliaria10.Controllers
             var contrato = await _repo.GetByIdAsync(id, ct);
             if (contrato == null) return NotFound();
 
-            // Obtener tipo del inmueble para precargar cascada
-            var inm = _repoInmueble.ObtenerPorId(contrato.IdInmueble); // sync en tu repo
-            int? tipo = inm?.IdTipo;
-
-            await CargarSelectsAsync(tipo, contrato.IdInmueble, contrato.IdInquilino, ct);
-            ViewBag.TipoSel = tipo;
+            await CargarSelectsAsync(contrato.IdInmueble, contrato.IdInquilino, ct);
             return View(contrato);
         }
 
@@ -136,27 +115,51 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, Contrato model, CancellationToken ct = default)
         {
-            if (id != model.IdContrato) return BadRequest();
-
-            // Leer tipo del form para reconstruir cascada si hay errores
-            int? tipoForm = null;
-            if (int.TryParse(Request.Form["tipo"], out var _tipo)) tipoForm = _tipo;
-            if (!tipoForm.HasValue && model.IdInmueble > 0)
+            if (id != model.IdContrato)
             {
-                var inm = _repoInmueble.ObtenerPorId(model.IdInmueble);
-                tipoForm = inm?.IdTipo;
+                ModelState.AddModelError(string.Empty, "El ID del contrato no coincide.");
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
+                return View(model);
             }
 
-            // Si tu modelo tiene UpdatedBy/UpdatedAt, podés setearlos acá:
-            // model.UpdatedBy = GetUserIdOrDefault();
-            // model.UpdatedAt = DateTime.UtcNow;
-            // ModelState.Remove(nameof(Contrato.UpdatedBy));
-            // ModelState.Remove(nameof(Contrato.UpdatedAt));
+            // Permitir que los campos opcionales nulos no rompan la validación
+            ModelState.Remove(nameof(Contrato.Rescision));
+            ModelState.Remove(nameof(Contrato.MontoMulta));
 
             if (!ModelState.IsValid)
             {
-                await CargarSelectsAsync(tipoForm, model.IdInmueble, model.IdInquilino, ct);
-                ViewBag.TipoSel = tipoForm;
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
+                return View(model);
+            }
+
+            try
+            {
+                // Ejecutar update y verificar filas afectadas
+                await _repo.UpdateAsync(model, ct);
+                  TempData["Ok"] = "Contrato actualizado correctamente.";
+                  return RedirectToAction(nameof(Detalles), new { id = model.IdContrato });
+              
+            }
+            catch (Exception ex)
+            {
+                // Mostrar mensaje de error completo
+                ModelState.AddModelError(string.Empty, $"No se pudo actualizar el contrato. {ex.Message}\n{ex.StackTrace}");
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
+                return View(model);
+            }
+        }
+
+
+/*
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Editar(int id, Contrato model, CancellationToken ct = default)
+        {
+            if (id != model.IdContrato) return BadRequest();
+
+            if (!ModelState.IsValid)
+            {
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }
 
@@ -169,13 +172,11 @@ namespace Inmobiliaria10.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, "No se pudo actualizar el contrato. " + ex.Message);
-                await CargarSelectsAsync(tipoForm, model.IdInmueble, model.IdInquilino, ct);
-                ViewBag.TipoSel = tipoForm;
+                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }
         }
-
-        
+*/
         // ------------------- DETALLES -------------------
         public async Task<IActionResult> Detalles(int id, CancellationToken ct = default)
         {
@@ -186,17 +187,7 @@ namespace Inmobiliaria10.Controllers
             return View(contrato);
         }
 
-        // ------------------- DETALLES -------------------
-        public async Task<IActionResult> Detalle(int id, CancellationToken ct = default)
-        {
-            var contrato = await _repo.GetByIdAsync(id, ct);
-            if (contrato == null) return NotFound();
-
-            await SetContratoEtiquetasAsync(contrato, ct);
-            return View(contrato);
-        }
-
-        // ------------------- ELIMINAR (GET - confirmación) -------------------
+        // ------------------- ELIMINAR -------------------
         [HttpGet]
         public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
@@ -207,7 +198,6 @@ namespace Inmobiliaria10.Controllers
             return View(contrato);
         }
 
-        // ------------------- BORRAR (POST) -------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
@@ -221,51 +211,34 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // =================== HELPERS ===================
 
-        // =================== Helper: arma textos legibles (sin ?. ni LINQ) ===================
         private async Task SetContratoEtiquetasAsync(Contrato contrato, CancellationToken ct)
         {
-            // --- INMUEBLE (Dirección · Piso · Dpto) ---
-            var inm = _repoInmueble.ObtenerPorId(contrato.IdInmueble); // sync en tu repo
+            var inm = await _repoInmueble.ObtenerPorId(contrato.IdInmueble);
 
             string inmuebleTxt = contrato.IdInmueble.ToString();
             if (inm != null)
             {
                 var sb = new System.Text.StringBuilder();
-                if (inm.Direccion != null && inm.Direccion.Trim().Length > 0)
-                    sb.Append(inm.Direccion);
-                if (inm.Piso != null && inm.Piso.Trim().Length > 0)
-                    sb.Append(" Piso ").Append(inm.Piso);
-                if (inm.Depto != null && inm.Depto.Trim().Length > 0)
-                    sb.Append(" Dpto ").Append(inm.Depto);
+                if (!string.IsNullOrWhiteSpace(inm.Direccion)) sb.Append(inm.Direccion);
+                if (!string.IsNullOrWhiteSpace(inm.Piso)) sb.Append(" Piso ").Append(inm.Piso);
+                if (!string.IsNullOrWhiteSpace(inm.Depto)) sb.Append(" Dpto ").Append(inm.Depto);
 
                 var texto = sb.ToString();
-                if (texto.Trim().Length > 0) inmuebleTxt = texto;
+                if (!string.IsNullOrWhiteSpace(texto)) inmuebleTxt = texto;
             }
             ViewBag.InmuebleTxt = inmuebleTxt;
 
-            // --- TIPO (si la navegación está cargada) ---
-            string tipoTxt = "";
-            if (inm != null && inm.Tipo != null)
-            {
-                var den = inm.Tipo.DenominacionTipo;
-                if (den != null && den.Trim().Length > 0) tipoTxt = den;
-            }
-            // (Si preferís, acá podés hacer un fallback con _repoTipo por IdTipo)
-            ViewBag.TipoTxt = tipoTxt;
-
-            // --- INQUILINO (GetInquilinosAsync => IReadOnlyList<(int Id, string Nombre)>) ---
             string inquilinoTxt = contrato.IdInquilino.ToString();
             var inqs = await _repo.GetInquilinosAsync(ct);
             if (inqs != null)
             {
-                for (int i = 0; i < inqs.Count; i++)
+                foreach (var item in inqs)
                 {
-                    var item = inqs[i]; // (int Id, string Nombre)
-                    if (item.Id == contrato.IdInquilino)
+                    if (item.Id == contrato.IdInquilino && !string.IsNullOrWhiteSpace(item.Nombre))
                     {
-                        if (item.Nombre != null && item.Nombre.Trim().Length > 0)
-                            inquilinoTxt = item.Nombre;
+                        inquilinoTxt = item.Nombre;
                         break;
                     }
                 }
@@ -273,35 +246,39 @@ namespace Inmobiliaria10.Controllers
             ViewBag.InquilinoTxt = inquilinoTxt;
         }
 
-
-        // ------------------- API: Inmuebles por Tipo (para AJAX) -------------------
-        [HttpGet]
-        public async Task<IActionResult> InmueblesPorTipo(int idTipo, CancellationToken ct = default)
-        {
-            var lista = _repoInmueble
-                .ListarTodos() // o un método async si lo tenés
-                .Where(x => x.IdTipo == idTipo)
-                .Select(x => new
-                {
-                    id = x.IdInmueble,
-                    texto = $"{x.Direccion}"
-                            + (string.IsNullOrWhiteSpace(x.Piso) ? "" : $" Piso {x.Piso}")
-                            + (string.IsNullOrWhiteSpace(x.Depto) ? "" : $" Dpto {x.Depto}")
-                })
-                .OrderBy(x => x.texto)
-                .ToList();
-
-            return Json(lista);
-        }
-
-        // =================== Helpers ===================
         private int GetUserIdOrDefault()
         {
             var str = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(str, out var id) ? id : 1;
         }
 
-        private async Task CargarSelectsAsync(int? idTipo, int? idInmueble, int? idInquilino, CancellationToken ct)
+        // ------------------- CARGA SELECTS -------------------
+
+        // Para Crear/Editar: solo inmuebles activos
+        private async Task CargarSelectsAsync(int? idInmueble, int? idInquilino, CancellationToken ct)
+        {
+            var inmuebles = (await _repoInmueble.ListarTodos())
+                .Where(i => i.Activo)
+                .Select(i => new SelectListItem
+                {
+                    Value = i.IdInmueble.ToString(),
+                    Text = $"{i.Direccion}" +
+                           (string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}") +
+                           (string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
+                })
+                .OrderBy(x => x.Text)
+                .ToList();
+            ViewBag.Inmuebles = new SelectList(inmuebles, "Value", "Text", idInmueble?.ToString());
+
+            var inquilinos = await _repo.GetInquilinosAsync(ct);
+            ViewBag.Inquilinos = new SelectList(
+                inquilinos.Select(x => new { Id = x.Id, Texto = x.Nombre }),
+                "Id", "Texto", idInquilino
+            );
+        }
+
+        // Para Index: filtra por tipo
+        private async Task CargarSelectsIndexAsync(int? tipo, int? idInmueble, int? idInquilino, CancellationToken ct)
         {
             // Tipos
             var tipos = _repoTipo.MostrarTodosInmuebleTipos()
@@ -310,43 +287,30 @@ namespace Inmobiliaria10.Controllers
                     Value = t.IdTipo.ToString(),
                     Text = t.DenominacionTipo
                 })
+                .OrderBy(x => x.Text)
                 .ToList();
+            ViewBag.Tipos = new SelectList(tipos, "Value", "Text", tipo?.ToString());
 
-            ViewBag.Tipos = new SelectList(tipos, "Value", "Text", idTipo?.ToString());
-
-            // Inmuebles (filtrados si viene tipo)
-            var inmuebles = _repoInmueble.ListarTodos()
-                .Where(i => !idTipo.HasValue || i.IdTipo == idTipo)
+            // Inmuebles filtrados por tipo (si aplica)
+            var inmuebles = (await _repoInmueble.ListarTodos())
+                .Where(i => !tipo.HasValue || i.IdTipo == tipo)
                 .Select(i => new SelectListItem
                 {
                     Value = i.IdInmueble.ToString(),
-                    Text = $"{i.Direccion}"
-                           + (string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}")
-                           + (string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
+                    Text = $"{i.Direccion}" +
+                           (string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}") +
+                           (string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
                 })
                 .OrderBy(x => x.Text)
                 .ToList();
-
             ViewBag.Inmuebles = new SelectList(inmuebles, "Value", "Text", idInmueble?.ToString());
 
-            // Inquilinos (igual que venías usando)
+            // Inquilinos
             var inquilinos = await _repo.GetInquilinosAsync(ct);
             ViewBag.Inquilinos = new SelectList(
                 inquilinos.Select(x => new { Id = x.Id, Texto = x.Nombre }),
                 "Id", "Texto", idInquilino
             );
-        }
-
-        // ------------------- Auditoría (sin cambios) -------------------
-        [HttpGet]
-        public async Task<IActionResult> Auditoria(int id, CancellationToken ct = default)
-        {
-            var contrato = await _repo.GetByIdAsync(id, ct);
-            if (contrato == null) return NotFound();
-
-            var eventos = await _repo.GetAuditoriaAsync(id, ct);
-            ViewBag.IdContrato = id;
-            return View(eventos);
         }
     }
 }

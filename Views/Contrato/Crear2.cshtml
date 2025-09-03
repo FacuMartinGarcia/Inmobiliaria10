@@ -1,0 +1,55 @@
+@model Inmobiliaria10.Models.Contrato
+@{
+    // Para precargar la cascada si viene ?tipo= o si el POST volvió con error:
+    var tipoSel = (string)(ViewBag.TipoSel?.ToString() ?? Context.Request.Query["tipo"].ToString());
+    var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
+}
+
+<div class="d-flex justify-content-center">
+    <div class="form-card w-100" style="max-width: 900px;">
+        <div class="form-title">Nuevo contrato</div>
+
+        @await Html.PartialAsync("_Form", Model)
+    </div>
+</div>
+
+@section Scripts{
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const tipo = document.getElementById('tipoSelect');
+        const comboInm = document.getElementById('inmuebleSelect');
+
+        async function cargarInmueblesPorTipo(idTipo, selectedValue){
+            comboInm.innerHTML = '<option value="">Seleccione inmueble</option>';
+            if(!idTipo) return;
+
+            try{
+                const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
+                if(!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json(); // [{id, texto}]
+                data.forEach(x => {
+                    const opt = document.createElement('option');
+                    opt.value = x.id;
+                    opt.textContent = x.texto;
+                    comboInm.appendChild(opt);
+                });
+                if (selectedValue) comboInm.value = selectedValue;
+            }catch(e){
+                console.error(e);
+            }
+        }
+
+        // Cascada: cambia tipo => recarga inmueble
+        tipo.addEventListener('change', () => cargarInmueblesPorTipo(tipo.value, ""));
+
+        // Precarga si viene ?tipo= o si el POST volvió con error
+        const preTipo = '@tipoSel';
+        const preInm  = '@inmSel';
+        if (preTipo) {
+            await cargarInmueblesPorTipo(preTipo, preInm);
+        }
+    });
+    </script>
+}

@@ -1,14 +1,16 @@
 using System.Data;
 using MySql.Data.MySqlClient;
+using System.Data.Common;
 using Inmobiliaria10.Models;
+
 
 namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleRepo: RepositorioBase, IInmuebleRepo
+    public class InmuebleRepo : RepositorioBase, IInmuebleRepo
     {
         public InmuebleRepo(IConfiguration cfg) : base(cfg) { }
 
-        public int Agregar(Inmueble i)
+        public async Task<int> Agregar(Inmueble i)
         {
             using var conn = Conn();
             var sql = @"INSERT INTO inmuebles 
@@ -31,14 +33,12 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
 
-            conn.Open();
-            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            return idGenerado;
+            await conn.OpenAsync();
+            return Convert.ToInt32(await cmd.ExecuteScalarAsync());
         }
 
-        public int Actualizar(Inmueble i)
+        public async Task<int> Actualizar(Inmueble i)
         {
-            int filas = 0;
             using var conn = Conn();
             var sql = @"UPDATE inmuebles SET
                             id_propietario = @idPropietario,
@@ -70,12 +70,11 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@id", i.IdInmueble);
 
-            conn.Open();
-            filas = cmd.ExecuteNonQuery();
-            return filas;
+            await conn.OpenAsync();
+            return await cmd.ExecuteNonQueryAsync();
         }
 
-        public List<Inmueble> ListarTodos()
+        public async Task<List<Inmueble>> ListarTodos()
         {
             var lista = new List<Inmueble>();
             using var conn = Conn();
@@ -93,17 +92,16 @@ namespace Inmobiliaria10.Data.Repositories
             ";
 
             using var cmd = new MySqlCommand(sql, conn);
-            conn.Open();
-            var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
                 lista.Add(Map(reader));
             }
             return lista;
         }
 
-
-        public (List<Inmueble> registros, int totalRegistros) ListarTodosPaginado(
+        public async Task<(List<Inmueble> registros, int totalRegistros)> ListarTodosPaginado(
             int pagina, int cantidadPorPagina, string? searchString = null)
         {
             var lista = new List<Inmueble>();
@@ -142,13 +140,13 @@ namespace Inmobiliaria10.Data.Repositories
             if (!string.IsNullOrEmpty(searchString))
                 cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
-            conn.Open();
-            var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
                 lista.Add(Map(reader));
             }
-            reader.Close();
+            await reader.CloseAsync();
 
             var sqlTotal = $@"
                 SELECT COUNT(*) 
@@ -162,12 +160,12 @@ namespace Inmobiliaria10.Data.Repositories
             if (!string.IsNullOrEmpty(searchString))
                 cmdTotal.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
-            int totalRegistros = Convert.ToInt32(cmdTotal.ExecuteScalar());
+            int totalRegistros = Convert.ToInt32(await cmdTotal.ExecuteScalarAsync());
 
             return (lista, totalRegistros);
         }
 
-        public Inmueble? ObtenerPorId(int id)
+        public async Task<Inmueble?> ObtenerPorId(int id)
         {
             Inmueble? i = null;
             using var conn = Conn();
@@ -188,69 +186,64 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
-            conn.Open();
-            var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
                 i = Map(reader);
             }
             return i;
         }
 
-
-        public int Eliminar(int id)
+        public async Task<int> Eliminar(int id)
         {
-            int filas = 0;
             using var conn = Conn();
             var sql = "DELETE FROM inmuebles WHERE id_inmueble = @id";
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
-            conn.Open();
-            filas = cmd.ExecuteNonQuery();
-            return filas;
+            await conn.OpenAsync();
+            return await cmd.ExecuteNonQueryAsync();
         }
 
-        private Inmueble Map(MySqlDataReader reader)
+        private Inmueble Map(DbDataReader reader)
         {
             return new Inmueble
             {
-                IdInmueble = reader.GetInt32("id_inmueble"),
-                IdPropietario = reader.GetInt32("id_propietario"),
+                IdInmueble = reader.GetInt32(reader.GetOrdinal("id_inmueble")),
+                IdPropietario = reader.GetInt32(reader.GetOrdinal("id_propietario")),
                 Propietario = new Propietario
                 {
-                    IdPropietario = reader.GetInt32("id_propietario"),
-                    Documento = reader.GetString("documento"),
-                    ApellidoNombres = reader.GetString("apellido_nombres"),
-                    Domicilio = reader.GetString("domicilio"),
-                    Telefono = reader.IsDBNull(reader.GetOrdinal("telefono")) ? null : reader.GetString("telefono"),
-                    Email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email")
+                    IdPropietario = reader.GetInt32(reader.GetOrdinal("id_propietario")),
+                    Documento = reader.GetString(reader.GetOrdinal("documento")),
+                    ApellidoNombres = reader.GetString(reader.GetOrdinal("apellido_nombres")),
+                    Domicilio = reader.GetString(reader.GetOrdinal("domicilio")),
+                    Telefono = reader.IsDBNull(reader.GetOrdinal("telefono")) ? null : reader.GetString(reader.GetOrdinal("telefono")),
+                    Email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString(reader.GetOrdinal("email"))
                 },
-                IdUso = reader.GetInt32("id_uso"),
+                IdUso = reader.GetInt32(reader.GetOrdinal("id_uso")),
                 Uso = new InmuebleUso
                 {
-                    IdUso = reader.GetInt32("uso_id_uso"),
-                    DenominacionUso = reader.GetString("denominacion_uso")
+                    IdUso = reader.GetInt32(reader.GetOrdinal("uso_id_uso")),
+                    DenominacionUso = reader.GetString(reader.GetOrdinal("denominacion_uso"))
                 },
-                IdTipo = reader.GetInt32("id_tipo"),
+                IdTipo = reader.GetInt32(reader.GetOrdinal("id_tipo")),
                 Tipo = new InmuebleTipo
                 {
-                    IdTipo = reader.GetInt32("tipo_id_tipo"),
-                    DenominacionTipo = reader.GetString("denominacion_tipo")
+                    IdTipo = reader.GetInt32(reader.GetOrdinal("tipo_id_tipo")),
+                    DenominacionTipo = reader.GetString(reader.GetOrdinal("denominacion_tipo"))
                 },
-                Direccion = reader.GetString("direccion"),
-                Piso = reader.IsDBNull("piso") ? null : reader.GetString("piso"),
-                Depto = reader.IsDBNull("depto") ? null : reader.GetString("depto"),
-                Lat = reader.IsDBNull("lat") ? null : reader.GetDecimal("lat"),
-                Lon = reader.IsDBNull("lon") ? null : reader.GetDecimal("lon"),
-                Ambientes = reader.IsDBNull("ambientes") ? null : reader.GetInt32("ambientes"),
-                Precio = reader.IsDBNull("precio") ? null : reader.GetDecimal("precio"),
-                Activo = reader.GetBoolean("activo"),
-                CreatedAt = reader.GetDateTime("created_at"),
-                UpdatedAt = reader.GetDateTime("updated_at")
+                Direccion = reader.GetString(reader.GetOrdinal("direccion")),
+                Piso = reader.IsDBNull(reader.GetOrdinal("piso")) ? null : reader.GetString(reader.GetOrdinal("piso")),
+                Depto = reader.IsDBNull(reader.GetOrdinal("depto")) ? null : reader.GetString(reader.GetOrdinal("depto")),
+                Lat = reader.IsDBNull(reader.GetOrdinal("lat")) ? null : reader.GetDecimal(reader.GetOrdinal("lat")),
+                Lon = reader.IsDBNull(reader.GetOrdinal("lon")) ? null : reader.GetDecimal(reader.GetOrdinal("lon")),
+                Ambientes = reader.IsDBNull(reader.GetOrdinal("ambientes")) ? null : reader.GetInt32(reader.GetOrdinal("ambientes")),
+                Precio = reader.IsDBNull(reader.GetOrdinal("precio")) ? null : reader.GetDecimal(reader.GetOrdinal("precio")),
+                Activo = reader.GetBoolean(reader.GetOrdinal("activo")),
+                CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                UpdatedAt = reader.GetDateTime(reader.GetOrdinal("updated_at"))
             };
         }
-
-
     }
 }

@@ -24,34 +24,33 @@ namespace Inmobiliaria10.Controllers
             _repoTipo = repoTipo;
         }
 
-        public IActionResult Index(int pagina = 1, string? searchString = null)
+        public async Task<IActionResult> Index(int pagina = 1, string? searchString = null)
         {
             int cantidadPorPagina = 8;
 
-            var resultado = _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
+            var resultado = await _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
             ViewData["SearchString"] = searchString;
-            return View(resultado.registros);
 
+            return View(resultado.registros);
         }
 
-        public IActionResult Detalle(int id)
+        public async Task<IActionResult> Detalle(int id)
         {
-            var inmueble = _repoInmueble.ObtenerPorId(id);
+            var inmueble = await _repoInmueble.ObtenerPorId(id);
             if (inmueble == null)
                 return NotFound();
 
             return View(inmueble);
         }
 
-
         public async Task<IActionResult> Crear()
         {
             await CargarSelectsAsync();
             var inmueble = new Inmueble
-            { 
+            {
                 Activo = true
             };
             return View(inmueble);
@@ -63,7 +62,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (ModelState.IsValid)
             {
-                _repoInmueble.Agregar(inmueble);
+                await _repoInmueble.Agregar(inmueble);
                 TempData["Mensaje"] = "Inmueble creado correctamente";
                 return RedirectToAction("Index");
             }
@@ -74,7 +73,7 @@ namespace Inmobiliaria10.Controllers
 
         public async Task<IActionResult> Editar(int id)
         {
-            var inmueble = _repoInmueble.ObtenerPorId(id);
+            var inmueble = await _repoInmueble.ObtenerPorId(id);
             if (inmueble == null)
                 return NotFound();
 
@@ -88,7 +87,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (ModelState.IsValid)
             {
-                _repoInmueble.Actualizar(inmueble);
+                await _repoInmueble.Actualizar(inmueble);
                 TempData["Mensaje"] = "Inmueble actualizado correctamente";
                 return RedirectToAction("Index");
             }
@@ -97,10 +96,9 @@ namespace Inmobiliaria10.Controllers
             return View(inmueble);
         }
 
-
-        public IActionResult Eliminar(int id)
+        public async Task<IActionResult> Eliminar(int id)
         {
-            var inmueble = _repoInmueble.ObtenerPorId(id);
+            var inmueble = await _repoInmueble.ObtenerPorId(id);
             if (inmueble == null)
                 return NotFound();
 
@@ -109,17 +107,15 @@ namespace Inmobiliaria10.Controllers
 
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
-        public IActionResult EliminarConfirmado(int id)
+        public async Task<IActionResult> EliminarConfirmado(int id)
         {
-            _repoInmueble.Eliminar(id);
+            await _repoInmueble.Eliminar(id);
             TempData["Mensaje"] = "Inmueble eliminado correctamente";
             return RedirectToAction("Index");
         }
 
-
         private async Task CargarSelectsAsync()
         {
-
             var propietarios = await _repoPropietario.ObtenerTodo();
             ViewBag.Propietarios = propietarios
                 .Select(p => new SelectListItem

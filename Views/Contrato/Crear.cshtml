@@ -1,55 +1,109 @@
 @model Inmobiliaria10.Models.Contrato
+
 @{
-    // Para precargar la cascada si viene ?tipo= o si el POST volvió con error:
-    var tipoSel = (string)(ViewBag.TipoSel?.ToString() ?? Context.Request.Query["tipo"].ToString());
-    var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
+    ViewData["Title"] = "Nuevo Contrato";
 }
 
-<div class="d-flex justify-content-center">
-    <div class="form-card w-100" style="max-width: 900px;">
-        <div class="form-title">Nuevo contrato</div>
+<style>
+    .form-card {
+        max-width: 1000px;
+        width: 100%;
+    }
+</style>
 
-        @await Html.PartialAsync("_Form", Model)
+<div class="mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card form-card mx-auto">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Crear" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Errores:</strong>
+                            <ul></ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="IdInquilino" class="form-label w-100 text-center">Inquilino</label>
+                                <select id="inquilino" asp-for="IdInquilino" class="form-select" asp-items="ViewBag.Inquilinos">
+                                    <option value="">-- Seleccione Inquilino --</option>
+                                </select>
+                                <span asp-validation-for="IdInquilino" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="IdInmueble" class="form-label w-100 text-center">Inmueble</label>
+                                <select id="inmueble" asp-for="IdInmueble" class="form-select" asp-items="ViewBag.Inmuebles">
+                                    <option value="">-- Seleccione Inmueble --</option>
+                                </select>
+                                <span asp-validation-for="IdInmueble" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="FechaInicio" class="form-label w-100 text-center">Fecha Inicio</label>
+                                <input asp-for="FechaInicio" type="date" class="form-control text-center" />
+                                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="FechaFin" class="form-label w-100 text-center">Fecha Fin</label>
+                                <input asp-for="FechaFin" type="date" class="form-control text-center" />
+                                <span asp-validation-for="FechaFin" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="MontoMensual" class="form-label w-100 text-center">Monto Mensual</label>
+                                <input asp-for="MontoMensual" type="number" step="0.01" class="form-control text-center" min="0.01" />
+                                <span asp-validation-for="MontoMensual" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-back">
+                                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-save">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-@section Scripts{
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
 
     <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const tipo = document.getElementById('tipoSelect');
-        const comboInm = document.getElementById('inmuebleSelect');
+        $(function () {
+            $('#inquilino').select2({
+                theme: 'bootstrap4',
+                placeholder: '-- Seleccione Inquilino --',
+                allowClear: true,
+                width: '100%'
+            });
 
-        async function cargarInmueblesPorTipo(idTipo, selectedValue){
-            comboInm.innerHTML = '<option value="">Seleccione inmueble</option>';
-            if(!idTipo) return;
+            $('#inmueble').select2({
+                theme: 'bootstrap4',
+                placeholder: '-- Seleccione Inmueble --',
+                allowClear: true,
+                width: '100%'
+            });
 
-            try{
-                const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
-                if(!resp.ok) throw new Error('HTTP ' + resp.status);
-                const data = await resp.json(); // [{id, texto}]
-                data.forEach(x => {
-                    const opt = document.createElement('option');
-                    opt.value = x.id;
-                    opt.textContent = x.texto;
-                    comboInm.appendChild(opt);
-                });
-                if (selectedValue) comboInm.value = selectedValue;
-            }catch(e){
-                console.error(e);
-            }
-        }
-
-        // Cascada: cambia tipo => recarga inmueble
-        tipo.addEventListener('change', () => cargarInmueblesPorTipo(tipo.value, ""));
-
-        // Precarga si viene ?tipo= o si el POST volvió con error
-        const preTipo = '@tipoSel';
-        const preInm  = '@inmSel';
-        if (preTipo) {
-            await cargarInmueblesPorTipo(preTipo, preInm);
-        }
-    });
+            // Validar al cerrar select2 (sin dejarlo abierto)
+            $('#inquilino, #inmueble').on('select2:close', function () {
+                $(this).valid();
+            });
+        });
     </script>
 }
