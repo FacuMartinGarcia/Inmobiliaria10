@@ -26,7 +26,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label asp-for="IdInquilino" class="form-label w-100 text-center">Inquilino</label>
                                 <select id="inquilino" asp-for="IdInquilino" class="form-select" asp-items="ViewBag.Inquilinos">
                                     <option value="">-- Seleccione Inquilino --</option>
@@ -34,10 +34,22 @@
                                 <span asp-validation-for="IdInquilino" class="text-danger"></span>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-7">
                                 <label asp-for="IdInmueble" class="form-label w-100 text-center">Inmueble</label>
-                                <select id="inmueble" asp-for="IdInmueble" class="form-select" asp-items="ViewBag.Inmuebles">
+                                <select id="inmueble" asp-for="IdInmueble" class="form-select">
                                     <option value="">-- Seleccione Inmueble --</option>
+                                    @foreach (var i in ViewBag.InmueblesRaw)
+                                    {
+                                        <option value="@i.IdInmueble"
+                                                data-precio="@i.Precio?.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                selected="@(Model.IdInmueble == i.IdInmueble)">
+                                            @i.Direccion
+                                            @(string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}")
+                                            @(string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
+                                            @(string.IsNullOrWhiteSpace(i.DenominacionTipo) ? "" : $" - {i.DenominacionTipo}")
+                                            - $@i.Precio
+                                        </option>
+                                    }
                                 </select>
                                 <span asp-validation-for="IdInmueble" class="text-danger"></span>
                             </div>
@@ -100,9 +112,15 @@
                 width: '100%'
             });
 
-            // Validar al cerrar select2 (sin dejarlo abierto)
+            /*
             $('#inquilino, #inmueble').on('select2:close', function () {
                 $(this).valid();
+            });
+            */
+            $('#inmueble').on('change', function () {
+                var selected = $(this).find(':selected');
+                var precio = selected.data('precio');
+                $('#MontoMensual').val(precio);
             });
         });
     </script>

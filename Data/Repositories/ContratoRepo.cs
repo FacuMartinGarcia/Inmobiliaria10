@@ -75,6 +75,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
 
         public async Task<(IReadOnlyList<Contrato> Items, int Total)> ListAsync(
+            int? tipo = null,                
             int? idInmueble = null,
             int? idInquilino = null,
             bool? soloActivos = null,
@@ -85,8 +86,14 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            var where = " WHERE 1=1 ";
+            var where = " WHERE c.deleted_at IS NULL "; 
             var pars = new List<MySqlParameter>();
+
+            if (tipo.HasValue && tipo.Value > 0)
+            {
+                where += " AND i.id_tipo = @Tipo ";  
+                pars.Add(new MySqlParameter("@Tipo", MySqlDbType.Int32) { Value = tipo.Value });
+            }
 
             if (idInmueble.HasValue && idInmueble.Value > 0)
             {
@@ -100,12 +107,24 @@ namespace Inmobiliaria10.Data.Repositories
                 pars.Add(new MySqlParameter("@idInquilino", MySqlDbType.Int32) { Value = idInquilino.Value });
             }
 
-            if (soloActivos == true)
-                where += " AND c.deleted_at IS NULL ";
-            else if (soloActivos == false)
-                where += " AND c.deleted_at IS NOT NULL ";
+            if (soloActivos.HasValue)
+            {
+                var hoy = DateTime.Today;
+                pars.Add(new MySqlParameter("@Hoy", MySqlDbType.Date) { Value = hoy });
 
-            var sqlCount = $"SELECT COUNT(*) FROM contratos c {where};";
+                if (soloActivos.Value)
+                    where += " AND c.fecha_fin >= @Hoy ";
+                else
+                    where += " AND c.fecha_fin < @Hoy ";
+            }
+
+            // agregamos el join con inmuebles
+            var sqlCount = $@"
+                SELECT COUNT(*)
+                FROM contratos c
+                INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                {where};";
+
             using (var cmdCount = new MySqlCommand(sqlCount, conn))
             {
                 cmdCount.Parameters.AddRange(pars.ToArray());
@@ -126,6 +145,7 @@ namespace Inmobiliaria10.Data.Repositories
                             c.deleted_at    AS DeletedAt,
                             c.deleted_by    AS DeletedBy
                     FROM contratos c
+                    INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
                     {where}
                     ORDER BY c.created_at DESC";
 
@@ -152,8 +172,6 @@ namespace Inmobiliaria10.Data.Repositories
                 return (items, total);
             }
         }
-
-
 
         public async Task<int> CreateAsync(Contrato entity, CancellationToken ct = default)
         {
@@ -270,13 +288,13 @@ namespace Inmobiliaria10.Data.Repositories
                 SELECT COUNT(*)
                 FROM contratos c
                 WHERE c.id_inmueble = @IdInmueble
-                  AND c.deleted_at IS NULL
-                  /**exclude**/
-                  AND (
+                AND c.deleted_at IS NULL
+                /**exclude**/
+                AND (
                         DATE(c.fecha_inicio) <= LEAST(DATE(c.fecha_fin), COALESCE(DATE(c.rescision), DATE(c.fecha_fin)))
                         AND @Ini <= LEAST(DATE(c.fecha_fin), COALESCE(DATE(c.rescision), DATE(c.fecha_fin)))
                         AND DATE(c.fecha_inicio) <= @Fin
-                      );";
+                );";
 
             if (excludeContratoId.HasValue)
                 sql = sql.Replace("/**exclude**/", "AND c.id_contrato <> @ExcludeId");
@@ -371,5 +389,39 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return list;
         }
+
+        public async Task<decimal?> CalcularMultaAsync(int idContrato, DateTime fechaRescision, CancellationToken ct = default)
+        {
+            
+            Console.WriteLine($"Calculando multa para contrato {idContrato} con fecha {fechaRescision}");
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var sql = @"
+                SELECT fecha_inicio, fecha_fin, monto_mensual
+                FROM contratos
+                WHERE id_contrato = @id AND deleted_at IS NULL;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add(new MySqlParameter("@id", MySqlDbType.Int32) { Value = idContrato });
+
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            if (!await reader.ReadAsync(ct))
+                return null; 
+
+            var fechaInicio = reader.GetDateTime("fecha_inicio");
+            var fechaFin = reader.GetDateTime("fecha_fin");
+            var montoMensual = reader.GetDecimal("monto_mensual");
+
+            if (fechaRescision < fechaInicio || fechaRescision > fechaFin)
+                throw new ArgumentException("La fecha de rescisión debe estar dentro del período del contrato.");
+
+            var mitadContrato = fechaInicio.AddDays((fechaFin - fechaInicio).TotalDays / 2);
+
+            decimal multa = fechaRescision < mitadContrato ? montoMensual * 2 : montoMensual * 1;
+
+            return multa;
+        }
+
     }
 }

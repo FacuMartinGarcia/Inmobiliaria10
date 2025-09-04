@@ -34,18 +34,29 @@ namespace Inmobiliaria10.Controllers
             int page = 1,
             int pageSize = 20,
             CancellationToken ct = default)
+            
         {
             // Selects para filtro del index
             await CargarSelectsIndexAsync(tipo, inmueble, inquilino, ct);
+            
             ViewBag.TipoSel = tipo;
 
+            var inmuebles = await _repoInmueble.ListarTodos();
+                        ViewBag.TipoMap = inmuebles.ToDictionary(
+                            i => i.IdInmueble.ToString(),
+                            i => i.Tipo?.DenominacionTipo ?? "-" 
+            );
+
+
             var (items, total) = await _repo.ListAsync(
+                tipo: tipo,          
                 idInmueble: inmueble,
                 idInquilino: inquilino,
                 soloActivos: soloActivos,
                 pageIndex: page,
                 pageSize: pageSize,
                 ct);
+
 
             ViewBag.Total = total;
             ViewBag.Page = page;
@@ -225,6 +236,7 @@ namespace Inmobiliaria10.Controllers
                 if (!string.IsNullOrWhiteSpace(inm.Piso)) sb.Append(" Piso ").Append(inm.Piso);
                 if (!string.IsNullOrWhiteSpace(inm.Depto)) sb.Append(" Dpto ").Append(inm.Depto);
 
+
                 var texto = sb.ToString();
                 if (!string.IsNullOrWhiteSpace(texto)) inmuebleTxt = texto;
             }
@@ -259,16 +271,26 @@ namespace Inmobiliaria10.Controllers
         {
             var inmuebles = (await _repoInmueble.ListarTodos())
                 .Where(i => i.Activo)
-                .Select(i => new SelectListItem
-                {
-                    Value = i.IdInmueble.ToString(),
-                    Text = $"{i.Direccion}" +
-                           (string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}") +
-                           (string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
-                })
-                .OrderBy(x => x.Text)
                 .ToList();
-            ViewBag.Inmuebles = new SelectList(inmuebles, "Value", "Text", idInmueble?.ToString());
+
+            ViewBag.Inmuebles = new SelectList(
+                inmuebles,
+                "IdInmueble",
+                "Direccion", 
+                idInmueble?.ToString()
+            );
+
+            // Creamos la lista completa para iterar en el Razor y agregar datos adicionales
+            ViewBag.InmueblesRaw = inmuebles.Select(i => new
+            {
+                i.IdInmueble,
+                i.Direccion,
+                i.Piso,
+                i.Depto,
+                i.Precio,
+                DenominacionTipo = i.Tipo?.DenominacionTipo ?? ""
+            }).ToList();
+            //ViewBag.InmueblesRaw = inmuebles;
 
             var inquilinos = await _repo.GetInquilinosAsync(ct);
             ViewBag.Inquilinos = new SelectList(
@@ -276,6 +298,7 @@ namespace Inmobiliaria10.Controllers
                 "Id", "Texto", idInquilino
             );
         }
+
 
         // Para Index: filtra por tipo
         private async Task CargarSelectsIndexAsync(int? tipo, int? idInmueble, int? idInquilino, CancellationToken ct)
@@ -312,5 +335,22 @@ namespace Inmobiliaria10.Controllers
                 "Id", "Texto", idInquilino
             );
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CalcularMulta(int idContrato, DateTime fechaRescision)
+        {
+            try
+            {
+                Console.WriteLine($"Recibido idContrato={idContrato}, fechaRescision={fechaRescision}");
+
+                var multa = await _repo.CalcularMultaAsync(idContrato, fechaRescision);
+                return Json(new { ok = true, multa });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, mensaje = ex.Message });
+            }
+        }
     }
+
 }

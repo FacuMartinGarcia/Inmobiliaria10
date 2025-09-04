@@ -11,6 +11,7 @@ namespace Inmobiliaria10.Data.Repositories
         /// pageIndex base 1. Si pageSize es 0, devuelve todo sin paginar.
         /// </summary>
         Task<(IReadOnlyList<Contrato> Items, int Total)> ListAsync(
+            int? tipo = null,   
             int? idInmueble = null,
             int? idInquilino = null,
             bool? soloActivos = null,
@@ -42,6 +43,7 @@ namespace Inmobiliaria10.Data.Repositories
         Task<IReadOnlyList<(int Id, string Direccion)>> GetInmueblesAsync(CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Nombre)>> GetInquilinosAsync(CancellationToken ct = default);
         Task<IReadOnlyList<ContratoAudit>> GetAuditoriaAsync(int contratoId, CancellationToken ct = default);
-
+        Task<decimal?> CalcularMultaAsync(int idContrato, DateTime fechaRescision, CancellationToken ct = default);
+        
     }
 }

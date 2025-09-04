@@ -10,21 +10,19 @@
     var pageSize = (int?)ViewBag.PageSize ?? 20;
     var totalPages = (int)Math.Ceiling((double)total / pageSize);
 
-    // Filtros actuales
     var tipoSel      = Context.Request.Query["tipo"].ToString();
     var inmuebleSel  = Context.Request.Query["inmueble"].ToString();
     var inquilinoSel = Context.Request.Query["inquilino"].ToString();
     var soloActivosSel = (bool?)ViewBag.SoloActivos;
     var soloActivosRoute = (soloActivosSel.HasValue && soloActivosSel.Value) ? "true" : null;
 
-    // Mapas para mostrar texto legible en la grilla
     var inmList = (IEnumerable<SelectListItem>)ViewBag.Inmuebles;
     var inmMap = inmList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
 
     var inqList = (IEnumerable<SelectListItem>)ViewBag.Inquilinos;
     var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
 
-    // Id del primer contrato listado (para el botón Auditoría)
+
     var firstId = 0;
     foreach (var row in Model) { firstId = row.IdContrato; break; }
     var hayContratos = firstId > 0;
@@ -65,7 +63,7 @@
 }
 
 <form method="get" class="row g-2 mb-3">
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-2">
         <label class="form-label">Tipo</label>
         @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos",
             new { @class="form-select", id="tipoSelect" })
@@ -80,14 +78,16 @@
         @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos",
             new { @class="form-select", id="inquilinoSelect" })
     </div>
-    <div class="col-6 col-md-1 d-flex align-items-end">
+    <div class="col-6 col-md-2 d-flex align-items-end">
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="soloActivos" value="true" @(soloActivosSel==true?"checked":"") />
-            <label class="form-check-label">Solo activos</label>
+            @{
+                var soloActivosSel = (bool?)ViewBag.SoloActivos ?? true;
+            }
+            <input class="form-check-input" type="checkbox" name="soloActivos" value="true" @(soloActivosSel ? "checked" : "") />
+            <label class="form-check-label">Solo Vigentes</label>
         </div>
     </div>
     <div class="col-6 col-md-1 d-flex align-items-end">
-        <!-- Botón filtrar en negro -->
         <button class="btn btn-dark w-100" type="submit">Filtrar</button>
     </div>
 </form>
@@ -95,8 +95,8 @@
 <table class="table table-striped align-middle">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Inmueble</th>
+            <th>Tipo</th>
+            <th>Domicilio</th>
             <th>Inquilino</th>
             <th>Inicio</th>
             <th>Fin</th>
@@ -109,8 +109,11 @@
     {
         var inmTxt = inmMap.TryGetValue(c.IdInmueble.ToString(), out var _inm) ? _inm : c.IdInmueble.ToString();
         var inqTxt = inqMap.TryGetValue(c.IdInquilino.ToString(), out var _inq) ? _inq : c.IdInquilino.ToString();
+        var tipoInmuebleTxt = ViewBag.TipoMap[c.IdInmueble.ToString()];
+        
+
         <tr>
-            <td>@c.IdContrato</td>
+            <td>@tipoInmuebleTxt</td> 
             <td>@inmTxt</td>
             <td>@inqTxt</td>
             <td>@c.FechaInicio.ToString("yyyy-MM-dd")</td>
@@ -119,15 +122,17 @@
             <td class="text-end">
                 <div class="btn-group" role="group" aria-label="acciones">
                     <a class="btn btn-sm btn-primary" title="Ver"
-                       asp-action="Detalles" asp-route-id="@c.IdContrato"><i class="fa-solid fa-eye"></i></a>
+                    asp-action="Detalles" asp-route-id="@c.IdContrato"><i class="fa-solid fa-eye"></i></a>
                     <a class="btn btn-sm btn-warning" title="Editar"
-                       asp-action="Editar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-pen"></i></a>
+                    asp-action="Editar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-pen"></i></a>
                     <a class="btn btn-sm btn-danger" title="Dar de baja"
-                       asp-action="Eliminar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-trash-can"></i></a>
+                    asp-action="Eliminar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-trash-can"></i></a>
                 </div>
             </td>
         </tr>
     }
+
+
     </tbody>
 </table>
 
@@ -139,13 +144,13 @@
             {
                 <li class="page-item @(i==page ? "active" : "")">
                     <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@i"
-                       asp-route-pageSize="@pageSize"
-                       asp-route-tipo="@tipoSel"
-                       asp-route-inmueble="@inmuebleSel"
-                       asp-route-inquilino="@inquilinoSel"
-                       asp-route-soloActivos="@soloActivosRoute">@i</a>
+                    asp-action="Index"
+                    asp-route-page="@i"
+                    asp-route-pageSize="@pageSize"
+                    asp-route-tipo="@tipoSel"
+                    asp-route-inmueble="@inmuebleSel"
+                    asp-route-inquilino="@inquilinoSel"
+                    asp-route-soloActivos="@soloActivosRoute">@i</a>
                 </li>
             }
         </ul>
