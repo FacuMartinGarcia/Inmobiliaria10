@@ -4,17 +4,22 @@ using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleTipoRepo : RepositorioBase, IInmuebleTipoRepo
+    public class InmuebleTipoRepo : IInmuebleTipoRepo
     {
-        public InmuebleTipoRepo(IConfiguration cfg) : base(cfg) { }
+        private readonly Database _db;
+
+        public InmuebleTipoRepo(Database db)
+        {
+            _db = db;
+        }
 
         public bool ExisteDenominacion(string denominacion, int? idExcluir = null)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "SELECT COUNT(*) FROM inmuebles_tipos WHERE denominacion_tipo = @denom";
 
             if (idExcluir.HasValue)
-                sql += " AND id_tipo <> @id"; 
+                sql += " AND id_tipo <> @id";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@denom", denominacion);
@@ -32,7 +37,7 @@ namespace Inmobiliaria10.Data.Repositories
             if (ExisteDenominacion(i.DenominacionTipo))
                 throw new Exception("Ya existe un tipo con esa denominación");
 
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = @"INSERT INTO inmuebles_tipos (denominacion_tipo) VALUES (@denom);
                         SELECT LAST_INSERT_ID();";
 
@@ -49,7 +54,7 @@ namespace Inmobiliaria10.Data.Repositories
             if (ExisteDenominacion(i.DenominacionTipo, i.IdTipo))
                 throw new Exception("Ya existe otro tipo con esa denominación");
 
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "UPDATE inmuebles_tipos SET denominacion_tipo = @denom WHERE id_tipo = @id";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -62,7 +67,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         public void Eliminar(int id)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "DELETE FROM inmuebles_tipos WHERE id_tipo = @id";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -74,7 +79,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         public InmuebleTipo? ObtenerPorId(int id)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "SELECT * FROM inmuebles_tipos WHERE id_tipo = @id";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -97,7 +102,7 @@ namespace Inmobiliaria10.Data.Repositories
         {
             var inmuebleTipos = new List<InmuebleTipo>();
 
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "SELECT * FROM inmuebles_tipos";
 
             using var cmd = new MySqlCommand(sql, conn);

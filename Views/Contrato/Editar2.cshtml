@@ -3,7 +3,8 @@
 @{
     // Para precargar la cascada si viene seteado desde el controller
     var tipoSel = (string)(ViewBag.TipoSel?.ToString() ?? "");
-    var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
+    //var inmSel  = Model?.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
+    var inmSel = Model != null && Model.IdInmueble > 0 ? Model.IdInmueble.ToString() : "";
 }
 
 <div class="d-flex justify-content-center">

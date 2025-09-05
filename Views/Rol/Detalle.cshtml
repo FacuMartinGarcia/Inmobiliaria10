@@ -1,0 +1,33 @@
+@model Inmobiliaria10.Models.Rol
+
+@{
+    ViewData["Title"] = "Detalle del Rol";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6"> 
+            <div class="card form-card">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title text-center">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body text-center">
+                    <p><strong>Id:</strong> @Model.IdRol</p>
+                    <p><strong>Denominación:</strong> @Model.DenominacionRol</p>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-back">
+                            <i class="fa-solid fa-arrow-left me-2"></i> Volver
+                        </a>
+                        <a asp-action="Editar" asp-route-id="@Model.IdRol" class="btn btn-save">
+                            <i class="fa-solid fa-pen me-2"></i> Editar
+                        </a>
+                        <a asp-action="Eliminar" asp-route-id="@Model.IdRol" class="btn btn-danger">
+                            <i class="fa-solid fa-trash me-2"></i> Eliminar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

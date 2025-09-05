@@ -3,16 +3,20 @@ using MySql.Data.MySqlClient;
 using System.Data.Common;
 using Inmobiliaria10.Models;
 
-
 namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleRepo : RepositorioBase, IInmuebleRepo
+    public class InmuebleRepo : IInmuebleRepo
     {
-        public InmuebleRepo(IConfiguration cfg) : base(cfg) { }
+        private readonly Database _db;
+
+        public InmuebleRepo(Database db)
+        {
+            _db = db;
+        }
 
         public async Task<int> Agregar(Inmueble i)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = @"INSERT INTO inmuebles 
                         (id_propietario, id_uso, id_tipo, direccion, piso, depto, lat, lon, ambientes, precio, activo, created_at, updated_at)
                         VALUES (@idPropietario, @idUso, @idTipo, @direccion, @piso, @depto, @lat, @lon, @ambientes, @precio, @activo, @createdAt, @updatedAt);
@@ -39,7 +43,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         public async Task<int> Actualizar(Inmueble i)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = @"UPDATE inmuebles SET
                             id_propietario = @idPropietario,
                             id_uso = @idUso,
@@ -77,7 +81,7 @@ namespace Inmobiliaria10.Data.Repositories
         public async Task<List<Inmueble>> ListarTodos()
         {
             var lista = new List<Inmueble>();
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
 
             var sql = @"
                 SELECT i.*,
@@ -105,7 +109,7 @@ namespace Inmobiliaria10.Data.Repositories
             int pagina, int cantidadPorPagina, string? searchString = null)
         {
             var lista = new List<Inmueble>();
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
 
             int offset = (pagina - 1) * cantidadPorPagina;
 
@@ -168,7 +172,7 @@ namespace Inmobiliaria10.Data.Repositories
         public async Task<Inmueble?> ObtenerPorId(int id)
         {
             Inmueble? i = null;
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
 
             var sql = @"
                 SELECT i.*,
@@ -197,7 +201,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         public async Task<int> Eliminar(int id)
         {
-            using var conn = Conn();
+            using var conn = _db.GetConnection();
             var sql = "DELETE FROM inmuebles WHERE id_inmueble = @id";
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);

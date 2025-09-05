@@ -1,20 +1,50 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Inmobiliaria10.Models
 {
     public class Usuario
     {
-        public int IdUsuario { get; set; }               // PK
-        public string ApellidoNombres { get; set; } = ""; // NOT NULL
-        public string Alias { get; set; } = "";          // UNIQUE, NOT NULL
-        public string Password { get; set; } = "";       // NOT NULL (hash)
-        public string Email { get; set; } = "";          // UNIQUE, NOT NULL
-        public int IdRol { get; set; }                   // FK roles
-        public DateTime CreatedAt { get; set; }          // DEFAULT NOW
-        public DateTime UpdatedAt { get; set; }          // ON UPDATE NOW
-    }
+        [Key]
+        public int IdUsuario { get; set; }  
 
-    public class Rol
-    {
-        public int IdRol { get; set; }                   // PK
-        public string DenominacionRol { get; set; } = ""; // UNIQUE
+        private string _apellidoNombres = "";
+        [Required, StringLength(200)]
+        public string ApellidoNombres
+        {
+            get => _apellidoNombres;
+            set => _apellidoNombres = value?.ToUpper() ?? "";
+        }
+
+        private string _alias = "";
+        [Required, StringLength(100)]
+        public string Alias
+        {
+            get => _alias;
+            set => _alias = value?.ToUpper() ?? "";
+        }
+
+        [Required, StringLength(255)]
+        public string Password { get; set; } = ""; 
+
+        private string _email = "";
+        [Required, EmailAddress, StringLength(150)]
+        public string Email
+        {
+            get => _email;
+            set => _email = value ?? "";
+        }
+
+        [Required]
+        public int IdRol { get; set; } 
+
+        [ForeignKey(nameof(IdRol))]
+        public Rol? Rol { get; set; }  
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }

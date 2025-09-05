@@ -13,11 +13,11 @@ namespace Inmobiliaria10.Controllers
             _repo = repo;
         }
 
-        // GET: /Inquilino - Mostrar todos pero paginado
-        public IActionResult Index(int pagina = 1, string? searchString = null)
+        // GET: /Inquilino - paginado
+        public async Task<IActionResult> Index(int pagina = 1, string? searchString = null, CancellationToken ct = default)
         {
             int cantidadPorPagina = 8; 
-            var resultado = _repo.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
+            var resultado = await _repo.ListarTodosPaginadoAsync(pagina, cantidadPorPagina, searchString, ct);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
@@ -26,102 +26,99 @@ namespace Inmobiliaria10.Controllers
             return View(resultado.registros);
         }
 
-        // GET: /Inquilino/Detalle/5 - Muestra un inquilino en particular
-        public IActionResult Detalle(int id)
+        // GET: /Inquilino/Detalle/5
+        public async Task<IActionResult> Detalle(int id, CancellationToken ct = default)
         {
-            var inq = _repo.ObtenerPorId(id);
+            var inq = await _repo.ObtenerPorIdAsync(id, ct);
             if (inq == null)
                 return NotFound();
 
             return View(inq);
         }
 
-        // GET: /Inquilino/Crear - Muestra el formulario vacío
+        // GET: /Inquilino/Crear
         public IActionResult Crear()
         {
             return View();
         }
 
-        // POST: /Inquilino/Crear - Recibe los datos y los guarda
+        // POST: /Inquilino/Crear
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Crear(Inquilino i)
+        public async Task<IActionResult> Crear(Inquilino i, CancellationToken ct = default)
         {
             if (!ModelState.IsValid)
                 return View(i);
 
             try
             {
-                _repo.Agregar(i);
+                await _repo.AgregarAsync(i, ct);
                 TempData["Mensaje"] = "Inquilino creado correctamente";
                 return RedirectToAction("Index");
             }
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
                 if (ex.Number == 1062)
-                {
                     ModelState.AddModelError("Documento", "El documento ya existe en el sistema.");
-                }
                 else
-                {
                     ModelState.AddModelError("", "Error al guardar: " + ex.Message);
-                }
+
                 return View(i);
             }
         }
 
-        // GET: /Inquilino/Editar/5 - Trae los datos para editar
-        public IActionResult Editar(int id)
+        // GET: /Inquilino/Editar/5
+        public async Task<IActionResult> Editar(int id, CancellationToken ct = default)
         {
-            var inq = _repo.ObtenerPorId(id);
+            var inq = await _repo.ObtenerPorIdAsync(id, ct);
             if (inq == null)
                 return NotFound();
 
             return View(inq);
         }
 
-        // POST: /Inquilino/Editar/5 - Valida y guarda
+        // POST: /Inquilino/Editar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Editar(Inquilino i)
+        public async Task<IActionResult> Editar(Inquilino i, CancellationToken ct = default)
         {
             if (!ModelState.IsValid)
                 return View(i);
 
-            var existente = _repo.ObtenerPorDocumento(i.Documento);
+            var existente = await _repo.ObtenerPorDocumentoAsync(i.Documento, ct);
             if (existente != null && existente.IdInquilino != i.IdInquilino)
             {
                 ModelState.AddModelError("Documento", "El documento ya está registrado en otro inquilino.");
                 return View(i);
             }
 
-            _repo.Actualizar(i);
+            await _repo.ActualizarAsync(i, ct);
             TempData["Mensaje"] = "El inquilino ha sido actualizado correctamente.";
             return RedirectToAction("Index");
         }
 
-        // GET: /Inquilino/Eliminar/5 - Muestra confirmación de borrado
-        public IActionResult Borrar(int id)
+        // GET: /Inquilino/Eliminar/5
+        public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
         {
-            var inq = _repo.ObtenerPorId(id);
+            var inq = await _repo.ObtenerPorIdAsync(id, ct);
             if (inq == null)
                 return NotFound();
 
-            return View(inq); 
+            return View(inq);
         }
 
-        // POST: /Inquilino/Eliminar/5 - Realiza el borrado
+        // POST: /Inquilino/Eliminar/5
         [HttpPost, ActionName("Borrar")]
         [ValidateAntiForgeryToken]
-        public IActionResult BorrarConfirmado(int id)
+        public async Task<IActionResult> BorrarConfirmado(int id, CancellationToken ct = default)
         {
-            var inq = _repo.ObtenerPorId(id);
+            var inq = await _repo.ObtenerPorIdAsync(id, ct);
             if (inq == null)
                 return NotFound();
 
             try
             {
-                _repo.Borrar(id);
+                await _repo.BorrarAsync(id, ct);
                 TempData["Mensaje"] = "Inquilino eliminado correctamente.";
             }
             catch (Exception ex)

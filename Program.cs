@@ -7,12 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
+builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
 builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
 builder.Services.AddScoped<IInmuebleRepo, InmuebleRepo>();
 builder.Services.AddScoped<IInmuebleTipoRepo, InmuebleTipoRepo>();
 builder.Services.AddScoped<IInmuebleUsoRepo, InmuebleUsoRepo>();
-builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
+builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
+builder.Services.AddScoped<IRolRepo, RolRepo>();
 builder.Services.AddScoped<Database>();
 
 var app = builder.Build();

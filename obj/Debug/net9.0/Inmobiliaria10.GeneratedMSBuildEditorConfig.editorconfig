@@ -17,201 +17,229 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Inmobiliaria10
 build_property.RootNamespace = Inmobiliaria10
-build_property.ProjectDir = C:\Users\ROMA\Documents\Desarrollo de Software\Segundo año\PROGRAMACION 2 .NET\Inmobiliaria10\
+build_property.ProjectDir = C:\Users\Facu\Documents\GitHub\Inmobiliaria10\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\ROMA\Documents\Desarrollo de Software\Segundo año\PROGRAMACION 2 .NET\Inmobiliaria10
+build_property.MSBuildProjectDirectory = C:\Users\Facu\Documents\GitHub\Inmobiliaria10
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Auditoria.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Auditoria.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cQXVkaXRvcmlhLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cQ3JlYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Detalles.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Crear2.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cQ3JlYXIyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Detalles.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cRGV0YWxsZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Eliminar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Editar2.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cRWRpdGFyMi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Eliminar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cRWxpbWluYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/_Form.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Contrato/_Form.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cX0Zvcm0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Home/EnConstruccion.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Home/EnConstruccion.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxFbkNvbnN0cnVjY2lvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Home/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Home/Privacy.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleTipo/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleTipo/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVUaXBvXENyZWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleTipo/Detalle.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleTipo/Detalle.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVUaXBvXERldGFsbGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleTipo/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleTipo/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVUaXBvXEVkaXRhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleTipo/Eliminar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleTipo/Eliminar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVUaXBvXEVsaW1pbmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleTipo/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleTipo/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVUaXBvXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleUso/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleUso/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVVc29cQ3JlYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleUso/Detalle.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleUso/Detalle.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVVc29cRGV0YWxsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleUso/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleUso/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVVc29cRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleUso/Eliminar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleUso/Eliminar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVVc29cRWxpbWluYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/InmuebleUso/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/InmuebleUso/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVVc29cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inmueble/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inmueble/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVcQ3JlYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inmueble/Detalle.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inmueble/Detalle.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVcRGV0YWxsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inmueble/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inmueble/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVcRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inmueble/Eliminar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inmueble/Eliminar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVcRWxpbWluYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inmueble/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inmueble/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5tdWVibGVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inquilino/Borrar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inquilino/Borrar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5xdWlsaW5vXEJvcnJhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inquilino/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inquilino/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5xdWlsaW5vXENyZWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inquilino/Detalle.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inquilino/Detalle.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5xdWlsaW5vXERldGFsbGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inquilino/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inquilino/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5xdWlsaW5vXEVkaXRhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Inquilino/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Inquilino/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5xdWlsaW5vXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Auditoria.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Auditoria.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xBdWRpdG9yaWEuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xDcmVhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Detalles.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Detalles.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xEZXRhbGxlcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xFZGl0YXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Eliminar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Eliminar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xFbGltaW5hci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pago/_Form.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Pago/_Form.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb1xfRm9ybS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Borrar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Propietario/Borrar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cQm9ycmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Crear.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Propietario/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cQ3JlYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Detalles.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Propietario/Detalles.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cRGV0YWxsZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Editar.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Propietario/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Index.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Propietario/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/Error.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Rol/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sXENyZWFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Rol/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sXERldGFsbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Rol/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sXEVkaXRhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Rol/Eliminar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sXEVsaW1pbmFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Rol/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/_ViewImports.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/_ViewStart.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/_Layout.cshtml]
+[C:/Users/Facu/Documents/GitHub/Inmobiliaria10/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-tgg9d7nvwd

@@ -4,12 +4,21 @@ using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Data.Repositories
 {
-    public class InquilinoRepo : RepositorioBase, IInquilinoRepo
+    public class InquilinoRepo : IInquilinoRepo
     {
-        // el constructor recibe IConfiguration y lo pasa a la base
-        public InquilinoRepo(IConfiguration cfg) : base(cfg) { }
+        private readonly Database _db;
 
-        public int Agregar(Inquilino i)
+        public InquilinoRepo(Database db)
+        {
+            _db = db;
+        }
+
+        private MySqlConnection Conn()
+        {
+            return _db.GetConnection();
+        }
+
+        public async Task<int> AgregarAsync(Inquilino i, CancellationToken ct = default)
         {
             using var conn = Conn();
             var sql = @"INSERT INTO inquilinos (documento, apellido_nombres, domicilio, telefono, email)
@@ -23,12 +32,11 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@tel", i.Telefono);
             cmd.Parameters.AddWithValue("@mail", i.Email);
 
-            conn.Open();
-            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            return idGenerado;
+            await conn.OpenAsync(ct);
+            return Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
         }
 
-        public int Actualizar(Inquilino i)
+        public async Task<int> ActualizarAsync(Inquilino i, CancellationToken ct = default)
         {
             using var conn = Conn();
             var sql = @"UPDATE inquilinos SET
@@ -47,21 +55,20 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@mail", i.Email);
             cmd.Parameters.AddWithValue("@id", i.IdInquilino);
 
-            conn.Open();
-            int filas = cmd.ExecuteNonQuery();
-            return filas;
+            await conn.OpenAsync(ct);
+            return await cmd.ExecuteNonQueryAsync(ct);
         }
 
-        public List<Inquilino> ListarTodos()
+        public async Task<List<Inquilino>> ListarTodosAsync(CancellationToken ct = default)
         {
             var lista = new List<Inquilino>();
             using var conn = Conn();
             var sql = "SELECT * FROM inquilinos";
             using var cmd = new MySqlCommand(sql, conn);
 
-            conn.Open();
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            await conn.OpenAsync(ct);
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
             {
                 lista.Add(new Inquilino
                 {
@@ -76,14 +83,15 @@ namespace Inmobiliaria10.Data.Repositories
             return lista;
         }
 
-        public (List<Inquilino> registros, int totalRegistros) ListarTodosPaginado(int pagina, int cantidadPorPagina, string? searchString = null)
+        public async Task<(List<Inquilino> registros, int totalRegistros)> ListarTodosPaginadoAsync(
+            int pagina, int cantidadPorPagina, string? searchString = null, CancellationToken ct = default)
         {
             var lista = new List<Inquilino>();
-            int totalRegistros = 0;
             int offset = (pagina - 1) * cantidadPorPagina;
+            int totalRegistros = 0;
 
             using var conn = Conn();
-            conn.Open();
+            await conn.OpenAsync(ct);
 
             string where = "";
             if (!string.IsNullOrEmpty(searchString))
@@ -98,17 +106,16 @@ namespace Inmobiliaria10.Data.Repositories
                         ORDER BY apellido_nombres 
                         LIMIT @cantidad OFFSET @offset";
 
-
             using (var cmd = new MySqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@cantidad", cantidadPorPagina);
                 cmd.Parameters.AddWithValue("@offset", offset);
-                
-                if (!string.IsNullOrEmpty(searchString))
-                        cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                if (!string.IsNullOrEmpty(searchString))
+                    cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
+
+                using var reader = await cmd.ExecuteReaderAsync(ct);
+                while (await reader.ReadAsync(ct))
                 {
                     lista.Add(new Inquilino
                     {
@@ -120,20 +127,19 @@ namespace Inmobiliaria10.Data.Repositories
                         Email = reader.IsDBNull("email") ? null : reader.GetString("email")
                     });
                 }
-                reader.Close();
+                await reader.CloseAsync();
             }
 
-            // contar total
             var sqlTotal = "SELECT COUNT(*) FROM inquilinos";
             using (var cmdTotal = new MySqlCommand(sqlTotal, conn))
             {
-                totalRegistros = Convert.ToInt32(cmdTotal.ExecuteScalar());
+                totalRegistros = Convert.ToInt32(await cmdTotal.ExecuteScalarAsync(ct));
             }
 
             return (lista, totalRegistros);
         }
 
-        public Inquilino? ObtenerPorId(int id)
+        public async Task<Inquilino?> ObtenerPorIdAsync(int id, CancellationToken ct = default)
         {
             Inquilino? i = null;
             using var conn = Conn();
@@ -142,9 +148,9 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
-            conn.Open();
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            await conn.OpenAsync(ct);
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            if (await reader.ReadAsync(ct))
             {
                 i = new Inquilino
                 {
@@ -159,7 +165,7 @@ namespace Inmobiliaria10.Data.Repositories
             return i;
         }
 
-        public Inquilino? ObtenerPorDocumento(string documento)
+        public async Task<Inquilino?> ObtenerPorDocumentoAsync(string documento, CancellationToken ct = default)
         {
             Inquilino? i = null;
             using var conn = Conn();
@@ -170,9 +176,9 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@doc", documento);
 
-            conn.Open();
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            await conn.OpenAsync(ct);
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            if (await reader.ReadAsync(ct))
             {
                 i = new Inquilino
                 {
@@ -187,7 +193,7 @@ namespace Inmobiliaria10.Data.Repositories
             return i;
         }
 
-        public int Borrar(int id)
+        public async Task<int> BorrarAsync(int id, CancellationToken ct = default)
         {
             using var conn = Conn();
             var sql = "DELETE FROM inquilinos WHERE id_inquilino = @id";
@@ -195,9 +201,8 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
-            conn.Open();
-            int filas = cmd.ExecuteNonQuery();
-            return filas;
+            await conn.OpenAsync(ct);
+            return await cmd.ExecuteNonQueryAsync(ct);
         }
     }
 }

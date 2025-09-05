@@ -4,9 +4,19 @@ using Inmobiliaria10.Models;
 
 namespace Inmobiliaria10.Data.Repositories
 {
-    public class InmuebleUsoRepo : RepositorioBase, IInmuebleUsoRepo
+    public class InmuebleUsoRepo : IInmuebleUsoRepo
     {
-        public InmuebleUsoRepo(IConfiguration cfg) : base(cfg) { }
+        private readonly Database _db;
+
+        public InmuebleUsoRepo(Database db)
+        {
+            _db = db;
+        }
+
+        private MySqlConnection Conn()
+        {
+            return _db.GetConnection();
+        }
 
         public bool ExisteDenominacion(string denominacion, int? idExcluir = null)
         {
@@ -40,8 +50,7 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@denom", u.DenominacionUso);
 
             conn.Open();
-            int idGenerado = Convert.ToInt32(cmd.ExecuteScalar());
-            return idGenerado;
+            return Convert.ToInt32(cmd.ExecuteScalar());
         }
 
         public void Editar(InmuebleUso u)
