@@ -12,13 +12,51 @@ namespace Inmobiliaria10.Controllers
         private readonly IPagoRepo _repo;
         public PagosController(IPagoRepo repo) { _repo = repo; }
 
+        // Index: solo prepara filtros; la grilla se llena por AJAX (DataTables)
         [HttpGet("")]
-        public async Task<IActionResult> Index(int? contrato, int? concepto, bool? soloActivos, int page = 1, int pageSize = 20, CancellationToken ct = default)
+        public async Task<IActionResult> Index(
+            int? contrato, int? inquilino, int? concepto, bool? soloActivos,
+            CancellationToken ct = default)
         {
             await CargarSelectsAsync(concepto, ct);
-            var (items, total) = await _repo.ListAsync(contrato, concepto, soloActivos, page, pageSize, ct);
-            ViewBag.Total = total; ViewBag.Page = page; ViewBag.PageSize = pageSize; ViewBag.SoloActivos = soloActivos; ViewBag.Contrato = contrato;
-            return View(items);
+            ViewBag.Contrato = contrato;
+            ViewBag.Inquilino = inquilino;
+            ViewBag.SoloActivos = soloActivos;
+            return View(Enumerable.Empty<Pago>());
+        }
+
+        // DataTables server-side
+        [HttpGet("data")]
+        public async Task<IActionResult> Data(
+            int? contrato, int? inquilino,
+            int draw, int start = 0, int length = 10,
+            CancellationToken ct = default)
+        {
+            int pageIndex = Math.Max(1, (start / Math.Max(1, length)) + 1);
+            int pageSize  = Math.Max(1, length);
+
+            var (items, total) = await _repo.ListAsync(
+                idContrato: contrato,
+                idConcepto: null,
+                soloActivos: null,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                ct: ct,
+                idInquilino: inquilino
+            );
+
+            var data = items.Select(p => new
+            {
+                idPago = p.IdPago,
+                fechaPago = p.FechaPago.ToString("yyyy-MM-dd"),
+                detalle = p.Detalle,
+                idConcepto = p.IdConcepto,
+                importe = p.Importe,
+                idContrato = p.IdContrato,
+                estado = p.DeletedAt.HasValue ? "Eliminado" : "Activo"
+            });
+
+            return Json(new { draw, recordsTotal = total, recordsFiltered = total, data });
         }
 
         [HttpGet("Detalles/{id:int}")]
@@ -41,9 +79,9 @@ namespace Inmobiliaria10.Controllers
         {
             if (!ModelState.IsValid) { await CargarSelectsAsync(m.IdConcepto, ct); return View(m); }
             m.CreatedBy = GetUserIdOrDefault(); m.CreatedAt = DateTime.UtcNow;
-            await _repo.CreateAsync(m, ct);
+            var id = await _repo.CreateAsync(m, ct);
             TempData["Ok"] = "Pago registrado.";
-            return RedirectToAction(nameof(Index), new { contrato = m.IdContrato });
+            return RedirectToAction(nameof(Detalles), new { id });
         }
 
         [HttpGet("Editar/{id:int}")]
@@ -65,6 +103,11 @@ namespace Inmobiliaria10.Controllers
             TempData["Ok"] = "Pago actualizado.";
             return RedirectToAction(nameof(Detalles), new { id = m.IdPago });
         }
+
+        [HttpPost("Editar")]
+        [ValidateAntiForgeryToken]
+        public Task<IActionResult> EditarSinId(Pago m, CancellationToken ct = default)
+            => Editar(m.IdPago, m, ct);
 
         [HttpGet("Eliminar/{id:int}")]
         public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
@@ -91,12 +134,44 @@ namespace Inmobiliaria10.Controllers
             return View(eventos);
         }
 
+        // --- Endpoints Select2 ---
+        [HttpGet("search-inquilinos")]
+        public async Task<IActionResult> SearchInquilinos(string? term, int take = 20, int? id = null, CancellationToken ct = default)
+        {
+            if (id is > 0)
+            {
+                var it = await _repo.GetInquilinoItemAsync(id.Value, ct);
+                return Json(new { item = it.HasValue ? new { id = it.Value.Id, text = it.Value.Text } : null });
+            }
+            var items = await _repo.SearchInquilinosAsync(term, take, ct);
+            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
+        }
+
+        [HttpGet("search-contratos")]
+        public async Task<IActionResult> SearchContratos(string? term, int take = 20, int? id = null, CancellationToken ct = default)
+        {
+            if (id is > 0)
+            {
+                var it = await _repo.GetContratoItemAsync(id.Value, ct);
+                return Json(new { item = it.HasValue ? new { id = it.Value.Id, text = it.Value.Text } : null });
+            }
+            var items = await _repo.SearchContratosAsync(term, take, ct);
+            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
+        }
+
+        [HttpGet("search-contratos-by-inquilino")]
+        public async Task<IActionResult> SearchContratosByInquilino(int idInquilino, string? term, int take = 20, CancellationToken ct = default)
+        {
+            var items = await _repo.SearchContratosPorInquilinoAsync(idInquilino, term, take, soloVigentesActivos: true, ct);
+            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
+        }
+
+        // --- Helpers ---
         private async Task CargarSelectsAsync(int? idConcepto, CancellationToken ct)
         {
             var conceptos = await _repo.GetConceptosAsync(ct);
-            ViewBag.Conceptos = new SelectList(
-                conceptos.Select(x => new { IdConcepto = x.Id, Nombre = x.Nombre }),
-                "IdConcepto", "Nombre", idConcepto);
+            ViewBag.Conceptos = new SelectList(conceptos.Select(x => new { IdConcepto = x.Id, Nombre = x.Nombre }),
+                                               "IdConcepto", "Nombre", idConcepto);
         }
 
         private int GetUserIdOrDefault()

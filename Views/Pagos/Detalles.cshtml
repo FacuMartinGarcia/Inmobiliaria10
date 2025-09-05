@@ -1,22 +1,91 @@
 @model Inmobiliaria10.Models.Pago
 @{
     ViewData["Title"] = "Detalle de pago";
+    var eliminado = Model.DeletedAt.HasValue;
 }
-<div class="d-flex justify-content-center py-4">
-    <div class="form-card w-100" style="max-width: 720px;">
-        <h1 class="form-title">Pago #@Model.IdPago</h1>
-        <dl class="row">
-            <dt class="col-sm-4">Contrato</dt><dd class="col-sm-8">@Model.IdContrato</dd>
-            <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">@Model.FechaPago:yyyy-MM-dd</dd>
-            <dt class="col-sm-4">Concepto</dt><dd class="col-sm-8">@Model.IdConcepto</dd>
-            <dt class="col-sm-4">Importe</dt><dd class="col-sm-8">@Model.Importe:0.00</dd>
-            <dt class="col-sm-4">Detalle</dt><dd class="col-sm-8">@Model.Detalle</dd>
-            <dt class="col-sm-4">Motivo anulación</dt><dd class="col-sm-8">@Model.MotivoAnulacion</dd>
-        </dl>
-        <div class="d-flex justify-content-center gap-2">
-            <a class="btn btn-outline-primary" asp-action="Editar" asp-route-id="@Model.IdPago">Editar</a>
-            <a class="btn btn-outline-dark" asp-action="Auditoria" asp-route-id="@Model.IdPago">Auditoría</a>
-            <a class="btn-back" asp-action="Index">Volver</a>
-        </div>
-    </div>
+
+<h2 class="mb-3">Detalle de pago</h2>
+
+<div class="card">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Id</dt>
+      <dd class="col-sm-9">#@Model.IdPago</dd>
+
+      <dt class="col-sm-3">Fecha</dt>
+      <dd class="col-sm-9">@Model.FechaPago:yyyy-MM-dd</dd>
+
+      <dt class="col-sm-3">Detalle</dt>
+      <dd class="col-sm-9">@Model.Detalle</dd>
+
+      <dt class="col-sm-3">Concepto</dt>
+      <dd class="col-sm-9">@Model.IdConcepto</dd>
+
+      <dt class="col-sm-3">Importe</dt>
+      <dd class="col-sm-9">@Model.Importe.ToString("C")</dd>
+
+      <dt class="col-sm-3">Contrato</dt>
+      <dd class="col-sm-9">@Model.IdContrato</dd>
+
+      <dt class="col-sm-3">Estado</dt>
+      <dd class="col-sm-9">
+        @if (eliminado)
+        { <span class="badge bg-warning text-dark">Eliminado</span> }
+        else
+        { <span class="badge bg-success">Activo</span> }
+      </dd>
+
+      @if (!string.IsNullOrWhiteSpace(Model.MotivoAnulacion))
+      {
+        <dt class="col-sm-3">Motivo anulación</dt>
+        <dd class="col-sm-9">@Model.MotivoAnulacion</dd>
+      }
+
+        <dt class="col-sm-3">Creado</dt>
+        <dd class="col-sm-9">
+        @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-") (UTC)
+        @if (Model.CreatedBy.HasValue) { <span>— UserId: @Model.CreatedBy</span> }
+        </dd>
+
+        @if (Model.DeletedAt.HasValue)
+        {
+        <dt class="col-sm-3">Eliminado</dt>
+        <dd class="col-sm-9">
+            @(Model.DeletedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-") (UTC)
+            @if (Model.DeletedBy.HasValue) { <span>— UserId: @Model.DeletedBy</span> }
+        </dd>
+        }
+
+    </dl>
+  </div>
 </div>
+
+<div class="d-flex gap-2 mt-3">
+  <a class="btn btn-secondary" asp-action="Index">
+    <i class="bi bi-arrow-left"></i> Volver
+  </a>
+  <a class="btn btn-primary" asp-action="Editar" asp-route-id="@Model.IdPago">
+    <i class="bi bi-pencil"></i> Editar
+  </a>
+  <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@Model.IdPago">
+    <i class="bi bi-trash"></i> Baja
+  </a>
+  <a class="btn btn-dark" asp-action="Auditoria" asp-route-id="@Model.IdPago">
+    <i class="bi bi-clock-history"></i> Auditoría
+  </a>
+</div>
+
+@section Scripts{
+  <!-- Quitar si SweetAlert2 ya está en el _Layout -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    (function(){
+      // Toast de éxito si viene desde Editar/Crear
+      const ok = '@TempData["Ok"]';
+      if (ok) {
+        Swal.fire({ toast:true, position:'top-end', icon:'success', title: ok,
+                    showConfirmButton:false, timer:2200, timerProgressBar:true });
+      }
+    })();
+  </script>
+}

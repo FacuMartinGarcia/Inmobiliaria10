@@ -9,8 +9,8 @@ namespace Inmobiliaria10.Models
         public int IdConcepto { get; set; }          // FK conceptos
         public decimal Importe { get; set; }         // DECIMAL(15,2) NOT NULL
         public string? MotivoAnulacion { get; set; } // varchar(255) NULL
-        public int CreatedBy { get; set; }           // FK usuarios
-        public DateTime CreatedAt { get; set; }      // DEFAULT NOW
+        public int? CreatedBy { get; set; }           // FK usuarios
+        public DateTime? CreatedAt { get; set; }      // DEFAULT NOW
         public DateTime? DeletedAt { get; set; }     // NULL
         public int? DeletedBy { get; set; }          // NULL FK usuarios
     }

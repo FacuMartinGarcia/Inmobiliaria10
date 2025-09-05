@@ -1,7 +1,6 @@
-using System.Text.Json;
+using System.Data;
 using Inmobiliaria10.Models;
 using MySql.Data.MySqlClient;
-using System.Data; 
 
 namespace Inmobiliaria10.Data.Repositories
 {
@@ -10,24 +9,52 @@ namespace Inmobiliaria10.Data.Repositories
         private readonly Database _db;
         public PagoRepo(Database db) => _db = db;
 
-        // ------------------ Mapping helper ------------------
-        private static Pago Map(IDataRecord r) => new Pago
+        // Ajustá esta condición si tu tabla "contratos" usa otros nombres.
+        // La idea de "vigente/activo": no eliminado, activo=1 (si existe), y fecha actual dentro del rango.
+        private const string ONLY_ACTIVE_WHERE = @"
+            c.deleted_at IS NULL
+            AND IFNULL(c.activo, 1) = 1
+            AND (c.fecha_inicio IS NULL OR c.fecha_inicio <= CURDATE())
+            AND (c.fecha_fin IS NULL OR c.fecha_fin >= CURDATE())
+        ";
+
+        // -----------------------------
+        // Mappers
+        // -----------------------------
+        // Helpers para leer DBNull de forma segura
+        private static int?     IntN (IDataRecord r, string n) => r[n] is DBNull ? (int?)null : Convert.ToInt32(r[n]);
+        private static DateTime? DateN(IDataRecord r, string n) => r[n] is DBNull ? (DateTime?)null : Convert.ToDateTime(r[n]);
+        private static string?  StrN (IDataRecord r, string n) => r[n] is DBNull ? null : Convert.ToString(r[n]);
+
+        private static Pago MapPago(IDataRecord r) => new()
         {
-            IdPago          = r["IdPago"]          is DBNull ? 0  : Convert.ToInt32(r["IdPago"]),
-            IdContrato      = r["IdContrato"]      is DBNull ? 0  : Convert.ToInt32(r["IdContrato"]),
-            FechaPago       = r["FechaPago"]       is DBNull ? DateTime.MinValue : Convert.ToDateTime(r["FechaPago"]),
-            Detalle         = r["Detalle"]         is DBNull ? null : Convert.ToString(r["Detalle"]),
-            IdConcepto      = r["IdConcepto"]      is DBNull ? 0  : Convert.ToInt32(r["IdConcepto"]),
-            Importe         = r["Importe"]         is DBNull ? 0m : Convert.ToDecimal(r["Importe"]),
-            MotivoAnulacion = r["MotivoAnulacion"] is DBNull ? null : Convert.ToString(r["MotivoAnulacion"]),
-            CreatedBy       = r["CreatedBy"]       is DBNull ? 0  : Convert.ToInt32(r["CreatedBy"]),
-            CreatedAt       = r["CreatedAt"]       is DBNull ? DateTime.MinValue : Convert.ToDateTime(r["CreatedAt"]),
-            DeletedAt       = r["DeletedAt"]       is DBNull ? (DateTime?)null : Convert.ToDateTime(r["DeletedAt"]),
-            DeletedBy       = r["DeletedBy"]       is DBNull ? (int?)null : Convert.ToInt32(r["DeletedBy"]),
+            IdPago          = Convert.ToInt32(r["IdPago"]),
+            IdContrato      = Convert.ToInt32(r["IdContrato"]),
+            FechaPago       = Convert.ToDateTime(r["FechaPago"]),
+            Detalle         = StrN(r, "Detalle") ?? string.Empty,
+            IdConcepto      = Convert.ToInt32(r["IdConcepto"]),
+            Importe         = Convert.ToDecimal(r["Importe"]),
+            MotivoAnulacion = StrN(r, "MotivoAnulacion"),
+            CreatedBy       = IntN(r, "CreatedBy"),
+            CreatedAt       = Convert.ToDateTime(r["CreatedAt"]),
+            DeletedAt       = DateN(r, "DeletedAt"),
+            DeletedBy       = IntN(r, "DeletedBy")
         };
 
-        // ------------------ CRUD ------------------
+        private static PagoAudit MapAudit(IDataRecord r) => new PagoAudit
+        {
+            IdAudit   = Convert.ToInt32(r["IdAudit"]),
+            IdPago    = Convert.ToInt32(r["IdPago"]),
+            Accion    = r["Accion"].ToString()!,
+            AccionAt  = Convert.ToDateTime(r["AccionAt"]),
+            AccionBy  = r["AccionBy"] is DBNull ? null : (int?)Convert.ToInt32(r["AccionBy"]),
+            OldData   = r["OldData"] as string,
+            NewData   = r["NewData"] as string
+        };
 
+        // -----------------------------
+        // CRUD
+        // -----------------------------
         public async Task<Pago?> GetByIdAsync(int id, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -46,13 +73,15 @@ namespace Inmobiliaria10.Data.Repositories
                         p.deleted_at      AS DeletedAt,
                         p.deleted_by      AS DeletedBy
                 FROM pagos p
-                WHERE p.id_pago = @id;";
+                WHERE p.id_pago = @id
+                LIMIT 1;";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
             using var r = await cmd.ExecuteReaderAsync(ct);
-            return await r.ReadAsync(ct) ? Map(r) : null;
+            if (await r.ReadAsync(ct)) return MapPago(r);
+            return null;
         }
 
         public async Task<(IReadOnlyList<Pago> Items, int Total)> ListAsync(
@@ -61,29 +90,31 @@ namespace Inmobiliaria10.Data.Repositories
             bool? soloActivos = null,
             int pageIndex = 1,
             int pageSize = 20,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            int? idInquilino = null)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            var where = " WHERE 1=1 ";
             var pars = new List<MySqlParameter>();
+            var where = " WHERE 1=1 ";
+            var from  = " FROM pagos p ";
 
-            if (idContrato is > 0)
+            if (idInquilino is > 0)
             {
-                where += " AND p.id_contrato = @idContrato ";
-                pars.Add(new MySqlParameter("@idContrato", idContrato));
+                from += " JOIN contratos c ON c.id_contrato = p.id_contrato ";
+                where += " AND c.id_inquilino = @idInquilino ";
+                pars.Add(new MySqlParameter("@idInquilino", idInquilino));
             }
-            if (idConcepto is > 0)
-            {
-                where += " AND p.id_concepto = @idConcepto ";
-                pars.Add(new MySqlParameter("@idConcepto", idConcepto));
-            }
+
+            if (idContrato is > 0) { where += " AND p.id_contrato = @idContrato "; pars.Add(new MySqlParameter("@idContrato", idContrato)); }
+            if (idConcepto is > 0) { where += " AND p.id_concepto = @idConcepto "; pars.Add(new MySqlParameter("@idConcepto", idConcepto)); }
+
             if (soloActivos == true) where += " AND p.deleted_at IS NULL ";
             else if (soloActivos == false) where += " AND p.deleted_at IS NOT NULL ";
 
             // Total
-            var sqlCount = $"SELECT COUNT(*) FROM pagos p {where};";
+            var sqlCount = $"SELECT COUNT(*) {from} {where};";
             using var cmdCount = new MySqlCommand(sqlCount, conn);
             cmdCount.Parameters.AddRange(pars.ToArray());
             var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
@@ -101,7 +132,7 @@ namespace Inmobiliaria10.Data.Repositories
                         p.created_at      AS CreatedAt,
                         p.deleted_at      AS DeletedAt,
                         p.deleted_by      AS DeletedBy
-                FROM pagos p
+                {from}
                 {where}
                 ORDER BY p.fecha_pago DESC, p.id_pago DESC";
 
@@ -116,11 +147,11 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmdItems = new MySqlCommand(sqlItems, conn);
             cmdItems.Parameters.AddRange(pars.ToArray());
 
-            var items = new List<Pago>();
+            var list = new List<Pago>();
             using var r = await cmdItems.ExecuteReaderAsync(ct);
-            while (await r.ReadAsync(ct)) items.Add(Map(r));
+            while (await r.ReadAsync(ct)) list.Add(MapPago(r));
 
-            return (items, total);
+            return (list, total);
         }
 
         public async Task<int> CreateAsync(Pago e, CancellationToken ct = default)
@@ -130,26 +161,21 @@ namespace Inmobiliaria10.Data.Repositories
 
             const string sql = @"
                 INSERT INTO pagos
-                    (id_contrato, fecha_pago, detalle, id_concepto, importe,
-                     motivo_anulacion, created_by, created_at, deleted_at, deleted_by)
+                    (id_contrato, fecha_pago, detalle, id_concepto, importe, motivo_anulacion, created_by, created_at)
                 VALUES
-                    (@IdContrato, @FechaPago, @Detalle, @IdConcepto, @Importe,
-                     @Motivo, @CreatedBy, @CreatedAt, NULL, NULL);
+                    (@id_contrato, @fecha_pago, @detalle, @id_concepto, @importe, @motivo, @created_by, UTC_TIMESTAMP());
                 SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@IdContrato", e.IdContrato);
-            cmd.Parameters.Add("@FechaPago", MySqlDbType.Date).Value = e.FechaPago.Date; // columna DATE
-            cmd.Parameters.AddWithValue("@Detalle", (object?)e.Detalle ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdConcepto", e.IdConcepto);
-            cmd.Parameters.Add("@Importe", MySqlDbType.Decimal).Value = e.Importe;
-            cmd.Parameters.AddWithValue("@Motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@CreatedBy", e.CreatedBy);
-            cmd.Parameters.Add("@CreatedAt", MySqlDbType.DateTime).Value = e.CreatedAt == default ? DateTime.UtcNow : e.CreatedAt;
+            cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
+            cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
+            cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? string.Empty);
+            cmd.Parameters.AddWithValue("@id_concepto", e.IdConcepto);
+            cmd.Parameters.AddWithValue("@importe", e.Importe);
+            cmd.Parameters.AddWithValue("@motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@created_by", (object?)e.CreatedBy ?? DBNull.Value);
 
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
-
-            await InsertAuditAsync(conn, null, id, "CREATE", e.CreatedBy, null, JsonSerializer.Serialize(e), ct);
             return id;
         }
 
@@ -158,34 +184,26 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            // snapshot previo
-            var old = await GetByIdAsync(e.IdPago, ct);
-            var oldJson = old is null ? null : JsonSerializer.Serialize(old);
-
             const string sql = @"
                 UPDATE pagos
-                SET id_contrato=@IdContrato,
-                    fecha_pago=@FechaPago,
-                    detalle=@Detalle,
-                    id_concepto=@IdConcepto,
-                    importe=@Importe,
-                    motivo_anulacion=@Motivo
-                WHERE id_pago=@IdPago;";
+                   SET id_contrato     = @id_contrato,
+                       fecha_pago      = @fecha_pago,
+                       detalle         = @detalle,
+                       id_concepto     = @id_concepto,
+                       importe         = @importe,
+                       motivo_anulacion= @motivo
+                 WHERE id_pago = @id;";
 
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@IdPago", e.IdPago);
-            cmd.Parameters.AddWithValue("@IdContrato", e.IdContrato);
-            cmd.Parameters.Add("@FechaPago", MySqlDbType.Date).Value = e.FechaPago.Date;
-            cmd.Parameters.AddWithValue("@Detalle", (object?)e.Detalle ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@IdConcepto", e.IdConcepto);
-            cmd.Parameters.Add("@Importe", MySqlDbType.Decimal).Value = e.Importe;
-            cmd.Parameters.AddWithValue("@Motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@id", e.IdPago);
+            cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
+            cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
+            cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? string.Empty);
+            cmd.Parameters.AddWithValue("@id_concepto", e.IdConcepto);
+            cmd.Parameters.AddWithValue("@importe", e.Importe);
+            cmd.Parameters.AddWithValue("@motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync(ct);
-
-            // No tenés "modified_by" en la tabla; uso CreatedBy como actor.
-            var actor = e.CreatedBy > 0 ? e.CreatedBy : 1;
-            await InsertAuditAsync(conn, null, e.IdPago, "UPDATE", actor, oldJson, JsonSerializer.Serialize(e), ct);
         }
 
         public async Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default)
@@ -193,116 +211,214 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            var old = await GetByIdAsync(id, ct);
-            var oldJson = old is null ? null : JsonSerializer.Serialize(old);
-
             const string sql = @"
                 UPDATE pagos
-                SET deleted_at = UTC_TIMESTAMP(),
-                    deleted_by = @By
-                WHERE id_pago=@Id AND deleted_at IS NULL;";
+                   SET deleted_at = UTC_TIMESTAMP(),
+                       deleted_by = @by
+                 WHERE id_pago = @id AND deleted_at IS NULL;";
 
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@By", deletedBy);
-            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@by", deletedBy);
+
             var rows = await cmd.ExecuteNonQueryAsync(ct);
-
-            if (rows > 0)
-                await InsertAuditAsync(conn, null, id, "DELETE", deletedBy, oldJson, null, ct);
-
             return rows > 0;
         }
 
-        // ------------------ Soporte selects ------------------
-
+        // -----------------------------
+        // Conceptos
+        // -----------------------------
         public async Task<IReadOnlyList<(int Id, string Nombre)>> GetConceptosAsync(CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"
-                SELECT id_concepto AS Id, denominacion_concepto AS Nombre
-                FROM conceptos
-                ORDER BY denominacion_concepto;";
+                SELECT c.id_concepto AS Id, c.denominacion_concepto AS Nombre
+                FROM conceptos c
+                ORDER BY c.denominacion_concepto;";
 
             using var cmd = new MySqlCommand(sql, conn);
+
             var list = new List<(int, string)>();
             using var r = await cmd.ExecuteReaderAsync(ct);
             while (await r.ReadAsync(ct))
-            {
-                var id  = r["Id"]     is DBNull ? 0 : Convert.ToInt32(r["Id"]);
-                var nom = r["Nombre"] is DBNull ? "" : Convert.ToString(r["Nombre"])!;
-                list.Add((id, nom));
-            }
+                list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Nombre"])!));
             return list;
         }
 
-        // ------------------ Auditoría ------------------
-
+        // -----------------------------
+        // Auditoría (si tenés tabla pagos_audit)
+        // -----------------------------
         public async Task<IReadOnlyList<PagoAudit>> GetAuditoriaAsync(int idPago, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"
-                SELECT id_audit AS IdAudit,
-                       id_pago  AS IdPago,
-                       accion   AS Accion,
-                       accion_at AS AccionAt,
-                       accion_by AS AccionBy,
-                       old_data  AS OldData,
-                       new_data  AS NewData
-                FROM pagos_audit
-                WHERE id_pago=@id
-                ORDER BY accion_at DESC, id_audit DESC;";
+                SELECT  a.id_audit AS IdAudit,
+                        a.id_pago  AS IdPago,
+                        a.accion   AS Accion,
+                        a.accion_at AS AccionAt,
+                        a.accion_by AS AccionBy,
+                        a.old_data AS OldData,
+                        a.new_data AS NewData
+                FROM pagos_audit a
+                WHERE a.id_pago = @id
+                ORDER BY a.id_audit DESC;";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", idPago);
 
             var list = new List<PagoAudit>();
             using var r = await cmd.ExecuteReaderAsync(ct);
-            while (await r.ReadAsync(ct))
-            {
-                list.Add(new PagoAudit
-                {
-                    IdAudit  = r["IdAudit"]  is DBNull ? 0L : Convert.ToInt64(r["IdAudit"]),
-                    IdPago   = r["IdPago"]   is DBNull ? 0  : Convert.ToInt32(r["IdPago"]),
-                    Accion   = r["Accion"]   is DBNull ? "" : Convert.ToString(r["Accion"])!,
-                    AccionAt = r["AccionAt"] is DBNull ? DateTime.MinValue : Convert.ToDateTime(r["AccionAt"]),
-                    AccionBy = r["AccionBy"] is DBNull ? 0  : Convert.ToInt32(r["AccionBy"]),
-                    OldData  = r["OldData"]  is DBNull ? null : Convert.ToString(r["OldData"]),
-                    NewData  = r["NewData"]  is DBNull ? null : Convert.ToString(r["NewData"]),
-                });
-            }
-
-
+            while (await r.ReadAsync(ct)) list.Add(MapAudit(r));
             return list;
         }
 
-        private static async Task InsertAuditAsync(
-            MySqlConnection conn,
-            MySqlTransaction? tx,
-            int idPago,
-            string accion,
-            int by,
-            string? oldJson,
-            string? newJson,
-            CancellationToken ct)
+        // -----------------------------
+        // Select2 — Inquilinos
+        // -----------------------------
+        public async Task<IReadOnlyList<(int Id, string Text)>> SearchInquilinosAsync(string? term, int take, CancellationToken ct = default)
         {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
             const string sql = @"
-                INSERT INTO pagos_audit
-                    (id_pago, accion, accion_at, accion_by, old_data, new_data)
-                VALUES
-                    (@Id, @Accion, UTC_TIMESTAMP(), @By, @Old, @New);";
+              SELECT  i.id_inquilino AS Id,
+                      CONCAT(i.apellido_nombres, ' (', i.documento, ')') AS Text
+              FROM inquilinos i
+              WHERE (@q IS NULL OR @q = '' OR i.apellido_nombres LIKE @q OR i.documento LIKE @q)
+              ORDER BY i.apellido_nombres
+              LIMIT @take;";
 
-            using var cmd = new MySqlCommand(sql, conn, tx);
-            cmd.Parameters.AddWithValue("@Id", idPago);
-            cmd.Parameters.AddWithValue("@Accion", accion);
-            cmd.Parameters.AddWithValue("@By", by);
-            cmd.Parameters.AddWithValue("@Old", (object?)oldJson ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@New", (object?)newJson ?? DBNull.Value);
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@q", $"%{(term ?? "").Trim()}%");
+            cmd.Parameters.AddWithValue("@take", take);
 
-            await cmd.ExecuteNonQueryAsync(ct);
+            var list = new List<(int, string)>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+                list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!));
+            return list;
         }
+
+        public async Task<(int Id, string Text)?> GetInquilinoItemAsync(int id, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+              SELECT  i.id_inquilino AS Id,
+                      CONCAT(i.apellido_nombres, ' (', i.documento, ')') AS Text
+              FROM inquilinos i
+              WHERE i.id_inquilino = @id
+              LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            if (await r.ReadAsync(ct))
+                return (Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!);
+            return null;
+        }
+        // -----------------------------
+        // Select2 — Contratos por Inquilino (solo vigentes/activos)
+        // -----------------------------
+        // Contratos por Inquilino (para el Select2 dependiente en Crear/Editar Pago)
+        public async Task<IReadOnlyList<(int Id, string Text)>> SearchContratosPorInquilinoAsync(
+            int idInquilino, string? term, int take, bool soloVigentesActivos = true, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var where = " WHERE c.id_inquilino = @inq ";
+            if (soloVigentesActivos)
+                where += $" AND ({ONLY_ACTIVE_WHERE}) ";
+
+            if (!string.IsNullOrWhiteSpace(term))
+                where += " AND (CAST(c.id_contrato AS CHAR) LIKE @q OR im.direccion LIKE @q) ";
+
+            var sql = $@"
+            SELECT  c.id_contrato AS Id,
+                    CONCAT('C#', c.id_contrato, ' - ', IFNULL(im.direccion,'(sin dirección)'),
+                            ' · ', DATE_FORMAT(c.fecha_inicio, '%d/%m/%Y'), ' → ', DATE_FORMAT(c.fecha_fin, '%d/%m/%Y')) AS Text
+            FROM contratos c
+            LEFT JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
+            {where}
+            ORDER BY c.id_contrato DESC
+            LIMIT @take;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@inq", idInquilino);
+            cmd.Parameters.AddWithValue("@take", take);
+            if (!string.IsNullOrWhiteSpace(term))
+                cmd.Parameters.AddWithValue("@q", $"%{term!.Trim()}%");
+
+            var list = new List<(int, string)>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+                list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!));
+            return list;
+        }
+
+        // Búsqueda genérica de contratos (también con inmueble en el texto)
+        public async Task<IReadOnlyList<(int Id, string Text)>> SearchContratosAsync(string? term, int take, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+            SELECT  c.id_contrato AS Id,
+                    CONCAT('C#', c.id_contrato, ' - ', IFNULL(im.direccion,'(sin dirección)'),
+                            ' · ', IFNULL(i.apellido_nombres,'')) AS Text
+            FROM contratos c
+            LEFT JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
+            LEFT JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
+            WHERE (@q IS NULL OR @q = ''
+                    OR CAST(c.id_contrato AS CHAR) LIKE @q
+                    OR im.direccion LIKE @q
+                    OR i.apellido_nombres LIKE @q
+                    OR i.documento LIKE @q)
+            ORDER BY c.id_contrato DESC
+            LIMIT @take;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@q", $"%{(term ?? "").Trim()}%");
+            cmd.Parameters.AddWithValue("@take", take);
+
+            var list = new List<(int, string)>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+                list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!));
+            return list;
+        }
+
+        // Item de contrato por Id (con inmueble)
+        public async Task<(int Id, string Text)?> GetContratoItemAsync(int id, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+            SELECT  c.id_contrato AS Id,
+                    CONCAT('C#', c.id_contrato, ' - ', IFNULL(im.direccion,'(sin dirección)'),
+                            ' · ', IFNULL(i.apellido_nombres,'')) AS Text
+            FROM contratos c
+            LEFT JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
+            LEFT JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
+            WHERE c.id_contrato = @id
+            LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            if (await r.ReadAsync(ct))
+                return (Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!);
+            return null;
+        }
+
     }
 }

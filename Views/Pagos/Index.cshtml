@@ -1,42 +1,164 @@
 @model IEnumerable<Inmobiliaria10.Models.Pago>
 @{
     ViewData["Title"] = "Pagos";
+    int? contratoSel  = ViewBag.Contrato  as int?;
+    int? inquilinoSel = ViewBag.Inquilino as int?;
 }
 
-<h2>Pagos</h2>
+<h2 class="mb-3">Pagos</h2>
 
-<p>
-    <a class="btn btn-success" asp-action="Crear">Nuevo pago</a>
-</p>
+<form method="get" class="row g-2 mb-3" id="frmFiltros">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Contrato</label>
+    <select id="fContrato" name="contrato" class="form-select" style="width:100%"></select>
+  </div>
+  <div class="col-12 col-md-4">
+    <label class="form-label">Inquilino</label>
+    <select id="fInquilino" name="inquilino" class="form-select" style="width:100%"></select>
+  </div>
+  <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+    <button class="btn btn-dark" type="submit">
+      <i class="bi bi-funnel"></i> Filtrar
+    </button>
+    <a id="btnNuevo" class="btn btn-success ms-auto" href="/Pagos/Crear">
+      <i class="bi bi-plus-lg"></i> Nuevo pago
+    </a>
+  </div>
+</form>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Contrato</th>
-            <th>Fecha</th>
-            <th>Concepto</th>
-            <th>Importe</th>
-            <th>Detalle</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var p in Model ?? Enumerable.Empty<Inmobiliaria10.Models.Pago>())
-    {
-        <tr>
-            <td>@p.IdPago</td>
-            <td>@p.IdContrato</td>
-            <td>@p.FechaPago:yyyy-MM-dd</td>
-            <td>@p.IdConcepto</td>
-            <td>@p.Importe:0.00</td>
-            <td>@p.Detalle</td>
-            <td class="text-nowrap">
-                <a class="btn btn-sm btn-outline-secondary" asp-action="Detalles" asp-route-id="@p.IdPago">Ver</a>
-                <a class="btn btn-sm btn-outline-primary" asp-action="Editar" asp-route-id="@p.IdPago">Editar</a>
-                <a class="btn btn-sm btn-outline-danger" asp-action="Eliminar" asp-route-id="@p.IdPago">Eliminar</a>
-            </td>
-        </tr>
-    }
-    </tbody>
+<table id="tblPagos" class="table table-striped align-middle w-100">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Fecha</th>
+      <th>Detalle</th>
+      <th>Concepto</th>
+      <th class="text-end">Importe</th>
+      <th>Contrato</th>
+      <th>Estado</th>
+      <th class="text-end" style="width:260px;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
+
+@section Scripts {
+  <!-- quitá estos includes si ya están en tu _Layout -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+
+  <script>
+  $(function () {
+    // --- Select2: Contratos (texto: Contrato + Inmueble) ---
+    $('#fContrato').select2({
+      placeholder: 'Buscar contrato…',
+      allowClear: true,
+      ajax: {
+        url: '/Pagos/search-contratos',
+        dataType: 'json',
+        delay: 250,
+        data: p => ({ term: p.term || '', page: p.page || 1 }),
+        processResults: d => ({ results: (d.results || []).map(x => ({ id: x.id, text: x.text })) })
+      }
+    });
+
+    // --- Select2: Inquilinos ---
+    $('#fInquilino').select2({
+      placeholder: 'Buscar inquilino…',
+      allowClear: true,
+      ajax: {
+        url: '/Pagos/search-inquilinos',
+        dataType: 'json',
+        delay: 250,
+        data: p => ({ term: p.term || '', page: p.page || 1 }),
+        processResults: d => ({ results: (d.results || []).map(x => ({ id: x.id, text: x.text })) })
+      }
+    });
+
+    // --- Preselección desde ViewBag (si vino por query/redirect) ---
+    const preContrato  = @((contratoSel  ?? 0));
+    const preInquilino = @((inquilinoSel ?? 0));
+
+    function preload(selector, fetchUrl, id) {
+      if (!id || id <= 0) return;
+      $.getJSON(fetchUrl, { id: id }, function (res) {
+        if (res && res.item) {
+          const opt = new Option(res.item.text, res.item.id, true, true);
+          $(selector).append(opt).trigger('change');
+        }
+      });
+    }
+    preload('#fContrato',  '/Pagos/search-contratos',  preContrato);
+    preload('#fInquilino', '/Pagos/search-inquilinos', preInquilino);
+
+    // --- DataTables (server-side) ---
+    const dt = $('#tblPagos').DataTable({
+      processing: true,
+      serverSide: true,
+      searching: false,
+      lengthMenu: [10, 20, 50, 100],
+      pageLength: 20,
+      order: [[1, 'desc']], // fecha desc
+      ajax: {
+        url: '/Pagos/data',
+        data: d => {
+          d.contrato  = $('#fContrato').val()  || '';
+          d.inquilino = $('#fInquilino').val() || '';
+        }
+      },
+      columns: [
+        { data: 'idPago' },
+        { data: 'fechaPago' },
+        { data: 'detalle' },
+        { data: 'idConcepto' },
+        {
+          data: 'importe',
+          className: 'text-end',
+          render: v => {
+            try { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v); }
+            catch { return v; }
+          }
+        },
+        { data: 'idContrato' },
+        {
+          data: 'estado',
+          render: v => v === 'Eliminado'
+            ? '<span class="badge bg-warning text-dark">Eliminado</span>'
+            : '<span class="badge bg-success">Activo</span>'
+        },
+        {
+          data: null,
+          orderable: false,
+          className: 'text-end text-nowrap',
+          render: (_d, _t, row) => {
+            const id = row.idPago;
+            return `
+              <a href="/Pagos/Detalles/${id}"  class="btn btn-sm btn-secondary"><i class="bi bi-eye"></i> Ver</a>
+              <a href="/Pagos/Editar/${id}"    class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i> Editar</a>
+              <a href="/Pagos/Eliminar/${id}"  class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Baja</a>
+              <a href="/Pagos/Auditoria/${id}" class="btn btn-sm btn-dark"><i class="bi bi-clock-history"></i> Auditoría</a>`;
+          }
+        }
+      ],
+      language: { url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json' }
+    });
+
+    // --- Recarga de tabla + actualizar botón "Nuevo" ---
+    function updateNuevoHref() {
+      const c = $('#fContrato').val();
+      const url = c ? `/Pagos/Crear?contrato=${encodeURIComponent(c)}` : '/Pagos/Crear';
+      $('#btnNuevo').attr('href', url);
+    }
+    $('#frmFiltros').on('submit', function (e) { e.preventDefault(); updateNuevoHref(); dt.ajax.reload(); });
+    $('#fContrato, #fInquilino').on('change', function () { updateNuevoHref(); dt.ajax.reload(); });
+
+    // set inicial
+    updateNuevoHref();
+  });
+  </script>
+}

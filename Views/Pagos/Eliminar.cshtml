@@ -1,18 +1,46 @@
 @model Inmobiliaria10.Models.Pago
 @{
-    ViewData["Title"] = "Eliminar pago";
+    ViewData["Title"] = "Baja de pago";
 }
-<div class="d-flex justify-content-center py-4">
-    <div class="form-card w-100" style="max-width: 720px;">
-        <h1 class="form-title">¿Eliminar pago #@Model.IdPago?</h1>
-        <dl class="row">
-            <dt class="col-sm-4">Contrato</dt><dd class="col-sm-8">@Model.IdContrato</dd>
-            <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">@Model.FechaPago:yyyy-MM-dd</dd>
-            <dt class="col-sm-4">Importe</dt><dd class="col-sm-8">@Model.Importe:0.00</dd>
-        </dl>
-        <form asp-action="Borrar" asp-route-id="@Model.IdPago" method="post" class="d-flex justify-content-center gap-2">
-            <button type="submit" class="btn btn-danger">Eliminar</button>
-            <a asp-action="Index" class="btn-back">Cancelar</a>
-        </form>
-    </div>
+
+<h2 class="mb-3 text-danger">Baja de pago</h2>
+
+<div class="alert alert-warning">
+  ¿Confirmás eliminar el pago <strong>#@Model.IdPago</strong>?
+  <div class="mt-2 small">
+    <strong>Fecha:</strong> @Model.FechaPago:yyyy-MM-dd ·
+    <strong>Importe:</strong> @Model.Importe.ToString("C") ·
+    <strong>Contrato:</strong> @Model.IdContrato
+  </div>
 </div>
+
+<form asp-action="Borrar" asp-route-id="@Model.IdPago" method="post" id="frmDelete">
+  @Html.AntiForgeryToken()
+  <div class="d-flex gap-2">
+    <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdPago">
+      <i class="bi bi-arrow-left"></i> Cancelar
+    </a>
+    <button type="submit" class="btn btn-danger">
+      <i class="bi bi-trash"></i> Eliminar
+    </button>
+  </div>
+</form>
+
+@section Scripts{
+  <!-- Quitar si SweetAlert2 ya está en el _Layout -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    // Confirmación con SweetAlert antes de enviar el POST
+    document.getElementById('frmDelete')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const r = await Swal.fire({
+        title:'¿Eliminar pago?',
+        text:'Se registrará la baja lógica del pago.',
+        icon:'warning', showCancelButton:true,
+        confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar',
+        reverseButtons:true
+      });
+      if (r.isConfirmed) e.target.submit();
+    });
+  </script>
+}
