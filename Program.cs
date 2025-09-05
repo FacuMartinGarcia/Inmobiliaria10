@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<Database>();
 
 builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
 builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
@@ -14,7 +15,8 @@ builder.Services.AddScoped<IInmuebleTipoRepo, InmuebleTipoRepo>();
 builder.Services.AddScoped<IInmuebleUsoRepo, InmuebleUsoRepo>();
 builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
 builder.Services.AddScoped<IRolRepo, RolRepo>();
-builder.Services.AddScoped<Database>();
+builder.Services.AddScoped<IPagoRepo, PagoRepo>();
+builder.Services.AddScoped<IConceptoRepo, ConceptoRepo>();
 
 var app = builder.Build();
 

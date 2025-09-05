@@ -1,0 +1,35 @@
+@model Inmobiliaria10.Models.Concepto
+@{
+    ViewData["Title"] = "Eliminar concepto";
+}
+<h2 class="mb-3">Eliminar concepto</h2>
+
+<form asp-action="Borrar" asp-route-id="@Model.IdConcepto" method="post">
+    <div class="d-flex gap-2">
+        <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdConcepto"><i class="bi bi-arrow-left"></i> Cancelar</a>
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Eliminar</button>
+    </div>
+</form>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- si ya está global, quitá esta línea -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('form[asp-action="Borrar"]');
+      if (!form) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const r = await Swal.fire({
+          title: '¿Eliminar?',
+          text: 'Puede fallar si existen pagos asociados.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar',
+          reverseButtons: true
+        });
+        if (r.isConfirmed) form.submit();
+      });
+    });
+    </script>
+}

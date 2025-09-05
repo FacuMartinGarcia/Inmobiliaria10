@@ -94,3 +94,7 @@ obj/project.nuget.cache
 /bin/
 /obj/
 /.vs/
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+obj/Debug/net9.0/Inmobiliaria10.GeneratedMSBuildEditorConfig.editorconfig
+obj/Debug/net9.0/Inmobiliaria10.AssemblyInfoInputs.cache
+/obj/Debug/net9.0

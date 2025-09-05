@@ -1,0 +1,60 @@
+@model Inmobiliaria10.Models.Concepto
+@{
+    ViewData["Title"] = "Editar concepto";
+}
+@using System.Text.Json
+<h2 class="mb-3">Editar concepto</h2>
+
+<form asp-controller="Conceptos"
+      asp-action="Editar"
+      asp-route-id="@Model.IdConcepto"
+      method="post"
+      class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <input type="hidden" asp-for="IdConcepto" />
+
+    <div class="mb-3">
+        <label asp-for="DenominacionConcepto" class="form-label">Denominación</label>
+        <input asp-for="DenominacionConcepto" class="form-control" maxlength="80" />
+        <span asp-validation-for="DenominacionConcepto" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a class="btn btn-secondary" asp-action="Index" asp-route-id="@Model.IdConcepto">
+            <i class="bi bi-eye"></i> Volver
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar 
+        </button>
+    </div>
+</form>
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- quitar si ya está -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        // Toma los mensajes del ValidationSummary
+        var errores = ViewData.ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .ToList();
+        if (errores.Count > 0)
+        {
+            <text>
+            <script>
+            Swal.fire({
+              icon: 'error',
+              title: 'Revisá los datos',
+              html: @Html.Raw(JsonSerializer.Serialize(string.Join("<br/>", errores))),
+              confirmButtonText: 'Aceptar'
+            });
+            </script>
+            </text>
+        }
+    }
+}
