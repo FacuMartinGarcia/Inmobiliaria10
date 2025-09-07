@@ -1,16 +1,28 @@
+using System.ComponentModel.DataAnnotations;
 namespace Inmobiliaria10.Models
 {
     public class Pago
     {
         public int IdPago { get; set; }              // PK
         public int IdContrato { get; set; }          // FK contratos
+
+        [Required]
+        [DataType(DataType.Date)]
         public DateTime FechaPago { get; set; }      // DATE NOT NULL
+
+        [StringLength(50)]
         public string? Detalle { get; set; }         // varchar(50) NULL
+
         public int IdConcepto { get; set; }          // FK conceptos
+
+        [Range(0, double.MaxValue, ErrorMessage = "El importe no puede ser negativo.")]
         public decimal Importe { get; set; }         // DECIMAL(15,2) NOT NULL
+
+        [StringLength(255)]
         public string? MotivoAnulacion { get; set; } // varchar(255) NULL
-        public int? CreatedBy { get; set; }           // FK usuarios
-        public DateTime? CreatedAt { get; set; }      // DEFAULT NOW
+
+        public int? CreatedBy { get; set; }          // FK usuarios
+        public DateTime? CreatedAt { get; set; }     // DEFAULT NOW
         public DateTime? DeletedAt { get; set; }     // NULL
         public int? DeletedBy { get; set; }          // NULL FK usuarios
     }
@@ -26,11 +38,6 @@ namespace Inmobiliaria10.Models
         public string? NewData { get; set; }         // longtext
     }
 
-    public class Concepto
-    {
-        public int IdConcepto { get; set; }                  // PK
-        public string DenominacionConcepto { get; set; } = ""; // UNIQUE, NOT NULL
-    }
 }
 
 

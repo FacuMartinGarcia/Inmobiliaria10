@@ -3,20 +3,28 @@
     ViewData["Title"] = "Editar pago";
 }
 
-<h2 class="mb-3">Editar pago</h2>
+<div class="d-flex justify-content-center py-4">
+  <div class="form-card">
+    <div class="form-title">Editar pago</div>
 
-<form asp-action="Editar" asp-route-id="@Model.IdPago" method="post" class="needs-validation" novalidate>
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Editar" asp-route-id="@Model.IdPago" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <input type="hidden" asp-for="IdPago" />
-    <partial name="_Form" />
+        <input type="hidden" asp-for="IdPago" />
+        <partial name="_Form" />
 
-    <div class="d-flex gap-2 mt-3">
-        <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdPago"><i class="bi bi-eye"></i> Ver</a>
-        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar cambios</button>
-    </div>
-</form>
+        <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdPago">
+                <i class="bi bi-eye"></i> Ver
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar cambios
+            </button>
+        </div>
+    </form>
+  </div>
+</div>
 
 @section Scripts{
     <!-- quitá estos includes si ya están en tu _Layout -->
@@ -28,18 +36,21 @@
     (function () {
       const $orig = $('#IdContrato');
       if ($orig.length) {
-        const $sel = $('<select class="form-select" style="width:100%"></select>');
+        const $sel = $('<select class="form-select form-select-lg" style="width:100%"></select>');
         $.each($orig[0].attributes, function (_, a) {
           if (a && a.name && a.name.startsWith('data-val')) $sel.attr(a.name, a.value);
         });
 
+        // Reemplazo: dejamos el original oculto para model binding/validación
         $orig.after($sel);
         $orig.attr('id','IdContrato_original').attr('name','').hide();
         $sel.attr('id','IdContrato').attr('name','IdContrato');
 
+        // Select2 remoto
         $('#IdContrato').select2({
           placeholder: 'Buscar contrato (Contrato + Inmueble)…',
           allowClear: true,
+          width: '100%',
           ajax: {
             url: '/Pagos/search-contratos',
             dataType: 'json',

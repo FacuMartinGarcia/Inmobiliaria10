@@ -75,7 +75,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
 
         public async Task<(IReadOnlyList<Contrato> Items, int Total)> ListAsync(
-            int? tipo = null,                
+            int? tipo = null,
             int? idInmueble = null,
             int? idInquilino = null,
             bool? soloActivos = null,
@@ -86,12 +86,12 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            var where = " WHERE c.deleted_at IS NULL "; 
+            var where = " WHERE c.deleted_at IS NULL ";
             var pars = new List<MySqlParameter>();
 
             if (tipo.HasValue && tipo.Value > 0)
             {
-                where += " AND i.id_tipo = @Tipo ";  
+                where += " AND i.id_tipo = @Tipo ";
                 pars.Add(new MySqlParameter("@Tipo", MySqlDbType.Int32) { Value = tipo.Value });
             }
 
@@ -207,18 +207,18 @@ namespace Inmobiliaria10.Data.Repositories
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
             return id;
         }
-        
-        
-                public async Task UpdateAsync(Contrato entity, CancellationToken ct = default)
-                {
-                    using var conn = _db.GetConnection();
-                    await conn.OpenAsync(ct);
 
-                    var overlap = await ExistsOverlapAsync(entity.IdInmueble, entity.FechaInicio, entity.FechaFin, entity.Rescision, entity.IdContrato, ct);
-                    if (overlap)
-                        throw new InvalidOperationException("La modificación genera un solapamiento con otro contrato del inmueble.");
 
-                    var sql = @"
+        public async Task UpdateAsync(Contrato entity, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var overlap = await ExistsOverlapAsync(entity.IdInmueble, entity.FechaInicio, entity.FechaFin, entity.Rescision, entity.IdContrato, ct);
+            if (overlap)
+                throw new InvalidOperationException("La modificación genera un solapamiento con otro contrato del inmueble.");
+
+            var sql = @"
                         UPDATE contratos
                         SET fecha_firma=@FechaFirma,
                             id_inmueble=@IdInmueble,
@@ -230,24 +230,24 @@ namespace Inmobiliaria10.Data.Repositories
                             monto_multa=@MontoMulta
                         WHERE id_contrato=@IdContrato;";
 
-                    using var cmd = new MySqlCommand(sql, conn);
-                    AddParam(cmd, "@FechaFirma", entity.FechaFirma ?? (object)DBNull.Value, MySqlDbType.DateTime);
-                    AddParam(cmd, "@IdInmueble", entity.IdInmueble, MySqlDbType.Int32);
-                    AddParam(cmd, "@IdInquilino", entity.IdInquilino, MySqlDbType.Int32);
-                    AddParam(cmd, "@FechaInicio", entity.FechaInicio, MySqlDbType.DateTime);
-                    AddParam(cmd, "@FechaFin", entity.FechaFin, MySqlDbType.DateTime);
-                    AddParam(cmd, "@MontoMensual", entity.MontoMensual, MySqlDbType.Decimal);
-                    AddParam(cmd, "@Rescision", entity.Rescision ?? (object)DBNull.Value, MySqlDbType.DateTime);
-                    AddParam(cmd, "@MontoMulta", entity.MontoMulta ?? (object)DBNull.Value, MySqlDbType.Decimal);
-                    AddParam(cmd, "@IdContrato", entity.IdContrato, MySqlDbType.Int32);
+            using var cmd = new MySqlCommand(sql, conn);
+            AddParam(cmd, "@FechaFirma", entity.FechaFirma ?? (object)DBNull.Value, MySqlDbType.DateTime);
+            AddParam(cmd, "@IdInmueble", entity.IdInmueble, MySqlDbType.Int32);
+            AddParam(cmd, "@IdInquilino", entity.IdInquilino, MySqlDbType.Int32);
+            AddParam(cmd, "@FechaInicio", entity.FechaInicio, MySqlDbType.DateTime);
+            AddParam(cmd, "@FechaFin", entity.FechaFin, MySqlDbType.DateTime);
+            AddParam(cmd, "@MontoMensual", entity.MontoMensual, MySqlDbType.Decimal);
+            AddParam(cmd, "@Rescision", entity.Rescision ?? (object)DBNull.Value, MySqlDbType.DateTime);
+            AddParam(cmd, "@MontoMulta", entity.MontoMulta ?? (object)DBNull.Value, MySqlDbType.Decimal);
+            AddParam(cmd, "@IdContrato", entity.IdContrato, MySqlDbType.Int32);
 
 
-                    var filas = await cmd.ExecuteNonQueryAsync(ct);
-                    if (filas == 0)
-                    {
-                        throw new InvalidOperationException("No se actualizó ningún contrato. Verifique el ID.");
-                    }
-                }
+            var filas = await cmd.ExecuteNonQueryAsync(ct);
+            if (filas == 0)
+            {
+                throw new InvalidOperationException("No se actualizó ningún contrato. Verifique el ID.");
+            }
+        }
 
         public async Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default)
         {
@@ -378,13 +378,13 @@ namespace Inmobiliaria10.Data.Repositories
             {
                 list.Add(new ContratoAudit
                 {
-                    IdAudit     = r.GetInt64("IdAudit"),
-                    IdContrato  = r.GetInt32("IdContrato"),
-                    Accion      = r.GetString("Accion"),
-                    AccionAt    = r.GetDateTime("AccionAt"),
-                    AccionBy    = r.GetInt32("AccionBy"),
-                    OldData     = r.IsDBNull(r.GetOrdinal("OldData")) ? null : r.GetString("OldData"),
-                    NewData     = r.IsDBNull(r.GetOrdinal("NewData")) ? null : r.GetString("NewData"),
+                    IdAudit = r.GetInt64("IdAudit"),
+                    IdContrato = r.GetInt32("IdContrato"),
+                    Accion = r.GetString("Accion"),
+                    AccionAt = r.GetDateTime("AccionAt"),
+                    AccionBy = r.GetInt32("AccionBy"),
+                    OldData = r.IsDBNull(r.GetOrdinal("OldData")) ? null : r.GetString("OldData"),
+                    NewData = r.IsDBNull(r.GetOrdinal("NewData")) ? null : r.GetString("NewData"),
                 });
             }
             return list;
@@ -392,7 +392,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         public async Task<decimal?> CalcularMultaAsync(int idContrato, DateTime fechaRescision, CancellationToken ct = default)
         {
-            
+
             Console.WriteLine($"Calculando multa para contrato {idContrato} con fecha {fechaRescision}");
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
@@ -407,7 +407,7 @@ namespace Inmobiliaria10.Data.Repositories
 
             using var reader = await cmd.ExecuteReaderAsync(ct);
             if (!await reader.ReadAsync(ct))
-                return null; 
+                return null;
 
             var fechaInicio = reader.GetDateTime("fecha_inicio");
             var fechaFin = reader.GetDateTime("fecha_fin");
@@ -421,6 +421,45 @@ namespace Inmobiliaria10.Data.Repositories
             decimal multa = fechaRescision < mitadContrato ? montoMensual * 2 : montoMensual * 1;
 
             return multa;
+        }
+        
+        public async Task<IReadOnlyList<(int Id, string Direccion, string Inquilino)>>
+            GetContratosInfoAsync(IEnumerable<int> ids, CancellationToken ct = default)
+        {
+            var idList = ids?.Distinct().Where(x => x > 0).ToList() ?? new List<int>();
+            if (idList.Count == 0) return Array.Empty<(int, string, string)>();
+
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var pars = new List<MySqlParameter>();
+            var inParams = new List<string>();
+            for (int i = 0; i < idList.Count; i++)
+            {
+                var p = new MySqlParameter($"@id{i}", MySqlDbType.Int32) { Value = idList[i] };
+                pars.Add(p);
+                inParams.Add(p.ParameterName);
+            }
+
+            var sql = $@"
+                SELECT  c.id_contrato       AS Id,
+                        i.direccion         AS Direccion,
+                        q.apellido_nombres  AS Inquilino
+                FROM contratos c
+                INNER JOIN inmuebles  i ON i.id_inmueble  = c.id_inmueble
+                INNER JOIN inquilinos q ON q.id_inquilino = c.id_inquilino
+                WHERE c.id_contrato IN ({string.Join(",", inParams)})";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddRange(pars.ToArray());
+
+            var list = new List<(int, string, string)>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+            {
+                list.Add((r.GetInt32("Id"), r.GetString("Direccion"), r.GetString("Inquilino")));
+            }
+            return list;
         }
 
     }

@@ -3,19 +3,23 @@
     ViewData["Title"] = "Nuevo pago";
 }
 
-<h2 class="mb-3">Nuevo pago</h2>
+<div class="d-flex justify-content-center py-4">
+  <div class="form-card">
+    <div class="form-title">Nuevo pago</div>
 
-<form asp-action="Crear" method="post" class="needs-validation" novalidate>
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Crear" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <partial name="_Form" />
+        <partial name="_Form" />
 
-    <div class="d-flex gap-2 mt-3">
-        <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
-        <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
-    </div>
-</form>
+        <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+        </div>
+    </form>
+  </div>
+</div>
 
 @section Scripts{
     <!-- quitá estos includes si ya están en tu _Layout -->

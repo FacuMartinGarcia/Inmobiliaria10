@@ -3,6 +3,7 @@
     ViewData["Title"] = "Auditoría de pago";
     var id = (int)ViewBag.IdPago;
 }
+
 <div class="d-flex justify-content-center py-4">
     <div class="form-card w-100" style="max-width: 1000px;">
         <h1 class="form-title">Auditoría – Pago #@id</h1>
@@ -10,13 +11,24 @@
         @if (Model is null || Model.Count == 0)
         {
             <div class="alert alert-info text-center">Sin eventos.</div>
-            <div class="text-center"><a asp-action="Detalles" asp-route-id="@id" class="btn-back">Volver</a></div>
+            <div class="text-center mt-3">
+                <a asp-action="Detalles" asp-route-id="@id" class="btn btn-back">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
         }
         else
         {
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead><tr><th>Fecha</th><th>Acción</th><th>Usuario</th><th>Datos</th></tr></thead>
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                            <th>Usuario</th>
+                            <th>Datos</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         @foreach (var e in Model)
                         {
@@ -28,20 +40,28 @@
                                         "UPDATE" => "text-bg-warning",
                                         "DELETE" => "text-bg-danger",
                                         _ => "text-bg-secondary"
-                                    })">@e.Accion</span>
+                                    })">
+                                        @e.Accion
+                                    </span>
                                 </td>
                                 <td>@e.AccionBy</td>
                                 <td>
                                     <details>
-                                        <summary>Ver</summary>
+                                        <summary class="text-primary" style="cursor:pointer;">
+                                            Ver cambios
+                                        </summary>
                                         <div class="row g-3 mt-2">
                                             <div class="col-md-6">
                                                 <div class="small text-muted mb-1">Old</div>
-                                                <pre class="bg-light p-2 rounded" style="white-space:pre-wrap;max-height:260px;overflow:auto;">@e.OldData</pre>
+                                                <pre class="bg-light p-2 rounded" 
+                                                     style="white-space:pre-wrap;max-height:260px;overflow:auto;">
+@e.OldData</pre>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="small text-muted mb-1">New</div>
-                                                <pre class="bg-light p-2 rounded" style="white-space:pre-wrap;max-height:260px;overflow:auto;">@e.NewData</pre>
+                                                <pre class="bg-light p-2 rounded" 
+                                                     style="white-space:pre-wrap;max-height:260px;overflow:auto;">
+@e.NewData</pre>
                                             </div>
                                         </div>
                                     </details>
@@ -51,7 +71,12 @@
                     </tbody>
                 </table>
             </div>
-            <div class="text-center"><a asp-action="Detalles" asp-route-id="@id" class="btn-back">Volver</a></div>
+
+            <div class="text-center mt-3">
+                <a asp-action="Detalles" asp-route-id="@id" class="btn btn-back">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
         }
     </div>
 </div>

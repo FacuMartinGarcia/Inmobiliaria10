@@ -5,11 +5,10 @@
   <!-- Contrato (lo reemplaza Select2 en Crear/Editar) -->
   <div class="col-md-6">
     <label asp-for="IdContrato" class="form-label">Contrato</label>
-    <input asp-for="IdContrato" type="number" class="form-control" placeholder="Seleccioná un contrato…" />
+
+    <input asp-for="IdContrato" type="hidden" class="form-control" />
+    <!-- El <select> visible lo genera el script (Select2) justo después del input oculto -->
     <span asp-validation-for="IdContrato" class="text-danger"></span>
-    <div class="form-text">
-      Usá el buscador para elegir <strong>Contrato + Inmueble</strong>.
-    </div>
   </div>
 
   <div class="col-md-3">
@@ -20,7 +19,7 @@
 
   <div class="col-md-3">
     <label asp-for="Importe" class="form-label">Importe</label>
-    <input asp-for="Importe" type="number" step="0.01" class="form-control" placeholder="0,00" />
+    <input asp-for="Importe" type="number" step="0.01" class="form-control" placeholder="0,00" autocomplete="off" />
     <span asp-validation-for="Importe" class="text-danger"></span>
   </div>
 
@@ -34,7 +33,7 @@
 
   <div class="col-md-6">
     <label asp-for="Detalle" class="form-label">Detalle</label>
-    <input asp-for="Detalle" class="form-control" maxlength="50" placeholder="Referencia / Nota" />
+    <input asp-for="Detalle" class="form-control" maxlength="50" placeholder="Referencia / Nota" autocomplete="off" />
     <span asp-validation-for="Detalle" class="text-danger"></span>
   </div>
 

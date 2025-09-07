@@ -10,8 +10,13 @@ namespace Inmobiliaria10.Controllers
     public class PagosController : Controller
     {
         private readonly IPagoRepo _repo;
-        public PagosController(IPagoRepo repo) { _repo = repo; }
+        private readonly IContratoRepo _contratoRepo; 
 
+        public PagosController(IPagoRepo repo, IContratoRepo contratoRepo) 
+        {
+            _repo = repo;
+            _contratoRepo = contratoRepo;               
+        }
         // Index: solo prepara filtros; la grilla se llena por AJAX (DataTables)
         [HttpGet("")]
         public async Task<IActionResult> Index(
@@ -36,28 +41,57 @@ namespace Inmobiliaria10.Controllers
             int pageSize  = Math.Max(1, length);
 
             var (items, total) = await _repo.ListAsync(
-                idContrato: contrato,
-                idConcepto: null,
+                idContrato : contrato,
+                idConcepto : null,
                 soloActivos: null,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
-                ct: ct,
+                pageIndex  : pageIndex,
+                pageSize   : pageSize,
+                ct         : ct,
                 idInquilino: inquilino
             );
 
-            var data = items.Select(p => new
+            // Conceptos: Id -> Denominación (tu repo expone Id/Nombre)
+            var conceptos   = await _repo.GetConceptosAsync(ct);
+            var conceptoMap = conceptos.ToDictionary(x => x.Id, x => x.Nombre);
+
+            // Contratos que aparecen en la página
+            var contratoIds   = items.Select(p => p.IdContrato).Distinct().ToList();
+            var contratosInfo = await _contratoRepo.GetContratosInfoAsync(contratoIds, ct);
+            var contratoMap   = contratosInfo.ToDictionary(c => c.Id, c => $"{c.Direccion} - {c.Inquilino}");
+
+            // Orden DataTables
+            var orderColIdx = int.TryParse(Request.Query["order[0][column]"], out var oc) ? oc : 0;
+            var orderDir    = (Request.Query["order[0][dir]"].FirstOrDefault() ?? "desc").ToLower();
+
+            Func<Pago, object?> keySelector = orderColIdx switch
             {
-                idPago = p.IdPago,
-                fechaPago = p.FechaPago.ToString("yyyy-MM-dd"),
-                detalle = p.Detalle,
-                idConcepto = p.IdConcepto,
-                importe = p.Importe,
-                idContrato = p.IdContrato,
+                0 => p => p.FechaPago,
+                1 => p => p.Detalle,
+                2 => p => conceptoMap.TryGetValue(p.IdConcepto, out var nom) ? nom : "",
+                3 => p => p.Importe,
+                4 => p => contratoMap.TryGetValue(p.IdContrato, out var txt) ? txt : $"Contrato #{p.IdContrato}",
+                5 => p => p.DeletedAt.HasValue ? "Eliminado" : "Activo",
+                _ => p => p.FechaPago
+            };
+
+            var ordered = (orderDir == "asc")
+                ? items.OrderBy(keySelector)
+                : items.OrderByDescending(keySelector);
+
+            var data = ordered.Select(p => new
+            {
+                idPago    = p.IdPago,
+                fechaPago = p.FechaPago.ToString("dd/MM/yyyy"),
+                detalle   = p.Detalle,
+                conceptoDenominacion = conceptoMap.TryGetValue(p.IdConcepto, out var nom) ? nom : "",
+                importe   = p.Importe,
+                contratoTexto = contratoMap.TryGetValue(p.IdContrato, out var txt) ? txt : $"Contrato #{p.IdContrato}",
                 estado = p.DeletedAt.HasValue ? "Eliminado" : "Activo"
-            });
+            }).ToList();
 
             return Json(new { draw, recordsTotal = total, recordsFiltered = total, data });
         }
+
 
         [HttpGet("Detalles/{id:int}")]
         public async Task<IActionResult> Detalles(int id, CancellationToken ct = default)
@@ -135,17 +169,6 @@ namespace Inmobiliaria10.Controllers
         }
 
         // --- Endpoints Select2 ---
-        [HttpGet("search-inquilinos")]
-        public async Task<IActionResult> SearchInquilinos(string? term, int take = 20, int? id = null, CancellationToken ct = default)
-        {
-            if (id is > 0)
-            {
-                var it = await _repo.GetInquilinoItemAsync(id.Value, ct);
-                return Json(new { item = it.HasValue ? new { id = it.Value.Id, text = it.Value.Text } : null });
-            }
-            var items = await _repo.SearchInquilinosAsync(term, take, ct);
-            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
-        }
 
         [HttpGet("search-contratos")]
         public async Task<IActionResult> SearchContratos(string? term, int take = 20, int? id = null, CancellationToken ct = default)

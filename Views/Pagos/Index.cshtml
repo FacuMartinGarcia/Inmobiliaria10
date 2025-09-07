@@ -1,35 +1,43 @@
 @model IEnumerable<Inmobiliaria10.Models.Pago>
 @{
     ViewData["Title"] = "Pagos";
-    int? contratoSel  = ViewBag.Contrato  as int?;
-    int? inquilinoSel = ViewBag.Inquilino as int?;
+    int? contratoSel  = ViewBag.Contrato as int?;
 }
 
-<h2 class="mb-3">Pagos</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Pagos</h2>
+  <a href="/Pagos/Auditoria" class="btn btn-dark">
+    <i class="bi bi-clock-history"></i> Auditoría
+  </a>
+</div>
 
-<form method="get" class="row g-2 mb-3" id="frmFiltros">
-  <div class="col-12 col-md-4">
-    <label class="form-label">Contrato</label>
-    <select id="fContrato" name="contrato" class="form-select" style="width:100%"></select>
+<form method="get" class="row g-2 mb-3 align-items-end" id="frmFiltros">
+  <div class="col-12 col-md-6 d-flex align-items-center">
+    <label for="fContrato" class="me-2 fw-bold">Contrato</label>
+    <select id="fContrato" name="contrato" 
+            class="form-select form-select-lg flex-grow-1"
+            style="max-width: 400px, height:100px;">
+    </select>
   </div>
-  <div class="col-12 col-md-4">
-    <label class="form-label">Inquilino</label>
-    <select id="fInquilino" name="inquilino" class="form-select" style="width:100%"></select>
-  </div>
-  <div class="col-12 col-md-4 d-flex align-items-end gap-2">
-    <button class="btn btn-dark" type="submit">
-      <i class="bi bi-funnel"></i> Filtrar
+
+  <div class="col-6 col-md-2">
+    <button class="btn btn-dark w-80" type="submit" style="height:32px;">
+      <i class="bi bi-funnel"></i> Buscar
     </button>
-    <a id="btnNuevo" class="btn btn-success ms-auto" href="/Pagos/Crear">
+  </div>
+
+  <div class="col-6 col-md-4 text-md-end">
+    <a id="btnNuevo" class="btn btn-success" href="/Pagos/Crear" style="height:38px;">
       <i class="bi bi-plus-lg"></i> Nuevo pago
     </a>
   </div>
 </form>
 
+
+
 <table id="tblPagos" class="table table-striped align-middle w-100">
   <thead>
     <tr>
-      <th>Id</th>
       <th>Fecha</th>
       <th>Detalle</th>
       <th>Concepto</th>
@@ -67,23 +75,8 @@
       }
     });
 
-    // --- Select2: Inquilinos ---
-    $('#fInquilino').select2({
-      placeholder: 'Buscar inquilino…',
-      allowClear: true,
-      ajax: {
-        url: '/Pagos/search-inquilinos',
-        dataType: 'json',
-        delay: 250,
-        data: p => ({ term: p.term || '', page: p.page || 1 }),
-        processResults: d => ({ results: (d.results || []).map(x => ({ id: x.id, text: x.text })) })
-      }
-    });
-
     // --- Preselección desde ViewBag (si vino por query/redirect) ---
-    const preContrato  = @((contratoSel  ?? 0));
-    const preInquilino = @((inquilinoSel ?? 0));
-
+    const preContrato = @((contratoSel ?? 0));
     function preload(selector, fetchUrl, id) {
       if (!id || id <= 0) return;
       $.getJSON(fetchUrl, { id: id }, function (res) {
@@ -93,8 +86,7 @@
         }
       });
     }
-    preload('#fContrato',  '/Pagos/search-contratos',  preContrato);
-    preload('#fInquilino', '/Pagos/search-inquilinos', preInquilino);
+    preload('#fContrato', '/Pagos/search-contratos', preContrato);
 
     // --- DataTables (server-side) ---
     const dt = $('#tblPagos').DataTable({
@@ -103,28 +95,26 @@
       searching: false,
       lengthMenu: [10, 20, 50, 100],
       pageLength: 20,
-      order: [[1, 'desc']], // fecha desc
+      order: [[0, 'desc']], // Fecha desc (columna 0)
       ajax: {
         url: '/Pagos/data',
         data: d => {
-          d.contrato  = $('#fContrato').val()  || '';
-          d.inquilino = $('#fInquilino').val() || '';
+          d.contrato = $('#fContrato').val() || '';
         }
       },
       columns: [
-        { data: 'idPago' },
-        { data: 'fechaPago' },
+        { data: 'fechaPago' },                // string dd/MM/yyyy (o como lo devuelvas)
         { data: 'detalle' },
-        { data: 'idConcepto' },
+        { data: 'conceptoDenominacion' },     // Denominación
         {
           data: 'importe',
           className: 'text-end',
           render: v => {
-            try { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v); }
+            try { return v != null ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v) : '-'; }
             catch { return v; }
           }
         },
-        { data: 'idContrato' },
+        { data: 'contratoTexto' },            // Texto legible (no idContrato)
         {
           data: 'estado',
           render: v => v === 'Eliminado'
@@ -132,16 +122,15 @@
             : '<span class="badge bg-success">Activo</span>'
         },
         {
-          data: null,
+          data: 'idPago',
           orderable: false,
           className: 'text-end text-nowrap',
-          render: (_d, _t, row) => {
-            const id = row.idPago;
+          render: (id) => {
+            if (!id) return '';
             return `
-              <a href="/Pagos/Detalles/${id}"  class="btn btn-sm btn-secondary"><i class="bi bi-eye"></i> Ver</a>
-              <a href="/Pagos/Editar/${id}"    class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i> Editar</a>
-              <a href="/Pagos/Eliminar/${id}"  class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Baja</a>
-              <a href="/Pagos/Auditoria/${id}" class="btn btn-sm btn-dark"><i class="bi bi-clock-history"></i> Auditoría</a>`;
+              <a href="/Pagos/Detalles/${id}"  class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
+              <a href="/Pagos/Editar/${id}"    class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></a>
+              <a href="/Pagos/Eliminar/${id}"  class="btn btn-sm btn-danger"><i class="fa-solid fa-trash-can"></i></a>`;
           }
         }
       ],
@@ -155,7 +144,7 @@
       $('#btnNuevo').attr('href', url);
     }
     $('#frmFiltros').on('submit', function (e) { e.preventDefault(); updateNuevoHref(); dt.ajax.reload(); });
-    $('#fContrato, #fInquilino').on('change', function () { updateNuevoHref(); dt.ajax.reload(); });
+    $('#fContrato').on('change', function () { updateNuevoHref(); dt.ajax.reload(); });
 
     // set inicial
     updateNuevoHref();
