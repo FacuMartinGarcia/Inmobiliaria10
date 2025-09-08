@@ -61,6 +61,24 @@ namespace Inmobiliaria10.Models
             // 4) Si hay DeletedAt, debe haber DeletedBy
             if (DeletedAt.HasValue && (!DeletedBy.HasValue || DeletedBy.Value <= 0))
                 yield return new ValidationResult("Si el contrato está eliminado, 'DeletedBy' es obligatorio.", new[] { nameof(DeletedBy) });
+
+            // 5) En casi que quiera rescindir el contrato, que  controle que multa no puede ser 0
+            if (Rescision.HasValue)
+            {
+                if (!MontoMulta.HasValue || MontoMulta.Value <= 0)
+                {
+                    yield return new ValidationResult(
+                        "Si existe rescisión, la multa es obligatoria y debe ser mayor a 0.",
+                        new[] { nameof(MontoMulta) });
+                }
+            }     
+            // 6) El caso inverso, si no hay fecha de rescicion, no deberia haber multa
+            if (!Rescision.HasValue && MontoMulta.HasValue && MontoMulta.Value > 0)
+            {
+                yield return new ValidationResult(
+                    "Si no hay rescisión, no se puede asignar una multa.",
+                    new[] { nameof(MontoMulta) });
+            }
         }
     }
 }

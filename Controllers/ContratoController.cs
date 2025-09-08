@@ -117,11 +117,9 @@ namespace Inmobiliaria10.Controllers
         {
             var contrato = await _repo.GetByIdAsync(id, ct);
             if (contrato == null) return NotFound();
-
             await CargarSelectsAsync(contrato.IdInmueble, contrato.IdInquilino, ct);
             return View(contrato);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, Contrato model, CancellationToken ct = default)
@@ -133,40 +131,10 @@ namespace Inmobiliaria10.Controllers
                 return View(model);
             }
 
-            // Permitir que los campos opcionales nulos no rompan la validación
-            ModelState.Remove(nameof(Contrato.Rescision));
-            ModelState.Remove(nameof(Contrato.MontoMulta));
-
-            if (!ModelState.IsValid)
+            if (!model.Rescision.HasValue)
             {
-                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
-                return View(model);
+                model.MontoMulta = null;
             }
-
-            try
-            {
-                // Ejecutar update y verificar filas afectadas
-                await _repo.UpdateAsync(model, ct);
-                  TempData["Ok"] = "Contrato actualizado correctamente.";
-                  return RedirectToAction(nameof(Detalles), new { id = model.IdContrato });
-              
-            }
-            catch (Exception ex)
-            {
-                // Mostrar mensaje de error completo
-                ModelState.AddModelError(string.Empty, $"No se pudo actualizar el contrato. {ex.Message}\n{ex.StackTrace}");
-                await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
-                return View(model);
-            }
-        }
-
-
-/*
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, Contrato model, CancellationToken ct = default)
-        {
-            if (id != model.IdContrato) return BadRequest();
 
             if (!ModelState.IsValid)
             {
@@ -182,12 +150,11 @@ namespace Inmobiliaria10.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "No se pudo actualizar el contrato. " + ex.Message);
+                ModelState.AddModelError(string.Empty, $"No se pudo actualizar el contrato. {ex.Message}\n{ex.StackTrace}");
                 await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }
         }
-*/
         // ------------------- DETALLES -------------------
         public async Task<IActionResult> Detalles(int id, CancellationToken ct = default)
         {
