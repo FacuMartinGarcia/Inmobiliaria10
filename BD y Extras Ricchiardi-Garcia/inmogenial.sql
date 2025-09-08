@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 04-09-2025 a las 18:29:20
+-- Tiempo de generación: 08-09-2025 a las 16:04:39
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -122,7 +122,7 @@ CREATE TABLE `inmuebles` (
 INSERT INTO `inmuebles` (`id_inmueble`, `id_propietario`, `id_uso`, `id_tipo`, `direccion`, `piso`, `depto`, `lat`, `lon`, `ambientes`, `precio`, `activo`, `created_at`, `updated_at`) VALUES
 (2, 1, 1, 2, 'ENTRE RIOS 1040', '1', '2', NULL, NULL, 1, 850000.00, 0, '2025-09-01 12:32:55', '2025-09-02 08:48:22'),
 (3, 1, 4, 4, 'LAVALLE 1218', '1', '1', NULL, NULL, 2, 250000.00, 1, '2025-09-02 10:38:28', '2025-09-03 11:52:55'),
-(4, 3, 1, 3, 'AGUSTIN ALVAREZ 2505', NULL, NULL, NULL, NULL, 1, 360000.00, 1, '2025-09-02 10:40:22', '2025-09-03 13:21:44'),
+(4, 3, 1, 3, 'AGUSTIN ALVAREZ 2505', NULL, NULL, NULL, NULL, 2, 360000.00, 1, '2025-09-02 10:40:22', '2025-09-08 10:35:52'),
 (5, 1, 2, 4, 'COLON 477', '1', '25', NULL, NULL, 2, 360000.00, 1, '2025-09-04 11:09:15', '2025-09-04 11:09:15'),
 (6, 2, 1, 1, 'PRINGLES 57', NULL, NULL, NULL, NULL, 1, 750000.00, 1, '2025-09-04 11:09:42', '2025-09-04 11:09:42'),
 (7, 1, 2, 3, 'B° LUZ Y FUERZA C-5', NULL, NULL, NULL, NULL, 1, 320000.00, 1, '2025-09-04 11:10:10', '2025-09-04 11:10:10'),
