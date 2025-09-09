@@ -18,7 +18,7 @@ namespace Inmobiliaria10.Controllers
             _rolRepo = rolRepo;
         }
 
-        // LISTADO CON PAGINACIÓN
+        // LISTADO
         public async Task<IActionResult> Index(int pagina = 1, string? search = null)
         {
             int cantidadPorPagina = 10;
@@ -31,6 +31,17 @@ namespace Inmobiliaria10.Controllers
 
             return View(usuarios);
         }
+
+         // DETALLE
+        public async Task<IActionResult> Detalle(int id, CancellationToken ct = default)
+        {
+            var usu = await _repo.ObtenerPorId(id, ct);
+            if (usu == null)
+                return NotFound();
+
+            return View(usu);
+        }
+
 
         // CREAR
         public async Task<IActionResult> Crear()
@@ -49,77 +60,70 @@ namespace Inmobiliaria10.Controllers
                 ModelState.AddModelError("Alias", "El alias ya está en uso por otro usuario.");
             }
 
-            if (string.IsNullOrEmpty(u.Password))
-            {
-                ModelState.AddModelError("Password", "La contraseña es obligatoria.");
-            }
-
             if (!ModelState.IsValid)
             {
                 ViewBag.Roles = await ObtenerRolesSelectList();
                 return View(u);
             }
 
-
             u.Password = HashPassword(u.Password);
 
             await _repo.Agregar(u);
-            TempData["Success"] = "Usuario creado correctamente.";
+            TempData["Mensaje"] = "Usuario creado correctamente.";
             return RedirectToAction("Index");
         }
 
         // EDITAR (GET)
         public async Task<IActionResult> Editar(int id)
         {
-            var u = await _repo.ObtenerPorId(id);
-            if (u == null)
+            var usuario = await _repo.ObtenerPorId(id);
+            if (usuario == null)
                 return NotFound();
 
+            var vm = new UsuarioEditViewModel
+            {
+                IdUsuario = usuario.IdUsuario,
+                ApellidoNombres = usuario.ApellidoNombres,
+                Alias = usuario.Alias,
+                Email = usuario.Email,
+                IdRol = usuario.IdRol
+
+            };
+
             ViewBag.Roles = await ObtenerRolesSelectList();
-
-            u.Password = string.Empty;
-
-            return View(u);
+            return View(vm);
         }
 
         // EDITAR (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(Usuario u)
+        public async Task<IActionResult> Editar(UsuarioEditViewModel vm)
         {
-            var existente = await _repo.ObtenerPorAlias(u.Alias);
-            if (existente != null && existente.IdUsuario != u.IdUsuario)
-            {
-                ModelState.AddModelError("Alias", "El alias ya está en uso por otro usuario.");
-            }
-
             if (!ModelState.IsValid)
             {
                 ViewBag.Roles = await ObtenerRolesSelectList();
-                return View(u);
+                return View(vm);
             }
 
-            var usuarioActual = await _repo.ObtenerPorId(u.IdUsuario);
+            var usuarioActual = await _repo.ObtenerPorId(vm.IdUsuario);
             if (usuarioActual == null)
                 return NotFound();
 
-            usuarioActual.ApellidoNombres = u.ApellidoNombres;
-            usuarioActual.Alias = u.Alias;
-            usuarioActual.Email = u.Email;
-            usuarioActual.IdRol = u.IdRol;
+            usuarioActual.ApellidoNombres = vm.ApellidoNombres;
+            usuarioActual.Alias = vm.Alias;
+            usuarioActual.Email = vm.Email;
+            usuarioActual.IdRol = vm.IdRol;
 
-
-            if (!string.IsNullOrEmpty(u.Password))
+            if (!string.IsNullOrEmpty(vm.Password))
             {
-                usuarioActual.Password = HashPassword(u.Password);
+                usuarioActual.Password = HashPassword(vm.Password);
             }
 
             await _repo.Actualizar(usuarioActual);
 
-            TempData["Success"] = "Usuario actualizado correctamente.";
+            TempData["Mensaje"] = "Usuario actualizado correctamente.";
             return RedirectToAction("Index");
         }
-
 
         public async Task<IActionResult> Eliminar(int id)
         {
@@ -135,10 +139,9 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> EliminarConfirmado(int id)
         {
             await _repo.Eliminar(id);
-            TempData["Success"] = "Usuario eliminado correctamente.";
+            TempData["Mensaje"] = "Usuario eliminado correctamente.";
             return RedirectToAction("Index");
         }
-
 
         private async Task<List<SelectListItem>> ObtenerRolesSelectList()
         {

@@ -1,4 +1,4 @@
-@model Inmobiliaria10.Models.Usuario
+@model Inmobiliaria10.Models.UsuarioEditViewModel
 
 @{
     ViewData["Title"] = "Editar Usuario";
@@ -24,7 +24,7 @@
                         <div class="row mb-3 justify-content-center">
                             <div class="col-md-8">
                                 <label asp-for="IdRol" class="form-label w-100 text-center">Rol</label>
-                                <select id="rol" asp-for="IdRol" class="form-select text-center" asp-items="ViewBag.Roles">
+                                <select id="rol" asp-for="IdRol" class="form-select d-block mx-auto" asp-items="ViewBag.Roles">
                                     <option value="">-- Seleccione Rol --</option>
                                 </select>
                                 <span asp-validation-for="IdRol" class="text-danger"></span>
@@ -44,9 +44,13 @@
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label asp-for="Password" class="form-label w-100 text-center">Contraseña</label>
-                                <input asp-for="Password" type="password" class="form-control text-center" autocomplete="off"/>
-                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <label asp-for="Password" class="form-label w-100 text-center">
+                                    Contraseña 
+                                    <i class="fa-solid fa-circle-info text-info" 
+                                    data-bs-toggle="tooltip" 
+                                    title="Si deja este campo vacío, la contraseña se mantendrá igual por razones de seguridad."></i>
+                                </label>
+                                <input asp-for="Password" type="password" class="form-control text-center" autocomplete="off" data-val="false" />
                             </div>
                             <div class="col-md-8">
                                 <label asp-for="Email" class="form-label w-100 text-center">Email</label>
@@ -54,6 +58,7 @@
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
                         </div>
+
                         <div class="d-flex justify-content-between mt-4">
                             <a asp-action="Index" class="btn btn-back">
                                 <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
@@ -86,6 +91,17 @@
                 allowClear: true,
                 width: '100%'
             });
+            $("#Password").removeAttr("data-val");
+            $("#Password").removeAttr("data-val-required");
+
+
+
+            var passwordInput = document.getElementById('Password');
+            var passwordTooltip = new bootstrap.Tooltip(passwordInput);
+
+
+
+
         });
     </script>
 }

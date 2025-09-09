@@ -132,7 +132,7 @@ namespace Inmobiliaria10.Data.Repositories
             return (lista, totalRegistros);
         }
 
-        public async Task<Usuario?> ObtenerPorId(int id)
+        public async Task<Usuario?> ObtenerPorId(int id, CancellationToken cancellationToken = default)
         {
             Usuario? u = null;
             using var conn = _db.GetConnection();
@@ -146,9 +146,9 @@ namespace Inmobiliaria10.Data.Repositories
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
 
-            await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
+            await conn.OpenAsync(cancellationToken);
+            using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
             {
                 u = Map(reader);
             }

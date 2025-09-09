@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations; 
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Inmobiliaria10.Models
@@ -24,18 +24,21 @@ namespace Inmobiliaria10.Models
             set => _alias = value?.ToUpper() ?? "";
         }
 
+        [Required(ErrorMessage = "Debe ingresar una contraseña")]
         [StringLength(255)]
         public string Password { get; set; } = ""; 
 
         private string _email = "";
-        [Required, EmailAddress, StringLength(150)]
+        [Required(ErrorMessage = "Debe ingresar un correo electrónico")]
+        [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
+        [StringLength(150)]
         public string Email
         {
             get => _email;
-            set => _email = value ?? "";
+            set => _email = value?.ToLower() ?? "";
         }
 
-        [Required]
+        [Required(ErrorMessage = "Debe seleccionar un rol")]
         public int IdRol { get; set; } 
 
         [ForeignKey(nameof(IdRol))]

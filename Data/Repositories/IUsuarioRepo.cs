@@ -8,7 +8,7 @@ namespace Inmobiliaria10.Data.Repositories
         Task<int> Actualizar(Usuario u);
         Task<List<Usuario>> ListarTodos();
         Task<(List<Usuario> registros, int totalRegistros)> ListarTodosPaginado(int pagina, int cantidadPorPagina, string? searchString = null);
-        Task<Usuario?> ObtenerPorId(int id);
+        Task<Usuario?> ObtenerPorId(int id, CancellationToken cancellationToken = default);
         Task<int> Eliminar(int id);
         Task<Usuario?> ObtenerPorAlias(string alias);
     }
