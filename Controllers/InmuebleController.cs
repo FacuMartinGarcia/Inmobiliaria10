@@ -139,5 +139,75 @@ namespace Inmobiliaria10.Controllers
                     Text = t.DenominacionTipo
                 }).ToList();
         }
+
+         // GET: Inmueble/Imagenes/5
+        public async Task<IActionResult> Imagenes(int id)
+        {
+            var inmueble = await _repoInmueble.ObtenerPorId(id);
+            if (inmueble == null)
+                return NotFound();
+
+            return View(inmueble);
+        }
+
+        // POST: Inmueble/Portada
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Portada(int InmuebleId, IFormFile? Archivo)
+        {
+            var inmueble = await _repoInmueble.ObtenerPorId(InmuebleId);
+            if (inmueble == null)
+                return NotFound();
+
+            if (Archivo != null && Archivo.Length > 0)
+            {
+                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploads))
+                    Directory.CreateDirectory(uploads);
+
+                var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(Archivo.FileName);
+                var rutaArchivo = Path.Combine(uploads, nombreArchivo);
+
+                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await Archivo.CopyToAsync(stream);
+                }
+
+                inmueble.Portada = "/uploads/" + nombreArchivo;
+                await _repoInmueble.Actualizar(inmueble);
+
+                TempData["Mensaje"] = "Portada actualizada correctamente";
+            }
+
+            return RedirectToAction(nameof(Imagenes), new { id = InmuebleId });
+        }
+
+        // POST: Inmueble/EliminarPortada
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarPortada(int InmuebleId)
+        {
+            var inmueble = await _repoInmueble.ObtenerPorId(InmuebleId);
+            if (inmueble == null)
+                return NotFound();
+
+            if (!string.IsNullOrEmpty(inmueble.Portada))
+            {
+                //Con esto se borra el archivo fisicamente
+                var ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", inmueble.Portada.TrimStart('/'));
+                if (System.IO.File.Exists(ruta))
+                {
+                    System.IO.File.Delete(ruta);
+                }
+
+                inmueble.Portada = null;
+                await _repoInmueble.Actualizar(inmueble);
+
+                TempData["Mensaje"] = "Portada eliminada correctamente";
+            }
+
+            return RedirectToAction(nameof(Imagenes), new { id = InmuebleId });
+        }
+
     }
 }
