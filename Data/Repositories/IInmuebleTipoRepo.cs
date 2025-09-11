@@ -5,9 +5,11 @@ namespace Inmobiliaria10.Data.Repositories
     public interface IInmuebleTipoRepo
     {
         public List<InmuebleTipo> MostrarTodosInmuebleTipos();
+        public List<InmuebleTipo> BuscarInmuebleTipos(string term);
         public int Agregar(InmuebleTipo i);
         public void Editar(InmuebleTipo i);
         public void Eliminar(int id);
         public InmuebleTipo? ObtenerPorId(int id);
+
     }
 }

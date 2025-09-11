@@ -43,7 +43,12 @@ namespace Inmobiliaria10.Models
 
         [Range(1, int.MaxValue, ErrorMessage = "DeletedBy debe ser válido si DeletedAt tiene valor.")]
         public int? DeletedBy { get; set; }
+        
+        [ForeignKey(nameof(IdInquilino))]
+        public Inquilino? Inquilino { get; set; }
 
+        [ForeignKey(nameof(IdInmueble))]
+        public Inmueble? Inmueble { get; set; }
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             // 1) Fin después de inicio

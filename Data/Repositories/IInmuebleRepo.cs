@@ -6,6 +6,7 @@ namespace Inmobiliaria10.Data.Repositories
     {
         Task<int> Agregar(Inmueble inmueble);
         Task<int> Actualizar(Inmueble inmueble);
+        Task<List<Inmueble>> BuscarInmueble(string term);
         Task<int> Eliminar(int id);
         Task<Inmueble?> ObtenerPorId(int id);
         Task<List<Inmueble>> ListarTodos();

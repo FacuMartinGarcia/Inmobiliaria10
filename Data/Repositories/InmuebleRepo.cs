@@ -210,6 +210,39 @@ namespace Inmobiliaria10.Data.Repositories
             return await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task<List<Inmueble>> BuscarInmueble(string term)
+        {
+            var lista = new List<Inmueble>();
+            using var conn = _db.GetConnection();
+
+            var sql = @"
+                SELECT i.*,
+                    u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
+                    t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
+                    p.id_propietario, p.documento, p.apellido_nombres, p.domicilio, 
+                    p.telefono, p.email
+                FROM inmuebles i
+                LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+                LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+                LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
+                WHERE i.direccion LIKE @term
+                AND i.activo = 1
+                ORDER BY i.direccion, i.piso, i.depto
+                LIMIT 20
+            ";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@term", MySqlDbType.VarChar).Value = $"%{term}%";
+
+            await conn.OpenAsync();
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                lista.Add(Map(reader));
+            }
+            return lista;
+        }
         private Inmueble Map(DbDataReader reader)
         {
             return new Inmueble

@@ -9,5 +9,6 @@ namespace Inmobiliaria10.Data.Repositories
         void Eliminar(int id);
         InmuebleUso? ObtenerPorId(int id);
         List<InmuebleUso> MostrarTodosInmuebleUsos();
+        List<InmuebleUso> BuscarInmuebleUsos(string term);
         bool ExisteDenominacion(string denominacion, int? id = null);}
 }

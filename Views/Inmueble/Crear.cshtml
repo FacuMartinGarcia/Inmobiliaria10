@@ -23,23 +23,17 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label asp-for="IdPropietario" class="form-label w-100 text-center">Propietario</label>
-                                <select id="propietario" asp-for="IdPropietario" class="form-select" asp-items="ViewBag.Propietarios">
-                                    <option value="">-- Seleccione Propietario --</option>
-                                </select>
+                                <select id="propietario" asp-for="IdPropietario" class="form-select"></select>
                                 <span asp-validation-for="IdPropietario" class="text-danger"></span>
                             </div>
                             <div class="col-md-3">
                                 <label asp-for="IdTipo" class="form-label w-100 text-center">Tipo</label>
-                                <select id="tipo" asp-for="IdTipo" class="form-select" asp-items="ViewBag.Tipos">
-                                    <option value="">-- Seleccione Tipo --</option>
-                                </select>
+                                <select id="tipo" asp-for="IdTipo" class="form-select"></select>
                                 <span asp-validation-for="IdTipo" class="text-danger"></span>
                             </div>
                             <div class="col-md-3">
                                 <label asp-for="IdUso" class="form-label w-100 text-center">Uso</label>
-                                <select id="uso" asp-for="IdUso" class="form-select" asp-items="ViewBag.Usos">
-                                    <option value="">-- Seleccione Uso --</option>
-                                </select>
+                                <select id="uso" asp-for="IdUso" class="form-select"></select>
                                 <span asp-validation-for="IdUso" class="text-danger"></span>
                             </div>
                             <div class="col-md-2">
@@ -125,23 +119,71 @@
         $(document).ready(function() {
             $('#propietario').select2({
                 theme: 'bootstrap4',
-                placeholder: '-- Seleccione Propietario --',
+                placeholder: 'Buscar propietario...',
                 allowClear: true,
-                width: '100%'
-            });
-
-            $('#tipo').select2({
-                theme: 'bootstrap4',
-                placeholder: '-- Seleccione Tipo --',
-                allowClear: true,
-                width: '100%'
+                width: '100%',
+                ajax: {
+                    url: '/Inmueble/BuscarPropietarios',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                },
+                minimumResultsForSearch: 1
             });
 
             $('#uso').select2({
+                placeholder: "Buscar usos de inmueble...",
                 theme: 'bootstrap4',
-                placeholder: '-- Seleccione Uso --',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                ajax: {
+                    url: '/Inmueble/BuscarUsos',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                },
+                minimumResultsForSearch: 1
+            });
+
+            $('#tipo').select2({
+                placeholder: "Buscar tipo de inmueble...",
+                theme: 'bootstrap4',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '/Inmueble/BuscarTipos',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                },
+                minimumResultsForSearch: 1
             });
         });
     </script>

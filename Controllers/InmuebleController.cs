@@ -77,7 +77,7 @@ namespace Inmobiliaria10.Controllers
             if (inmueble == null)
                 return NotFound();
 
-            await CargarSelectsAsync();
+            //await CargarSelectsAsync();
             return View(inmueble);
         }
 
@@ -139,5 +139,45 @@ namespace Inmobiliaria10.Controllers
                     Text = t.DenominacionTipo
                 }).ToList();
         }
+
+        // Endpoints para cargar los combos (select2= con Ajax, como pidió el profe en la segunda entrega
+        [HttpGet]
+        public IActionResult BuscarTipos(string term)
+        {
+            var tipos = _repoTipo.BuscarInmuebleTipos(term ?? "");
+            var resultados = tipos.Select(t => new
+            {
+                id = t.IdTipo,
+                text = t.DenominacionTipo
+            });
+            return Json(resultados);
+        }
+
+        [HttpGet]
+        public IActionResult BuscarUsos(string term)
+        {
+            var usos = _repoUso.BuscarInmuebleUsos(term ?? "");
+            var resultados = usos.Select(u => new
+            {
+                id = u.IdUso,
+                text = u.DenominacionUso
+            });
+            return Json(resultados);
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> BuscarPropietarios(string term)
+        {
+            var propietarios = await _repoPropietario.BuscarPropietarioAsync(term ?? "");
+
+            var results = propietarios.Select(p => new
+            {
+                id = p.IdPropietario,
+                text = $"{p.ApellidoNombres} - {p.Documento}"
+            });
+
+            return Json(results);
+        }
+
     }
 }

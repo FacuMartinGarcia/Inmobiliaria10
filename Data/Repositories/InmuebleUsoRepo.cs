@@ -125,5 +125,34 @@ namespace Inmobiliaria10.Data.Repositories
 
             return inmuebleUsos;
         }
+
+        public List<InmuebleUso> BuscarInmuebleUsos(string term)
+        {
+            var inmuebleUsos = new List<InmuebleUso>();
+
+            using var conn = _db.GetConnection();
+            var sql = @"SELECT id_uso, denominacion_uso 
+                        FROM inmuebles_usos
+                        WHERE denominacion_uso LIKE @term
+                        LIMIT 20";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+            conn.Open();
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var inmuebleUso = new InmuebleUso
+                {
+                    IdUso = reader.GetInt32("id_uso"),
+                    DenominacionUso = reader.GetString("denominacion_uso"),
+                };
+                inmuebleUsos.Add(inmuebleUso);
+            }
+
+            return inmuebleUsos;
+        }
+
     }
 }

@@ -95,5 +95,6 @@ namespace Inmobiliaria10.Controllers
             repo.Eliminar(id);
             return RedirectToAction(nameof(Index));
         }
+        
     }
 }
