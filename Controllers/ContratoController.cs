@@ -232,6 +232,57 @@ namespace Inmobiliaria10.Controllers
         }
 
         // ------------------- CARGA SELECTS -------------------
+        
+        [HttpGet]
+        public async Task<IActionResult> SearchInquilinos(string? term, int? id, CancellationToken ct = default)
+        {
+            var inquilinos = await _repo.GetInquilinosAsync(ct);
+
+            if (id.HasValue)
+            {
+                var item = inquilinos.FirstOrDefault(x => x.Id == id.Value);
+                if (item.Id > 0)
+                    return Json(new { item = new { id = item.Id, text = item.Nombre } });
+                return Json(new { item = (object?)null });
+            }
+
+            var results = inquilinos
+                .Where(x => string.IsNullOrEmpty(term) || x.Nombre.Contains(term, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new { id = x.Id, text = x.Nombre })
+                .Take(20)
+                .ToList();
+
+            return Json(new { results });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchInmuebles(string? term, int? id, CancellationToken ct = default)
+        {
+            var inmuebles = await _repoInmueble.ListarTodos();
+
+            if (id.HasValue)
+            {
+                var item = inmuebles.FirstOrDefault(x => x.IdInmueble == id.Value);
+                if (item != null)
+                {
+                    var txt = $"{item.Direccion}" +
+                            (string.IsNullOrWhiteSpace(item.Piso) ? "" : $" Piso {item.Piso}") +
+                            (string.IsNullOrWhiteSpace(item.Depto) ? "" : $" Dpto {item.Depto}");
+                    return Json(new { item = new { id = item.IdInmueble, text = txt } });
+                }
+                return Json(new { item = (object?)null });
+            }
+
+            var results = inmuebles
+                .Where(x => string.IsNullOrEmpty(term) || x.Direccion.Contains(term, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new { id = x.IdInmueble, text = x.Direccion })
+                .Take(20)
+                .ToList();
+
+            return Json(new { results });
+        }
+
+
 
         // Para Crear/Editar: solo inmuebles activos
         private async Task CargarSelectsAsync(int? idInmueble, int? idInquilino, CancellationToken ct)
@@ -243,7 +294,7 @@ namespace Inmobiliaria10.Controllers
             ViewBag.Inmuebles = new SelectList(
                 inmuebles,
                 "IdInmueble",
-                "Direccion", 
+                "Direccion",
                 idInmueble?.ToString()
             );
 
