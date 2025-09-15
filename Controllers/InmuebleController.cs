@@ -185,6 +185,7 @@ namespace Inmobiliaria10.Controllers
             }
 
             return RedirectToAction(nameof(Imagenes), new { id = InmuebleId });
+        
         }
 
         // POST: Inmueble/EliminarPortada
@@ -212,7 +213,7 @@ namespace Inmobiliaria10.Controllers
             }
 
             return RedirectToAction(nameof(Imagenes), new { id = InmuebleId });
-
+        }
         // Endpoints para cargar los combos (select2= con Ajax, como pidió el profe en la segunda entrega
         [HttpGet]
         public IActionResult BuscarTipos(string term)
