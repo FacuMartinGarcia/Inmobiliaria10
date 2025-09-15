@@ -17,14 +17,14 @@
           <!-- Inquilino -->
           <div class="col-md-6">
             <label asp-for="IdInquilino" class="form-label">Inquilino</label>
-            <select asp-for="IdInquilino" class="form-select"></select>
+            <select asp-for="IdInquilino" class="form-select" id="IdInquilino"></select>
             <span asp-validation-for="IdInquilino" class="text-danger"></span>
           </div>
 
           <!-- Inmueble -->
           <div class="col-md-6">
             <label asp-for="IdInmueble" class="form-label">Inmueble</label>
-            <select asp-for="IdInmueble" class="form-select"></select>
+            <select asp-for="IdInmueble" class="form-select" id="IdInmueble"></select>
             <span asp-validation-for="IdInmueble" class="text-danger"></span>
           </div>
 
@@ -43,28 +43,59 @@
 
           <div class="col-md-4">
             <label asp-for="MontoMensual" class="form-label">Monto mensual</label>
-            <input asp-for="MontoMensual" type="number" step="0.01" class="form-control" />
+            <input asp-for="MontoMensual" type="number" step="0.01" class="form-control" id="MontoMensual" />
             <span asp-validation-for="MontoMensual" class="text-danger"></span>
           </div>
         </div>
 
-        <div class="d-flex gap-2 mt-3">
-            <a class="btn btn-back" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
-            <button type="submit" class="btn btn-save"><i class="bi bi-check-lg"></i> Guardar</button>
+        <!-- Rescisión -->
+        <div class="rescision-section mt-3">
+            <h6 class="form-subtitle text-center">Rescindir Contrato con Cálculo de Multa</h6>
+            <div class="d-flex justify-content-center align-items-end flex-wrap gap-3">
+                <div class="d-flex flex-column" style="flex: 0 0 200px;">
+                    <label asp-for="Rescision" class="form-label text-center">Fecha de Rescisión</label>
+                    <input asp-for="Rescision" type="date" class="form-control" id="Rescision" />
+                    <span asp-validation-for="Rescision" class="text-danger"></span>
+                </div>
+                <div class="d-flex flex-column" style="flex: 0 0 200px;">
+                    <label asp-for="MontoMulta" class="form-label text-center">Monto de Multa</label>
+                    <input asp-for="MontoMulta" type="number" step="0.01" min="0" class="form-control" id="MontoMulta" readonly />
+                    <span asp-validation-for="MontoMulta" class="text-danger"></span>
+                </div>
+            </div>
         </div>
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn btn-back">
+                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-save">
+                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Cambios
+            </button>
+        </div>
+        
+
     </form>
   </div>
 </div>
 
 @section Scripts {
-    <!-- quitá estos includes si ya están en tu _Layout -->
+    <!-- Librerías base -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Select2 y SweetAlert -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
     $(function () {
+      // =======================
       // Inquilinos
+      // =======================
       $('#IdInquilino').select2({
         placeholder: 'Buscar inquilino…',
         allowClear: true,
@@ -77,7 +108,7 @@
         }
       });
 
-      // Inmuebles
+
       $('#IdInmueble').select2({
         placeholder: 'Buscar inmueble…',
         allowClear: true,
@@ -90,8 +121,16 @@
         }
       });
 
-      // Preselección Inquilino (desde el modelo)
-      const preInquilino = @Model.IdInquilino;
+      // Asignar precio al seleccionar inmueble
+      $('#IdInmueble').on('select2:select', function (e) {
+        const data = e.params.data;
+        if (data && data.precio) {
+          $('#MontoMensual').val(data.precio);
+        }
+      });
+
+
+      const preInquilino = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IdInquilino));
       if (preInquilino && preInquilino > 0) {
         $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
           if (res && res.item) {
@@ -101,16 +140,83 @@
         });
       }
 
-      // Preselección Inmueble (desde el modelo)
-      const preInmueble = @Model.IdInmueble;
+
+      const preInmueble = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IdInmueble));
       if (preInmueble && preInmueble > 0) {
         $.getJSON('/Contrato/SearchInmuebles', { id: preInmueble }, function (res) {
           if (res && res.item) {
             const opt = new Option(res.item.text, res.item.id, true, true);
             $('#IdInmueble').append(opt).trigger('change');
+            if (res.item.precio) {
+              $('#MontoMensual').val(res.item.precio);
+            }
           }
         });
       }
+
+
+      async function calcularMulta() {
+        const idContrato = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IdContrato));
+        const fechaRescision = $("#Rescision").val();
+        const inputMontoMulta = $("#MontoMulta")[0];
+        const spanValidacion = inputMontoMulta.nextElementSibling;
+
+        inputMontoMulta.value = '';
+        spanValidacion.textContent = '';
+
+        if (!fechaRescision) return;
+
+        const params = new URLSearchParams();
+        params.append("idContrato", idContrato);
+        params.append("fechaRescision", fechaRescision);
+
+        try {
+          const resp = await fetch('@Url.Action("CalcularMulta","Contrato")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+          });
+
+          const data = await resp.json();
+          if (data.ok && data.multa != null) {
+            inputMontoMulta.value = data.multa.toFixed(2);
+          } else {
+            spanValidacion.textContent = data.mensaje ?? "No se pudo calcular la multa.";
+          }
+        } catch (ex) {
+          spanValidacion.textContent = "Error al comunicarse con el servidor.";
+        }
+      }
+      $("#Rescision").on("change", calcularMulta);
+
+
+      $('form').on('submit', function (e) {
+        e.preventDefault();
+        const form = this;
+
+        const fechaRescision = $("#Rescision").val();
+        const mensaje = fechaRescision
+          ? "El contrato se va a rescindir. ¿Está seguro?"
+          : "Se actualizarán los datos del contrato.";
+
+        if (fechaRescision) {
+          Swal.fire({
+            title: 'Confirmación',
+            text: mensaje,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+          }).then((result) => {
+            if (result.isConfirmed && $(form).valid()) {
+              form.submit();
+            }
+          });
+        } else if ($(form).valid()) {
+          form.submit();
+        }
+      });
     });
     </script>
 }
