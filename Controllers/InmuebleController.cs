@@ -139,8 +139,9 @@ namespace Inmobiliaria10.Controllers
                     Text = t.DenominacionTipo
                 }).ToList();
         }
-
-         // GET: Inmueble/Imagenes/5
+        
+        // CODIGO PARA EL MANEJO DE IMAGENES
+        // GET: Inmueble/Imagenes/5
         public async Task<IActionResult> Imagenes(int id)
         {
             var inmueble = await _repoInmueble.ObtenerPorId(id);
@@ -153,7 +154,8 @@ namespace Inmobiliaria10.Controllers
         // POST: Inmueble/Portada
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Portada(int InmuebleId, IFormFile? Archivo)
+        public async Task<IActionResult> Portada(int InmuebleId, IFormFile? Archivo, [FromServices] IWebHostEnvironment environment)
+        //HortEnviromet sirve para trabajar con archivos y rutas sin depender de dónde está instalada la app.
         {
             var inmueble = await _repoInmueble.ObtenerPorId(InmuebleId);
             if (inmueble == null)
@@ -161,19 +163,22 @@ namespace Inmobiliaria10.Controllers
 
             if (Archivo != null && Archivo.Length > 0)
             {
-                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploads))
-                    Directory.CreateDirectory(uploads);
+                //enviroment 
+                var ruta = Path.Combine(environment.WebRootPath, "Uploads", "Inmuebles");
 
-                var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(Archivo.FileName);
-                var rutaArchivo = Path.Combine(uploads, nombreArchivo);
+                if (!Directory.Exists(ruta))
+                    Directory.CreateDirectory(ruta);
+
+                var nombreArchivo = "portada_" + inmueble.IdInmueble + Path.GetExtension(Archivo.FileName);
+                var rutaArchivo = Path.Combine(ruta, nombreArchivo);
+
 
                 using (var stream = new FileStream(rutaArchivo, FileMode.Create))
                 {
                     await Archivo.CopyToAsync(stream);
                 }
 
-                inmueble.Portada = "/uploads/" + nombreArchivo;
+                inmueble.Portada = "/uploads/inmuebles/" + nombreArchivo;
                 await _repoInmueble.Actualizar(inmueble);
 
                 TempData["Mensaje"] = "Portada actualizada correctamente";
@@ -185,7 +190,7 @@ namespace Inmobiliaria10.Controllers
         // POST: Inmueble/EliminarPortada
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EliminarPortada(int InmuebleId)
+        public async Task<IActionResult> EliminarPortada(int InmuebleId, [FromServices] IWebHostEnvironment environment)
         {
             var inmueble = await _repoInmueble.ObtenerPorId(InmuebleId);
             if (inmueble == null)
@@ -193,8 +198,8 @@ namespace Inmobiliaria10.Controllers
 
             if (!string.IsNullOrEmpty(inmueble.Portada))
             {
-                //Con esto se borra el archivo fisicamente
-                var ruta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", inmueble.Portada.TrimStart('/'));
+                var ruta = Path.Combine(environment.WebRootPath, inmueble.Portada.TrimStart('/'));
+
                 if (System.IO.File.Exists(ruta))
                 {
                     System.IO.File.Delete(ruta);
