@@ -65,7 +65,9 @@
                         <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
                             <i class="fa-solid fa-eye"></i>
                         </a>
-                    </td>
+                        <a class="btn btn-sm btn-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble" title="Imágenes">
+                            <i class="fa-solid fa-image"></i>
+                        </a>
                 </tr>
             }
         }
