@@ -1,127 +1,114 @@
 @model Inmobiliaria10.Models.Contrato
-
 @{
-    ViewData["Title"] = "Nuevo Contrato";
+    ViewData["Title"] = "Nuevo contrato";
 }
 
-<style>
-    .form-card {
-        max-width: 1000px;
-        width: 100%;
-    }
-</style>
+<div class="d-flex justify-content-center py-4">
+  <div class="form-card w-100" style="max-width: 900px;">
+    <h1 class="form-title">Nuevo contrato</h1>
 
-<div class="mt-5">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="card form-card mx-auto">
-                <div class="card-header form-card-header">
-                    <h4 class="form-title">@ViewData["Title"]</h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Crear" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>Errores:</strong>
-                            <ul></ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-5">
-                                <label asp-for="IdInquilino" class="form-label w-100 text-center">Inquilino</label>
-                                <select id="inquilino" asp-for="IdInquilino" class="form-select" asp-items="ViewBag.Inquilinos">
-                                    <option value="">-- Seleccione Inquilino --</option>
-                                </select>
-                                <span asp-validation-for="IdInquilino" class="text-danger"></span>
-                            </div>
+    <form asp-action="Crear" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                            <div class="col-md-7">
-                                <label asp-for="IdInmueble" class="form-label w-100 text-center">Inmueble</label>
-                                <select id="inmueble" asp-for="IdInmueble" class="form-select">
-                                    <option value="">-- Seleccione Inmueble --</option>
-                                    @foreach (var i in ViewBag.InmueblesRaw)
-                                    {
-                                        <option value="@i.IdInmueble"
-                                                data-precio="@i.Precio?.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                                selected="@(Model.IdInmueble == i.IdInmueble)">
-                                            @i.Direccion
-                                            @(string.IsNullOrWhiteSpace(i.Piso) ? "" : $" Piso {i.Piso}")
-                                            @(string.IsNullOrWhiteSpace(i.Depto) ? "" : $" Dpto {i.Depto}")
-                                            @(string.IsNullOrWhiteSpace(i.DenominacionTipo) ? "" : $" - {i.DenominacionTipo}")
-                                            - $@i.Precio
-                                        </option>
-                                    }
-                                </select>
-                                <span asp-validation-for="IdInmueble" class="text-danger"></span>
-                            </div>
-                        </div>
+        <div class="row g-3">
+          <!-- Inquilino -->
+          <div class="col-md-6">
+            <label asp-for="IdInquilino" class="form-label">Inquilino</label>
+            <select asp-for="IdInquilino" class="form-select"></select>
+            <span asp-validation-for="IdInquilino" class="text-danger"></span>
+          </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label asp-for="FechaInicio" class="form-label w-100 text-center">Fecha Inicio</label>
-                                <input asp-for="FechaInicio" type="date" class="form-control text-center" />
-                                <span asp-validation-for="FechaInicio" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-4">
-                                <label asp-for="FechaFin" class="form-label w-100 text-center">Fecha Fin</label>
-                                <input asp-for="FechaFin" type="date" class="form-control text-center" />
-                                <span asp-validation-for="FechaFin" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-4">
-                                <label asp-for="MontoMensual" class="form-label w-100 text-center">Monto Mensual</label>
-                                <input asp-for="MontoMensual" type="number" step="0.01" class="form-control text-center" min="0.01" />
-                                <span asp-validation-for="MontoMensual" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Index" class="btn btn-back">
-                                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-save">
-                                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+          <!-- Inmueble -->
+          <div class="col-md-6">
+            <label asp-for="IdInmueble" class="form-label">Inmueble</label>
+            <select asp-for="IdInmueble" class="form-select"></select>
+            <span asp-validation-for="IdInmueble" class="text-danger"></span>
+          </div>
+
+          <!-- Fechas -->
+          <div class="col-md-4">
+            <label asp-for="FechaInicio" class="form-label">Fecha inicio</label>
+            <input asp-for="FechaInicio" type="date" class="form-control" />
+            <span asp-validation-for="FechaInicio" class="text-danger"></span>
+          </div>
+
+          <div class="col-md-4">
+            <label asp-for="FechaFin" class="form-label">Fecha fin</label>
+            <input asp-for="FechaFin" type="date" class="form-control" />
+            <span asp-validation-for="FechaFin" class="text-danger"></span>
+          </div>
+
+          <div class="col-md-4">
+            <label asp-for="MontoMensual" class="form-label">Monto mensual</label>
+            <input asp-for="MontoMensual" type="number" step="0.01" class="form-control" />
+            <span asp-validation-for="MontoMensual" class="text-danger"></span>
+          </div>
         </div>
-    </div>
+
+        <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-back" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
+            <button type="submit" class="btn btn-save"><i class="bi bi-check-lg"></i> Guardar</button>
+        </div>
+    </form>
+  </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    <!-- quitá estos includes si ya están en tu _Layout -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
 
     <script>
-        $(function () {
-            $('#inquilino').select2({
-                theme: 'bootstrap4',
-                placeholder: '-- Seleccione Inquilino --',
-                allowClear: true,
-                width: '100%'
-            });
+    $(function () {
+      // Inquilinos
+      $('#IdInquilino').select2({
+        placeholder: 'Buscar inquilino…',
+        allowClear: true,
+        ajax: {
+          url: '/Contrato/SearchInquilinos',
+          dataType: 'json',
+          delay: 250,
+          data: params => ({ term: params.term }),
+          processResults: data => ({ results: data.results })
+        }
+      });
 
-            $('#inmueble').select2({
-                theme: 'bootstrap4',
-                placeholder: '-- Seleccione Inmueble --',
-                allowClear: true,
-                width: '100%'
-            });
+      // Inmuebles
+      $('#IdInmueble').select2({
+        placeholder: 'Buscar inmueble…',
+        allowClear: true,
+        ajax: {
+          url: '/Contrato/SearchInmuebles',
+          dataType: 'json',
+          delay: 250,
+          data: params => ({ term: params.term }),
+          processResults: data => ({ results: data.results })
+        }
+      });
 
-            /*
-            $('#inquilino, #inmueble').on('select2:close', function () {
-                $(this).valid();
-            });
-            */
-            $('#inmueble').on('change', function () {
-                var selected = $(this).find(':selected');
-                var precio = selected.data('precio');
-                $('#MontoMensual').val(precio);
-            });
+      // Preselección Inquilino
+      const preInquilino = @Model.IdInquilino;
+      if (preInquilino && preInquilino > 0) {
+        $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
+          if (res && res.item) {
+            const opt = new Option(res.item.text, res.item.id, true, true);
+            $('#IdInquilino').append(opt).trigger('change');
+          }
         });
+      }
+
+      // Preselección Inmueble
+      const preInmueble = @Model.IdInmueble;
+      if (preInmueble && preInmueble > 0) {
+        $.getJSON('/Contrato/SearchInmuebles', { id: preInmueble }, function (res) {
+          if (res && res.item) {
+            const opt = new Option(res.item.text, res.item.id, true, true);
+            $('#IdInmueble').append(opt).trigger('change');
+          }
+        });
+      }
+    });
     </script>
 }

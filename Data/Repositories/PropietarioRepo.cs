@@ -218,5 +218,31 @@ namespace Inmobiliaria10.Data.Repositories
             var i = rd.GetOrdinal(col);
             return rd.IsDBNull(i);
         }
+
+        public async Task<List<Propietario>> BuscarPropietarioAsync(string term)
+        {
+            var propietarios = new List<Propietario>();
+
+            const string sql = @"
+                SELECT id_propietario, documento, apellido_nombres, domicilio, telefono, email
+                FROM propietarios
+                WHERE apellido_nombres LIKE @term OR documento LIKE @term
+                LIMIT 20;";
+
+            await using var cn = Conn();
+            await cn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, cn);
+            cmd.Parameters.Add("@term", MySqlDbType.VarChar).Value = $"%{term}%";
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+
+                propietarios.Add(Map(reader));
+            }
+
+            return propietarios;
+        }
+
     }
 }

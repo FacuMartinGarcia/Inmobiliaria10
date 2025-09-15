@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations; 
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Inmobiliaria10.Models
@@ -9,7 +9,7 @@ namespace Inmobiliaria10.Models
         public int IdUsuario { get; set; }  
 
         private string _apellidoNombres = "";
-        [Required, StringLength(200)]
+        [Required(ErrorMessage = "Debe ingresar el apellido y nombres de usuario"), StringLength(200)]
         public string ApellidoNombres
         {
             get => _apellidoNombres;
@@ -17,25 +17,28 @@ namespace Inmobiliaria10.Models
         }
 
         private string _alias = "";
-        [Required, StringLength(100)]
+        [Required(ErrorMessage = "Debe ingresar un alias de identificación del usuario"), StringLength(100)]
         public string Alias
         {
             get => _alias;
             set => _alias = value?.ToUpper() ?? "";
         }
 
-        [Required, StringLength(255)]
+        [Required(ErrorMessage = "Debe ingresar una contraseña")]
+        [StringLength(255)]
         public string Password { get; set; } = ""; 
 
         private string _email = "";
-        [Required, EmailAddress, StringLength(150)]
+        [Required(ErrorMessage = "Debe ingresar un correo electrónico")]
+        [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
+        [StringLength(150)]
         public string Email
         {
             get => _email;
-            set => _email = value ?? "";
+            set => _email = value?.ToLower() ?? "";
         }
 
-        [Required]
+        [Required(ErrorMessage = "Debe seleccionar un rol")]
         public int IdRol { get; set; } 
 
         [ForeignKey(nameof(IdRol))]

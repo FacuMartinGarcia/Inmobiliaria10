@@ -98,7 +98,7 @@ namespace Inmobiliaria10.Data.Repositories
             {
                 where = @"WHERE apellido_nombres LIKE @search 
                         OR documento LIKE @search
-                        OR telefono LIKE @search"; 
+                        OR telefono LIKE @search";
             }
 
             var sql = $@"SELECT * FROM inquilinos 
@@ -204,5 +204,42 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync(ct);
             return await cmd.ExecuteNonQueryAsync(ct);
         }
+        
+        public async Task<List<Inquilino>> BuscarInquilino(string term, CancellationToken ct = default)
+        {
+            var lista = new List<Inquilino>();
+            using var conn = Conn();
+
+            var sql = @"
+                SELECT * 
+                FROM inquilinos
+                WHERE apellido_nombres LIKE @term OR documento LIKE @term
+                ORDER BY apellido_nombres
+                LIMIT 20;
+            ";
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@term", MySqlDbType.VarChar).Value = $"%{term}%";
+
+            await conn.OpenAsync(ct);
+
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                lista.Add(new Inquilino
+                {
+                    IdInquilino = reader.GetInt32("id_inquilino"),
+                    Documento = reader.GetString("documento"),
+                    ApellidoNombres = reader.GetString("apellido_nombres"),
+                    Domicilio = reader.GetString("domicilio"),
+                    Telefono = reader.IsDBNull("telefono") ? null : reader.GetString("telefono"),
+                    Email = reader.IsDBNull("email") ? null : reader.GetString("email")
+                });
+            }
+
+            return lista;
+        }
+
+        
     }
 }

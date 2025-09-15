@@ -121,5 +121,36 @@ namespace Inmobiliaria10.Data.Repositories
 
             return inmuebleTipos;
         }
+
+        public List<InmuebleTipo> BuscarInmuebleTipos(string term)
+        {
+            var inmuebleTipos = new List<InmuebleTipo>();
+
+            using var conn = _db.GetConnection();
+            var sql = @"SELECT id_tipo, denominacion_tipo 
+                        FROM inmuebles_tipos
+                        WHERE denominacion_tipo LIKE @term
+                        LIMIT 20";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@term", "%" + term + "%");
+            conn.Open();
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var inmuebleTipo = new InmuebleTipo
+                {
+                    IdTipo = reader.GetInt32("id_tipo"),
+                    DenominacionTipo = reader.GetString("denominacion_tipo"),
+                };
+                inmuebleTipos.Add(inmuebleTipo);
+            }
+
+            return inmuebleTipos;
+        }
+
     }
+
+    
 }
