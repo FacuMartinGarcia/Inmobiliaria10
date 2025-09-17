@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; 
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace Inmobiliaria10.Models
 {
@@ -14,7 +16,7 @@ namespace Inmobiliaria10.Models
         [Display(Name = "Cód Inmueble")]
         public int IdInmueble { get; set; }
 
-        [Required(ErrorMessage = "Debe seleccionar un Propietario") ]
+        [Required(ErrorMessage = "Debe seleccionar un Propietario")]
         [Display(Name = "Propietario")]
         public int IdPropietario { get; set; }
 
@@ -80,12 +82,17 @@ namespace Inmobiliaria10.Models
 
         [ForeignKey(nameof(IdPropietario))]
         public Propietario? Propietario { get; set; }
-     
+
         [ForeignKey(nameof(IdTipo))]
-     
         public InmuebleTipo? Tipo { get; set; }
 
         [ForeignKey(nameof(IdUso))]
         public InmuebleUso? Uso { get; set; }
+        public string? Portada { get; set; }
+
+        [NotMapped]
+        public IFormFile? PortadaFile { get; set; }
+
+        public IList<Imagen> Imagenes { get; set; } = new List<Imagen>();
     }
 }

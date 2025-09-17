@@ -1,4 +1,3 @@
-using System.Data;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
 using Inmobiliaria10.Models;
@@ -8,10 +7,12 @@ namespace Inmobiliaria10.Data.Repositories
     public class InmuebleRepo : IInmuebleRepo
     {
         private readonly Database _db;
+        private readonly IImagenRepo _imagenRepo;
 
         public InmuebleRepo(Database db)
         {
             _db = db;
+            _imagenRepo = new ImagenRepo(db);
         }
 
         public async Task<int> Agregar(Inmueble i)
@@ -56,6 +57,7 @@ namespace Inmobiliaria10.Data.Repositories
                             ambientes = @ambientes,
                             precio = @precio,
                             activo = @activo,
+                            portada = @portada,         -- 👈 agregado
                             updated_at = @updatedAt
                         WHERE id_inmueble = @id";
 
@@ -71,12 +73,14 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@ambientes", (object?)i.Ambientes ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@precio", (object?)i.Precio ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@activo", i.Activo);
+            cmd.Parameters.AddWithValue("@portada", (object?)i.Portada ?? DBNull.Value); 
             cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@id", i.IdInmueble);
 
             await conn.OpenAsync();
             return await cmd.ExecuteNonQueryAsync();
         }
+
 
         public async Task<List<Inmueble>> ListarTodos()
         {
@@ -196,6 +200,12 @@ namespace Inmobiliaria10.Data.Repositories
             {
                 i = Map(reader);
             }
+            
+            
+                if (i != null)
+            {
+                i.Imagenes = (await _imagenRepo.BuscarPorInmueble(id)).ToList();
+            }
             return i;
         }
 
@@ -277,6 +287,7 @@ namespace Inmobiliaria10.Data.Repositories
                 Lon = reader.IsDBNull(reader.GetOrdinal("lon")) ? null : reader.GetDecimal(reader.GetOrdinal("lon")),
                 Ambientes = reader.IsDBNull(reader.GetOrdinal("ambientes")) ? null : reader.GetInt32(reader.GetOrdinal("ambientes")),
                 Precio = reader.IsDBNull(reader.GetOrdinal("precio")) ? null : reader.GetDecimal(reader.GetOrdinal("precio")),
+                Portada = reader.IsDBNull(reader.GetOrdinal("portada")) ? null : reader.GetString(reader.GetOrdinal("portada")),
                 Activo = reader.GetBoolean(reader.GetOrdinal("activo")),
                 CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
                 UpdatedAt = reader.GetDateTime(reader.GetOrdinal("updated_at"))

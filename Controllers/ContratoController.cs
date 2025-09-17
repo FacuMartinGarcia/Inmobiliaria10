@@ -146,7 +146,7 @@ namespace Inmobiliaria10.Controllers
             {
                 await _repo.UpdateAsync(model, ct);
                 TempData["Ok"] = "Contrato actualizado correctamente.";
-                return RedirectToAction(nameof(Detalles), new { id = model.IdContrato });
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -255,6 +255,8 @@ namespace Inmobiliaria10.Controllers
             return Json(new { results });
         }
 
+
+
         [HttpGet]
         public async Task<IActionResult> SearchInmuebles(string? term, int? id, CancellationToken ct = default)
         {
@@ -267,23 +269,43 @@ namespace Inmobiliaria10.Controllers
                 {
                     var txt = $"{item.Direccion}" +
                             (string.IsNullOrWhiteSpace(item.Piso) ? "" : $" Piso {item.Piso}") +
-                            (string.IsNullOrWhiteSpace(item.Depto) ? "" : $" Dpto {item.Depto}");
-                    return Json(new { item = new { id = item.IdInmueble, text = txt } });
+                            (string.IsNullOrWhiteSpace(item.Depto) ? "" : $" Dpto {item.Depto}") +
+                            $" - ${item.Precio:0.00}";
+
+                    return Json(new
+                    {
+                        item = new
+                        {
+                            id = item.IdInmueble,
+                            text = txt,
+                            piso = item.Piso,
+                            depto = item.Depto,
+                            precio = item.Precio
+                        }
+                    });
                 }
                 return Json(new { item = (object?)null });
             }
 
             var results = inmuebles
-                .Where(x => string.IsNullOrEmpty(term) || x.Direccion.Contains(term, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new { id = x.IdInmueble, text = x.Direccion })
+                .Where(x => string.IsNullOrEmpty(term) || 
+                            x.Direccion.Contains(term, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new
+                {
+                    id = x.IdInmueble,
+                    text = $"{x.Direccion}" +
+                        (string.IsNullOrWhiteSpace(x.Piso) ? "" : $" Piso {x.Piso}") +
+                        (string.IsNullOrWhiteSpace(x.Depto) ? "" : $" Dpto {x.Depto}") +
+                        $" - ${x.Precio:0.00}",
+                    piso = x.Piso,
+                    depto = x.Depto,
+                    precio = x.Precio
+                })
                 .Take(20)
                 .ToList();
 
             return Json(new { results });
         }
-
-
-
         // Para Crear/Editar: solo inmuebles activos
         private async Task CargarSelectsAsync(int? idInmueble, int? idInquilino, CancellationToken ct)
         {
