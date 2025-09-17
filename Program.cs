@@ -2,12 +2,25 @@ using Inmobiliaria10.Data;
 using Inmobiliaria10.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Inmobiliaria10.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<Database>();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Usuario/Login";       // redirigir si no está logueado
+        options.LogoutPath = "/Usuario/Logout";     // logout
+        options.AccessDeniedPath = "/Home/Restringido"; // acceso denegado
+    });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Administrador", policy =>
+        policy.RequireClaim(System.Security.Claims.ClaimTypes.Role, "Administrador"));
+});
 builder.Services.AddScoped<IConceptoRepo, ConceptoRepo>();
 builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
 builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
@@ -32,13 +45,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();        
 app.UseRouting();
-app.UseAuthentication();
+
 //app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/Home/MostrarCodigo", "?code={0}");
 
+app.UseAuthentication(); // habilitar autenticación
+app.UseAuthorization();  // habilitar autorización
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"

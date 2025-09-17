@@ -6,9 +6,14 @@ using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
 using Inmobiliaria10.Models.ViewModels;
 using Inmobiliaria10.Services;
+using System.Security.Claims;                     // Para Claim, ClaimTypes, ClaimsIdentity
+using Microsoft.AspNetCore.Authentication;        // Para HttpContext.SignInAsync
+using Microsoft.AspNetCore.Authentication.Cookies;// Para CookieAuthenticationDefaults
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    
     public class UsuarioController : Controller
     {
         private readonly IUsuarioRepo _repo;
@@ -174,6 +179,21 @@ namespace Inmobiliaria10.Controllers
             return Convert.ToBase64String(hashBytes);
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Perfil()
+        {
+            var idClaim = User.FindFirst("IdUsuario");
+            if (idClaim == null) return RedirectToAction("Login");
+
+            int idUsuario = int.Parse(idClaim.Value);
+            var usuario = await _repo.ObtenerPorId(idUsuario);
+
+            if (usuario == null) return NotFound();
+
+            return View(usuario); // le manda el usuario a la vista
+        }
+
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Perfil(Usuario vm, IFormFile? ImagenPerfil, [FromServices] IWebHostEnvironment env)
         {
@@ -256,6 +276,7 @@ namespace Inmobiliaria10.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm)
@@ -287,6 +308,7 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction("Login");
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ResetPassword(string token)
         {
@@ -317,5 +339,59 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction("Login");
         }
 
-   }
+        // LOGIN
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(string email, string password)
+        {
+            // 1. Buscar usuario en BD
+            var usuario = (await _repo.ListarTodos())
+                            .FirstOrDefault(u => u.Email == email);
+
+            if (usuario == null || usuario.Password != HashPassword(password))
+            {
+                ModelState.AddModelError("", "Credenciales incorrectas.");
+                return View();
+            }
+
+            // 2. Crear Claims
+            var claims = new List<Claim>
+            {
+                new Claim("IdUsuario", usuario.IdUsuario.ToString()), 
+                new Claim(ClaimTypes.Name, usuario.Email),
+                new Claim("FullName", usuario.ApellidoNombres),
+                new Claim(ClaimTypes.Role, usuario.Rol?.DenominacionRol ?? "Empleado"),
+                new Claim("Foto", usuario.ImagenPerfil ?? "/img/user.png")
+            };
+
+            // 3. Identidad y cookie
+            var claimsIdentity = new ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+
+            // 4. Redirigir a página principal
+            return RedirectToAction("Index", "Home");
+        }
+        
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Usuario");
+        }
+
+    }
 }

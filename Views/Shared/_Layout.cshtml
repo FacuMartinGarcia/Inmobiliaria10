@@ -43,30 +43,40 @@
                 </a>
 
                 <div class="ms-auto d-flex align-items-center">
-                    <!-- Login / Usuario -->
                     @if (isAuth)
                     {
+                        <!-- Menú de usuario logueado -->
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
-                                    type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
-                                    aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menú">
-                                <i class="fa-solid fa-bars"></i>
-                            </button>
+                            <a class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
+                                href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="@(!string.IsNullOrEmpty(User.FindFirst("Foto")?.Value) 
+                                            ? User.FindFirst("Foto")!.Value 
+                                            : "/img/user.png")"
+                                    alt="Avatar" class="rounded-circle"
+                                    style="width:32px; height:32px; object-fit:cover;" />
+                                <span>@userName</span>
+                            </a>
+
 
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                 <li>
-                                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                        Perfil
-                                    </a>
+                                    <a class="dropdown-item" asp-controller="Usuario" asp-action="Perfil">Perfil</a>
                                 </li>
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
-                                    <form class="px-3 py-1" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post">
-                                        <button type="submit" class="btn btn-link p-0">Cerrar sesión</button>
+                                    <form asp-controller="Usuario" asp-action="Logout" method="post" class="px-3 py-1">
+                                        <button type="submit" class="btn btn-link p-0 text-danger">Cerrar sesión</button>
                                     </form>
                                 </li>
                             </ul>
                         </div>
+                    }
+                    else
+                    {
+                        <!-- Botón de login si no está autenticado -->
+                        <a class="btn btn-outline-light" asp-controller="Usuario" asp-action="Login">
+                            <i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión
+                        </a>
                     }
                 </div>
             </div>

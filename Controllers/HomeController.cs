@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Inmobiliaria10.Models;
+using Inmobiliaria10.Models.ViewModels;
 
 namespace Inmobiliaria10.Controllers;
 

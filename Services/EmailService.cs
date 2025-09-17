@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 
 namespace Inmobiliaria10.Services
 {
@@ -20,11 +19,14 @@ namespace Inmobiliaria10.Services
 
         public async Task Enviar(string destinatario, string asunto, string cuerpoHtml)
         {
-            var smtpHost = _config["Smtp:Host"];
-            var smtpPort = int.Parse(_config["Smtp:Port"]);
-            var smtpUser = _config["Smtp:User"];
-            var smtpPass = _config["Smtp:Pass"];
-            var smtpFrom = _config["Smtp:From"];
+            var smtpHost = _config["Smtp:Host"] ?? throw new InvalidOperationException("Falta configurar Smtp:Host en appsettings.json");
+            var smtpUser = _config["Smtp:User"] ?? throw new InvalidOperationException("Falta configurar Smtp:User en appsettings.json");
+            var smtpPass = _config["Smtp:Pass"] ?? throw new InvalidOperationException("Falta configurar Smtp:Pass en appsettings.json");
+            var smtpFrom = _config["Smtp:From"] ?? throw new InvalidOperationException("Falta configurar Smtp:From en appsettings.json");
+
+            // Puerto con valor por defecto
+            int.TryParse(_config["Smtp:Port"], out var smtpPort);
+            if (smtpPort == 0) smtpPort = 587;
 
             using var client = new SmtpClient(smtpHost, smtpPort)
             {
