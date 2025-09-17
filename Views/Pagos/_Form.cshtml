@@ -23,17 +23,17 @@
     <span asp-validation-for="Importe" class="text-danger"></span>
   </div>
 
-  <div class="col-md-6">
-    <label asp-for="IdConcepto" class="form-label">Concepto</label>
-    <select asp-for="IdConcepto" class="form-select" asp-items="(SelectList)ViewBag.Conceptos">
-      <option value="">-- Seleccione --</option>
-    </select>
-    <span asp-validation-for="IdConcepto" class="text-danger"></span>
+  <div class="form-group">
+      <label asp-for="IdConcepto" class="form-label">Concepto</label>
+      <select asp-for="IdConcepto" class="form-control select2" asp-items="ViewBag.Conceptos">
+          <option value="">-- Seleccione un concepto --</option>
+      </select>
+      <span asp-validation-for="IdConcepto" class="text-danger"></span>
   </div>
 
-  <div class="col-md-6">
+  <div class="col-md-12">
     <label asp-for="Detalle" class="form-label">Detalle</label>
-    <input asp-for="Detalle" class="form-control" maxlength="50" placeholder="Referencia / Nota" autocomplete="off" />
+    <input asp-for="Detalle" class="form-control" placeholder="Referencia / Nota" autocomplete="off" />
     <span asp-validation-for="Detalle" class="text-danger"></span>
   </div>
 

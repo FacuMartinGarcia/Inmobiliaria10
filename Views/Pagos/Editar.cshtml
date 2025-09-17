@@ -26,51 +26,76 @@
   </div>
 </div>
 
-@section Scripts{
-    <!-- quitá estos includes si ya están en tu _Layout -->
+@section Scripts {
+    <!-- Quitá estos includes si ya están en tu _Layout -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
 
     <script>
     (function () {
-      const $orig = $('#IdContrato');
-      if ($orig.length) {
-        const $sel = $('<select class="form-select form-select-lg" style="width:100%"></select>');
-        $.each($orig[0].attributes, function (_, a) {
-          if (a && a.name && a.name.startsWith('data-val')) $sel.attr(a.name, a.value);
-        });
+        const $orig = $('#IdContrato'); // input original generado por asp-for
+        if ($orig.length) {
+            // Crear nuevo select y copiar validaciones del input original
+            const $sel = $('<select class="form-select" style="width:100%"></select>');
+            $.each($orig[0].attributes, function (_, a) {
+                if (a && a.name && a.name.startsWith('data-val')) {
+                    $sel.attr(a.name, a.value);
+                }
+            });
 
-        // Reemplazo: dejamos el original oculto para model binding/validación
-        $orig.after($sel);
-        $orig.attr('id','IdContrato_original').attr('name','').hide();
-        $sel.attr('id','IdContrato').attr('name','IdContrato');
+            // Insertar nuevo select después del input original
+            $orig.after($sel);
+            // Ocultar el input original y cambiar su id/name
+            $orig.attr('id', 'IdContrato_original').attr('name', '').hide();
+            // Asignar id y name correctos al select2
+            $sel.attr('id', 'IdContrato').attr('name', 'IdContrato');
 
-        // Select2 remoto
-        $('#IdContrato').select2({
-          placeholder: 'Buscar contrato (Contrato + Inmueble)…',
-          allowClear: true,
-          width: '100%',
-          ajax: {
-            url: '/Pagos/search-contratos',
-            dataType: 'json',
-            delay: 250,
-            data: p => ({ term: p.term || '', page: p.page || 1 }),
-            processResults: d => ({ results: (d.results || []).map(x => ({ id: x.id, text: x.text })) })
-          }
-        });
+            // Inicializar Select2 con AJAX
+            $('#IdContrato').select2({
+                placeholder: 'Buscar contrato (Contrato + Inmueble)…',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '/Pagos/search-contratos',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: (data.results || []).map(function (x) {
+                                return { id: x.id, text: x.text };
+                            })
+                        };
+                    }
+                }
+            });
 
-        // Preselección con el valor actual del modelo
-        const pre = @Model.IdContrato;
-        if (pre && pre > 0) {
-          $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
-            if (res && res.item) {
-              const opt = new Option(res.item.text, res.item.id, true, true);
-              $('#IdContrato').append(opt).trigger('change');
+            // Preselección si el modelo trae valor
+            const pre = @Model.IdContrato;
+            if (pre && pre > 0) {
+                $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
+                    if (res && res.item) {
+                        const opt = new Option(res.item.text, res.item.id, true, true);
+                        $('#IdContrato').append(opt).trigger('change');
+                    }
+                });
             }
-          });
         }
-      }
     })();
+    </script>
+    <script>
+        $(function () {
+            $('#IdConcepto').select2({
+                placeholder: "Seleccione un concepto",
+                allowClear: true,
+                width: '100%'
+            });
+        });
     </script>
 }
