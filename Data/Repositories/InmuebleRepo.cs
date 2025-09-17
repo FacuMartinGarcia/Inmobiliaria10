@@ -1,4 +1,3 @@
-using System.Data;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
 using Inmobiliaria10.Models;
@@ -8,10 +7,12 @@ namespace Inmobiliaria10.Data.Repositories
     public class InmuebleRepo : IInmuebleRepo
     {
         private readonly Database _db;
+        private readonly IImagenRepo _imagenRepo;
 
         public InmuebleRepo(Database db)
         {
             _db = db;
+            _imagenRepo = new ImagenRepo(db);
         }
 
         public async Task<int> Agregar(Inmueble i)
@@ -198,6 +199,12 @@ namespace Inmobiliaria10.Data.Repositories
             if (await reader.ReadAsync())
             {
                 i = Map(reader);
+            }
+            
+            
+                if (i != null)
+            {
+                i.Imagenes = (await _imagenRepo.BuscarPorInmueble(id)).ToList();
             }
             return i;
         }

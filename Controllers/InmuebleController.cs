@@ -12,16 +12,22 @@ namespace Inmobiliaria10.Controllers
         private readonly IInmuebleUsoRepo _repoUso;
         private readonly IInmuebleTipoRepo _repoTipo;
 
+        private readonly IImagenRepo _repoImagen;
+
         public InmuebleController(
+
             IInmuebleRepo repoInmueble,
             IPropietarioRepo repoPropietario,
             IInmuebleUsoRepo repoUso,
-            IInmuebleTipoRepo repoTipo)
+            IInmuebleTipoRepo repoTipo,
+            IImagenRepo repoImagen
+            )
         {
             _repoInmueble = repoInmueble;
             _repoPropietario = repoPropietario;
             _repoUso = repoUso;
             _repoTipo = repoTipo;
+            _repoImagen = repoImagen;
         }
 
         public async Task<IActionResult> Index(int pagina = 1, string? searchString = null)
@@ -142,13 +148,16 @@ namespace Inmobiliaria10.Controllers
         
         // CODIGO PARA EL MANEJO DE IMAGENES
         // GET: Inmueble/Imagenes/5
+
         public async Task<IActionResult> Imagenes(int id)
         {
             var inmueble = await _repoInmueble.ObtenerPorId(id);
             if (inmueble == null)
                 return NotFound();
 
-            return View(inmueble);
+            inmueble.Imagenes = await _repoImagen.BuscarPorInmueble(id); 
+
+            return View(inmueble); 
         }
 
         // POST: Inmueble/Portada
@@ -178,7 +187,7 @@ namespace Inmobiliaria10.Controllers
                     await Archivo.CopyToAsync(stream);
                 }
 
-                inmueble.Portada = "/uploads/inmuebles/" + nombreArchivo;
+                inmueble.Portada = "/Uploads/inmuebles/" + nombreArchivo;
                 await _repoInmueble.Actualizar(inmueble);
 
                 TempData["Mensaje"] = "Portada actualizada correctamente";
