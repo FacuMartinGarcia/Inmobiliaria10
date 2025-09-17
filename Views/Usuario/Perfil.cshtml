@@ -1,0 +1,59 @@
+@model Inmobiliaria10.Models.Usuario
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div id="content" class="d-flex justify-content-center align-items-center">
+    <div class="form-card" style="max-width:700px; width:100%;">
+        <h2 class="form-title">Mi Perfil</h2>
+
+        <div class="row">
+            <!-- Columna izquierda: Imagen -->
+            <div class="col-md-4 text-center">
+                <img src="@(!string.IsNullOrEmpty(Model.ImagenPerfil) 
+                              ? Model.ImagenPerfil 
+                              : "/img/default-user.png")"
+                     alt="Foto de perfil"
+                     class="rounded-circle mb-3"
+                     style="width:150px; height:150px; object-fit:cover; border:2px solid #523A02;" />
+
+                <div>
+                    <a asp-action="PerfilImagen" asp-route-id="@Model.IdUsuario" 
+                       class="btn btn-sm btn-save mt-2">
+                        Cambiar foto
+                    </a>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Datos -->
+            <div class="col-md-8">
+                <dl class="row">
+                    <dt class="col-sm-4">Nombre completo</dt>
+                    <dd class="col-sm-8">@Model.ApellidoNombres</dd>
+
+                    <dt class="col-sm-4">Alias</dt>
+                    <dd class="col-sm-8">@Model.Alias</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4">Rol</dt>
+                    <dd class="col-sm-8">@Model.Rol?.DenominacionRol</dd>
+                </dl>
+
+                <div class="d-flex gap-2 mt-3">
+                    <a asp-action="PerfilDatos" asp-route-id="@Model.IdUsuario" class="btn btn-save">
+                        Editar datos
+                    </a>
+                    <a asp-action="CambiarPassword" asp-route-id="@Model.IdUsuario" class="btn btn-back">
+                        Cambiar contraseña
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

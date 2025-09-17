@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
+using Inmobiliaria10.Models.ViewModels;
+using Inmobiliaria10.Services;
 
 namespace Inmobiliaria10.Controllers
 {
@@ -11,11 +13,12 @@ namespace Inmobiliaria10.Controllers
     {
         private readonly IUsuarioRepo _repo;
         private readonly IRolRepo _rolRepo;
-
-        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo)
+        private readonly IEmailService _emailService;
+        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo, IEmailService emailService)
         {
             _repo = repo;
             _rolRepo = rolRepo;
+            _emailService = emailService;
         }
 
         // LISTADO
@@ -32,7 +35,7 @@ namespace Inmobiliaria10.Controllers
             return View(usuarios);
         }
 
-         // DETALLE
+        // DETALLE
         public async Task<IActionResult> Detalle(int id, CancellationToken ct = default)
         {
             var usu = await _repo.ObtenerPorId(id, ct);
@@ -109,6 +112,15 @@ namespace Inmobiliaria10.Controllers
             if (usuarioActual == null)
                 return NotFound();
 
+            // 🔹 Validar alias duplicado
+            var existente = await _repo.ObtenerPorAlias(vm.Alias);
+            if (existente != null && existente.IdUsuario != vm.IdUsuario)
+            {
+                ModelState.AddModelError("Alias", "El alias ya está en uso por otro usuario.");
+                ViewBag.Roles = await ObtenerRolesSelectList();
+                return View(vm);
+            }
+
             usuarioActual.ApellidoNombres = vm.ApellidoNombres;
             usuarioActual.Alias = vm.Alias;
             usuarioActual.Email = vm.Email;
@@ -124,6 +136,7 @@ namespace Inmobiliaria10.Controllers
             TempData["Mensaje"] = "Usuario actualizado correctamente.";
             return RedirectToAction("Index");
         }
+
 
         public async Task<IActionResult> Eliminar(int id)
         {
@@ -160,5 +173,149 @@ namespace Inmobiliaria10.Controllers
             var hashBytes = sha.ComputeHash(bytes);
             return Convert.ToBase64String(hashBytes);
         }
-    }
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Perfil(Usuario vm, IFormFile? ImagenPerfil, [FromServices] IWebHostEnvironment env)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var usuarioActual = await _repo.ObtenerPorId(vm.IdUsuario);
+            if (usuarioActual == null)
+                return NotFound();
+
+            usuarioActual.ApellidoNombres = vm.ApellidoNombres;
+            usuarioActual.Email = vm.Email;
+
+            // Subida de imagen
+            if (ImagenPerfil != null && ImagenPerfil.Length > 0)
+            {
+                string carpeta = Path.Combine(env.WebRootPath, "Uploads", "Perfiles", vm.IdUsuario.ToString());
+                if (!Directory.Exists(carpeta))
+                    Directory.CreateDirectory(carpeta);
+
+                var extension = Path.GetExtension(ImagenPerfil.FileName);
+                var nombreArchivo = $"{Guid.NewGuid()}{extension}";
+                var ruta = Path.Combine(carpeta, nombreArchivo);
+
+                using var stream = new FileStream(ruta, FileMode.Create);
+                await ImagenPerfil.CopyToAsync(stream);
+
+                usuarioActual.ImagenPerfil = $"/Uploads/Perfiles/{vm.IdUsuario}/{nombreArchivo}";
+            }
+
+            await _repo.Actualizar(usuarioActual);
+            TempData["Mensaje"] = "Perfil actualizado correctamente.";
+            return RedirectToAction("Perfil");
+        }
+
+
+        // CAMBIAR PASSWORD
+        [HttpGet]
+        public async Task<IActionResult> CambiarPassword(int id)
+        {
+            var usuario = await _repo.ObtenerPorId(id);
+            if (usuario == null)
+                return NotFound();
+
+            var vm = new CambiarPasswordViewModel { IdUsuario = usuario.IdUsuario };
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarPassword(CambiarPasswordViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var usuarioActual = await _repo.ObtenerPorId(vm.IdUsuario);
+            if (usuarioActual == null)
+                return NotFound();
+
+            // Verificar contraseña actual
+            var passwordActualHash = HashPassword(vm.PasswordActual);
+            if (usuarioActual.Password != passwordActualHash)
+            {
+                ModelState.AddModelError("PasswordActual", "La contraseña actual es incorrecta.");
+                return View(vm);
+            }
+
+            // Guardar nueva contraseña
+            usuarioActual.Password = HashPassword(vm.NuevaPassword);
+            await _repo.Actualizar(usuarioActual);
+
+            TempData["Mensaje"] = "Contraseña cambiada correctamente.";
+            return RedirectToAction("Perfil");
+        }
+
+        // RECUPERAR PASSWORD
+        [HttpGet]
+        public IActionResult RecuperarPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var usuario = (await _repo.ListarTodos()).FirstOrDefault(u => u.Email == vm.Email);
+            if (usuario == null)
+            {
+                TempData["Error"] = "No existe un usuario con ese correo.";
+                return View(vm);
+            }
+
+            // Generar token
+            var token = Guid.NewGuid().ToString();
+            usuario.ResetToken = token;
+            usuario.ResetTokenExpira = DateTime.UtcNow.AddHours(1);
+            await _repo.Actualizar(usuario);
+
+            // Enviar correo 
+            string link = Url.Action("ResetPassword", "Usuario", new { token = token }, Request.Scheme)!;
+            await _emailService.Enviar(
+                vm.Email,
+                "Recuperar contraseña",
+                $"<p>Hacé click en el siguiente enlace para restablecer tu contraseña:</p><p><a href='{link}'>Restablecer Contraseña</a></p>"
+            );
+            TempData["Mensaje"] = "Se ha enviado un enlace a tu correo.";
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            var vm = new ResetPasswordViewModel { Token = token };
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var usuario = (await _repo.ListarTodos()).FirstOrDefault(u => u.ResetToken == vm.Token && u.ResetTokenExpira > DateTime.UtcNow);
+            if (usuario == null)
+            {
+                TempData["Error"] = "El enlace no es válido o ha expirado.";
+                return RedirectToAction("RecuperarPassword");
+            }
+
+            usuario.Password = HashPassword(vm.NuevaPassword);
+            usuario.ResetToken = null;
+            usuario.ResetTokenExpira = null;
+            await _repo.Actualizar(usuario);
+
+            TempData["Mensaje"] = "Tu contraseña ha sido restablecida correctamente.";
+            return RedirectToAction("Login");
+        }
+
+   }
 }

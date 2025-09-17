@@ -1,0 +1,33 @@
+@model Inmobiliaria10.Models.Usuario
+@{
+    ViewData["Title"] = "Cambiar Foto";
+}
+
+<div id="content" class="d-flex justify-content-center align-items-center">
+    <div class="form-card">
+        <h2 class="form-title">Cambiar Foto de Perfil</h2>
+
+        <form asp-action="PerfilImagen" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="IdUsuario" />
+
+            <div class="text-center mb-3">
+                <img src="@(!string.IsNullOrEmpty(Model.ImagenPerfil) 
+                              ? Model.ImagenPerfil 
+                              : "/img/default-user.png")"
+                     alt="Foto de perfil"
+                     class="rounded-circle mb-3"
+                     style="width:150px; height:150px; object-fit:cover; border:2px solid #523A02;" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label">Seleccionar nueva foto</label>
+                <input type="file" name="ImagenPerfil" class="form-control" />
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Perfil" class="btn btn-back">Volver</a>
+                <button type="submit" class="btn btn-save">Actualizar Foto</button>
+            </div>
+        </form>
+    </div>
+</div>

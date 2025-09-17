@@ -1,7 +1,7 @@
 using Inmobiliaria10.Data;
 using Inmobiliaria10.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
-
+using Inmobiliaria10.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +19,7 @@ builder.Services.AddScoped<IPagoRepo, PagoRepo>();
 builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
 builder.Services.AddScoped<IRolRepo, RolRepo>();
 builder.Services.AddScoped<IUsuarioRepo, UsuarioRepo>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 

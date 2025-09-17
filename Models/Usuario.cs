@@ -6,7 +6,10 @@ namespace Inmobiliaria10.Models
     public class Usuario
     {
         [Key]
-        public int IdUsuario { get; set; }  
+        public int IdUsuario { get; set; } 
+        
+        [StringLength(255)]
+        public string? ImagenPerfil { get; set; }
 
         private string _apellidoNombres = "";
         [Required(ErrorMessage = "Debe ingresar el apellido y nombres de usuario"), StringLength(200)]
@@ -27,6 +30,9 @@ namespace Inmobiliaria10.Models
         [Required(ErrorMessage = "Debe ingresar una contraseña")]
         [StringLength(255)]
         public string Password { get; set; } = ""; 
+
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpira { get; set; }
 
         private string _email = "";
         [Required(ErrorMessage = "Debe ingresar un correo electrónico")]
