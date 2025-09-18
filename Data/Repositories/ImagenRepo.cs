@@ -119,5 +119,44 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return res;
         }
+        public async Task<int> AltaPerfil(int idUsuario, string ruta)
+        {
+            using var conn = _db.GetConnection();
+            string sql = @"INSERT INTO Imagenes (id_usuario, ruta) VALUES (@idUsuario, @ruta)";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@ruta", ruta);
+
+            await conn.OpenAsync();
+            return await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<IList<Imagen>> BuscarPorUsuario(int idUsuario)
+        {
+            var res = new List<Imagen>();
+            using var conn = _db.GetConnection();
+            string sql = @"SELECT id_imagen, id_usuario, ruta
+                        FROM Imagenes
+                        WHERE id_usuario=@idUsuario";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                res.Add(new Imagen
+                {
+                    IdImagen = reader.GetInt32(reader.GetOrdinal("id_imagen")),
+                    IdUsuario = reader.IsDBNull(reader.GetOrdinal("id_usuario")) 
+                                ? null 
+                                : reader.GetInt32(reader.GetOrdinal("id_usuario")),
+                    Url = reader.GetString(reader.GetOrdinal("ruta"))
+                });
+            }
+            return res;
+        }
+
+        
     }
 }

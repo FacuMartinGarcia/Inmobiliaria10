@@ -10,5 +10,8 @@ namespace Inmobiliaria10.Data.Repositories
         Task<Imagen?> ObtenerPorId(int id);
         Task<IList<Imagen>> ObtenerTodos();
         Task<IList<Imagen>> BuscarPorInmueble(int idInmueble);
+        Task<IList<Imagen>> BuscarPorUsuario(int idUsuario);
+        Task<int> AltaPerfil(int idUsuario, string ruta);
+
     }
 }

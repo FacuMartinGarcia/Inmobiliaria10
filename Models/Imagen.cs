@@ -9,17 +9,17 @@ namespace Inmobiliaria10.Models
         [Key]
         public int IdImagen { get; set; }
 
-        [Required]
-        public int IdInmueble { get; set; }
+        public int? IdInmueble { get; set; }
+        public int? IdUsuario { get; set; }
 
         [ForeignKey(nameof(IdInmueble))]
         public Inmueble? Inmueble { get; set; }
 
-        [Required(ErrorMessage = "Debe indicar la URL o ruta de la imagen")]
-        [StringLength(255)]
+        [Required(ErrorMessage = "Debe indicar la URL de la imagen")]
+        [StringLength(500)]
         public string Url { get; set; } = string.Empty;
 
         [NotMapped]
-        public IFormFile? Archivo { get; set; } = null;
+        public IFormFile? Archivo { get; set; }
     }
 }

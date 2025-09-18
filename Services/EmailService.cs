@@ -19,14 +19,11 @@ namespace Inmobiliaria10.Services
 
         public async Task Enviar(string destinatario, string asunto, string cuerpoHtml)
         {
-            var smtpHost = _config["Smtp:Host"] ?? throw new InvalidOperationException("Falta configurar Smtp:Host en appsettings.json");
-            var smtpUser = _config["Smtp:User"] ?? throw new InvalidOperationException("Falta configurar Smtp:User en appsettings.json");
-            var smtpPass = _config["Smtp:Pass"] ?? throw new InvalidOperationException("Falta configurar Smtp:Pass en appsettings.json");
-            var smtpFrom = _config["Smtp:From"] ?? throw new InvalidOperationException("Falta configurar Smtp:From en appsettings.json");
-
-            // Puerto con valor por defecto
-            int.TryParse(_config["Smtp:Port"], out var smtpPort);
-            if (smtpPort == 0) smtpPort = 587;
+            var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
+            var smtpPort = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
+            var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
+            var smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
+            var smtpFrom = Environment.GetEnvironmentVariable("SMTP_FROM");;
 
             using var client = new SmtpClient(smtpHost, smtpPort)
             {

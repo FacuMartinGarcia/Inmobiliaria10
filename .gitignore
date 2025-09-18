@@ -7,7 +7,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+.env
 # Carpetas de compilación
 **/[Bb]in/
 **/[Oo]bj/
@@ -50,6 +50,7 @@ publish/
 # IDEs
 .vscode/
 .idea/
+
 *.sln.iml
 
 # Node / Python (si aparecen)

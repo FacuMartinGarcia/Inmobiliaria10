@@ -5,14 +5,16 @@ namespace Inmobiliaria10.Models.ViewModels
     public class ResetPasswordViewModel
     {
         [Required]
-        public string Token { get; set; } = "";
+        public string Token { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe ingresar una nueva contraseña")]
-        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
-        public string NuevaPassword { get; set; } = "";
+        [DataType(DataType.Password)]
+        public string NuevaPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe confirmar la contraseña")]
-        [Compare("NuevaPassword", ErrorMessage = "Las contraseñas no coinciden")]
-        public string ConfirmarPassword { get; set; } = "";
+        [DataType(DataType.Password)]
+        [Compare("NuevaPassword", ErrorMessage = "Las contraseñas no coinciden.")]
+        public string ConfirmarPassword { get; set; } = string.Empty;
     }
+
 }

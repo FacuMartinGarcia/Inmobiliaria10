@@ -11,5 +11,11 @@ namespace Inmobiliaria10.Data.Repositories
         Task<Usuario?> ObtenerPorId(int id, CancellationToken cancellationToken = default);
         Task<int> Eliminar(int id);
         Task<Usuario?> ObtenerPorAlias(string alias);
+        Task<Usuario?> ObtenerPorToken(string token);
+        Task<int> GuardarTokenReset(int idUsuario, string token, DateTime expiraUtc);
+        Task<int> LimpiarTokenReset(int idUsuario);
+        Task<int> ActualizarPassword(int idUsuario, string passwordHash);
+        Task<Usuario?> ObtenerPorEmail(string email);
+
     }
 }

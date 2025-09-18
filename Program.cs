@@ -3,9 +3,10 @@ using Inmobiliaria10.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Inmobiliaria10.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
-
+DotNetEnv.Env.Load();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<Database>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -33,8 +34,8 @@ builder.Services.AddScoped<IPropietarioRepo, PropietarioRepo>();
 builder.Services.AddScoped<IRolRepo, RolRepo>();
 builder.Services.AddScoped<IUsuarioRepo, UsuarioRepo>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-
+builder.Services.AddScoped<IImageStorageService, LocalImageStorageService>();
+builder.Configuration.AddEnvironmentVariables(); 
 
 var app = builder.Build();
 
