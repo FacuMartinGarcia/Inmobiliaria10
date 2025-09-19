@@ -387,12 +387,12 @@ namespace Inmobiliaria10.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Perfil(Usuario vm)
+        public async Task<IActionResult> Perfil(UsuarioPerfilViewModel vm)
         {
             if (!ModelState.IsValid)
                 return View(vm);
 
-            // Asegurar Id (si no vino en el hidden, lo tomo del claim)
+            // Tomar el Id desde el claim si no vino en hidden
             if (vm.IdUsuario <= 0)
             {
                 var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -404,17 +404,14 @@ namespace Inmobiliaria10.Controllers
             if (usuarioActual == null)
                 return NotFound();
 
-            // Solo actualizamos los campos editables desde el perfil
+            // Actualizar solo campos editables
             usuarioActual.ApellidoNombres = (vm.ApellidoNombres ?? "").Trim();
             usuarioActual.Alias           = (vm.Alias ?? "").Trim();
             usuarioActual.Email           = (vm.Email ?? "").Trim();
 
             try
             {
-                Console.WriteLine($"[DEBUG PERFIL] IdUsuario={usuarioActual.IdUsuario}, Nombre={usuarioActual.ApellidoNombres}, Alias={usuarioActual.Alias}, Email={usuarioActual.Email}, Rol={usuarioActual.IdRol}");
-
                 var filas = await _repo.Actualizar(usuarioActual);
-                Console.WriteLine($"[DEBUG] Filas afectadas: {filas}, Id={usuarioActual.IdUsuario}, Rol={usuarioActual.IdRol}");
 
                 if (filas == 0)
                 {
@@ -442,6 +439,7 @@ namespace Inmobiliaria10.Controllers
                 return View(vm);
             }
         }
+
 
         [HttpGet]
         [Authorize]
