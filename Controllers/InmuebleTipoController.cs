@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Models;
 using Inmobiliaria10.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     public class InmuebleTipoController : Controller
     {
         private readonly IInmuebleTipoRepo repo;
@@ -95,6 +97,6 @@ namespace Inmobiliaria10.Controllers
             repo.Eliminar(id);
             return RedirectToAction(nameof(Index));
         }
-        
+
     }
 }

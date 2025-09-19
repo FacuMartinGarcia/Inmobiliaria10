@@ -2,10 +2,13 @@
 using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Inmobiliaria10.Controllers
 {
     [Route("Conceptos")]
+    [Authorize] 
     public class ConceptosController : Controller
     {
         private readonly IConceptoRepo _repo;

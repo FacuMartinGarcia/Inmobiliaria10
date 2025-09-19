@@ -2,9 +2,10 @@
 using Inmobiliaria10.Models;
 using Inmobiliaria10.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers;
-
+[Authorize]
 public class PropietarioController : Controller
 {
     private readonly IPropietarioRepo _repo;

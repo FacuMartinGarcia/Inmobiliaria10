@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Inmobiliaria10.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class ImagenesController : Controller
     {
         private readonly IImagenRepo _repositorio;

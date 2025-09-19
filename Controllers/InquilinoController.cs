@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Models;
 using Inmobiliaria10.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     public class InquilinoController : Controller
     {
         private readonly IInquilinoRepo _repo;
@@ -16,7 +18,7 @@ namespace Inmobiliaria10.Controllers
         // GET: /Inquilino - paginado
         public async Task<IActionResult> Index(int pagina = 1, string? searchString = null, CancellationToken ct = default)
         {
-            int cantidadPorPagina = 8; 
+            int cantidadPorPagina = 8;
             var resultado = await _repo.ListarTodosPaginadoAsync(pagina, cantidadPorPagina, searchString, ct);
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);

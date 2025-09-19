@@ -80,8 +80,6 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync();
             return await cmd.ExecuteNonQueryAsync();
         }
-
-
         public async Task<List<Inmueble>> ListarTodos()
         {
             var lista = new List<Inmueble>();
@@ -255,7 +253,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
         private Inmueble Map(DbDataReader reader)
         {
-            return new Inmueble
+            var inmueble = new Inmueble
             {
                 IdInmueble = reader.GetInt32(reader.GetOrdinal("id_inmueble")),
                 IdPropietario = reader.GetInt32(reader.GetOrdinal("id_propietario")),
@@ -287,11 +285,16 @@ namespace Inmobiliaria10.Data.Repositories
                 Lon = reader.IsDBNull(reader.GetOrdinal("lon")) ? null : reader.GetDecimal(reader.GetOrdinal("lon")),
                 Ambientes = reader.IsDBNull(reader.GetOrdinal("ambientes")) ? null : reader.GetInt32(reader.GetOrdinal("ambientes")),
                 Precio = reader.IsDBNull(reader.GetOrdinal("precio")) ? null : reader.GetDecimal(reader.GetOrdinal("precio")),
-                Portada = reader.IsDBNull(reader.GetOrdinal("portada")) ? null : reader.GetString(reader.GetOrdinal("portada")),
                 Activo = reader.GetBoolean(reader.GetOrdinal("activo")),
                 CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at")),
                 UpdatedAt = reader.GetDateTime(reader.GetOrdinal("updated_at"))
             };
+
+            // 📌 Generar la ruta de la portada dinámicamente
+            inmueble.Portada = $"/uploads/Inmuebles/{inmueble.IdInmueble}.jpeg";
+
+            return inmueble;
         }
+
     }
 }

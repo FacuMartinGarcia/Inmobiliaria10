@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
+            <div class="container-fluid">
+
+                <!-- Botón para plegar/mostrar sidebar -->
+                <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
+                        aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <!-- Brand -->
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="fw-bold">InnovaPropiedades</span>
+                    <img src="~/img/logoOk.png" alt="Logo" style="height:40px;" />
+                </a>
+
+                <div class="ms-auto d-flex align-items-center">
+                    @if (User?.Identity?.IsAuthenticated ?? false)
+                    {
+                        <div class="dropdown">
+                            <a class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
+                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                                @{
+                                    var foto = User.FindFirst("Foto")?.Value ?? "/img/user.png";
+                                }
+                                <img src="@foto" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;" alt="Avatar" />
+                                <span>@User.Identity?.Name</span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Usuario" asp-action="Perfil">Perfil</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form asp-controller="Usuario" asp-action="Logout" method="post" class="px-3 py-1">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-link p-0 text-danger">Cerrar sesión</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-light" asp-controller="Usuario" asp-action="Login">Iniciar sesión</a>
+                    }
+                </div>
+            </div>
+        </nav>

@@ -3,12 +3,12 @@ using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize] 
     public class ContratoController : Controller
     {
         private readonly IContratoRepo _repo;
@@ -34,22 +34,22 @@ namespace Inmobiliaria10.Controllers
             int page = 1,
             int pageSize = 20,
             CancellationToken ct = default)
-            
+
         {
             // Selects para filtro del index
             await CargarSelectsIndexAsync(tipo, inmueble, inquilino, ct);
-            
+
             ViewBag.TipoSel = tipo;
 
             var inmuebles = await _repoInmueble.ListarTodos();
-                        ViewBag.TipoMap = inmuebles.ToDictionary(
-                            i => i.IdInmueble.ToString(),
-                            i => i.Tipo?.DenominacionTipo ?? "-" 
-            );
+            ViewBag.TipoMap = inmuebles.ToDictionary(
+                i => i.IdInmueble.ToString(),
+                i => i.Tipo?.DenominacionTipo ?? "-"
+);
 
 
             var (items, total) = await _repo.ListAsync(
-                tipo: tipo,          
+                tipo: tipo,
                 idInmueble: inmueble,
                 idInquilino: inquilino,
                 soloActivos: soloActivos,
@@ -182,7 +182,7 @@ namespace Inmobiliaria10.Controllers
         {
             var ok = await _repo.SoftDeleteAsync(id, GetUserIdOrDefault(), ct);
 
-            TempData[ ok ? "Ok" : "Err" ] = ok
+            TempData[ok ? "Ok" : "Err"] = ok
                 ? "Contrato eliminado correctamente."
                 : "El contrato no existe o ya fue eliminado.";
 
@@ -232,7 +232,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // ------------------- CARGA SELECTS -------------------
-        
+
         [HttpGet]
         public async Task<IActionResult> SearchInquilinos(string? term, int? id, CancellationToken ct = default)
         {
@@ -288,7 +288,7 @@ namespace Inmobiliaria10.Controllers
             }
 
             var results = inmuebles
-                .Where(x => string.IsNullOrEmpty(term) || 
+                .Where(x => string.IsNullOrEmpty(term) ||
                             x.Direccion.Contains(term, StringComparison.OrdinalIgnoreCase))
                 .Select(x => new
                 {

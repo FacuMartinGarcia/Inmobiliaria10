@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     public class RolController : Controller
     {
         private readonly IRolRepo _repo;

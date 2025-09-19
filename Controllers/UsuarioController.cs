@@ -13,6 +13,7 @@ using BCrypt.Net; // 🔹 BCrypt.Net-Next
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     public class UsuarioController : Controller
     {
         private readonly IUsuarioRepo _repo;
@@ -21,7 +22,7 @@ namespace Inmobiliaria10.Controllers
         private readonly IImagenRepo _imagenRepo;
         private readonly IWebHostEnvironment _env;
 
-        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo, IEmailService emailService, IImagenRepo imagenRepo,IWebHostEnvironment env)
+        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo, IEmailService emailService, IImagenRepo imagenRepo, IWebHostEnvironment env)
         {
             _repo = repo;
             _rolRepo = rolRepo;
@@ -406,8 +407,8 @@ namespace Inmobiliaria10.Controllers
 
             // Actualizar solo campos editables
             usuarioActual.ApellidoNombres = (vm.ApellidoNombres ?? "").Trim();
-            usuarioActual.Alias           = (vm.Alias ?? "").Trim();
-            usuarioActual.Email           = (vm.Email ?? "").Trim();
+            usuarioActual.Alias = (vm.Alias ?? "").Trim();
+            usuarioActual.Email = (vm.Email ?? "").Trim();
 
             try
             {

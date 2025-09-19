@@ -3,9 +3,11 @@ using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     [Route("Pagos")]
     public class PagosController : Controller
     {

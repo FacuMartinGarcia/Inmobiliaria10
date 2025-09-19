@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Inmobiliaria10.Models;
 using Inmobiliaria10.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
+    [Authorize]
     public class InmuebleController : Controller
     {
         private readonly IInmuebleRepo _repoInmueble;
@@ -145,7 +147,7 @@ namespace Inmobiliaria10.Controllers
                     Text = t.DenominacionTipo
                 }).ToList();
         }
-        
+
         // CODIGO PARA EL MANEJO DE IMAGENES
         // GET: Inmueble/Imagenes/5
 
@@ -155,9 +157,9 @@ namespace Inmobiliaria10.Controllers
             if (inmueble == null)
                 return NotFound();
 
-            inmueble.Imagenes = await _repoImagen.BuscarPorInmueble(id); 
+            inmueble.Imagenes = await _repoImagen.BuscarPorInmueble(id);
 
-            return View(inmueble); 
+            return View(inmueble);
         }
 
         // POST: Inmueble/Portada
@@ -194,7 +196,7 @@ namespace Inmobiliaria10.Controllers
             }
 
             return RedirectToAction(nameof(Imagenes), new { id = InmuebleId });
-        
+
         }
 
         // POST: Inmueble/EliminarPortada
@@ -247,7 +249,7 @@ namespace Inmobiliaria10.Controllers
             });
             return Json(resultados);
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> BuscarPropietarios(string term)
         {
