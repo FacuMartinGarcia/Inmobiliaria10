@@ -114,7 +114,11 @@
                                 <span>Pagos</span>
                             </a>
                         </li>
-
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuarios" asp-action="Index">
+                                <span>Usuarios</span>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2 collapsed" data-bs-toggle="collapse" href="#menuSistema" role="button" aria-expanded="false" aria-controls="menuSistema">
                                 <i class="fa-solid fa-cogs"></i>
@@ -122,10 +126,7 @@
                                 <i class="fa-solid fa-chevron-down ms-auto"></i>
                             </a>
                             <div class="collapse" id="menuSistema">
-                                <ul class="nav flex-column ms-3">
-                                    <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuario" asp-action="Index">Usuarios</a>
-                                    </li>
+                                <ul class="nav-item ms-3">
                                     <li class="nav-item">
                                         <a class="nav-link d-flex align-items-center gap-2" asp-controller="Rol" asp-action="Index">Roles</a>
                                     </li>
@@ -159,13 +160,7 @@
         </div>
     </div>
 
-    <!-- FOOTER (opcional si querés uno global) -->
-    <footer class="border-top footer text-muted mt-auto">
-        <div class="container">
-            &copy; @DateTime.Now.Year - @appName -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
-        </div>
-    </footer>
+    <partial name="~/Views/Shared/footer.cshtml" />
 
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
