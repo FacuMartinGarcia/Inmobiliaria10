@@ -1,32 +1,43 @@
 @model Inmobiliaria10.Models.Usuario
+
 @{
-    ViewData["Title"] = "Cambiar Foto";
+    var claimFoto = User.FindFirst("Foto")?.Value;
+    var baseFoto = string.IsNullOrWhiteSpace(claimFoto) ? "/img/user.png" : claimFoto;
+    var fotoPerfil = $"{baseFoto}?v={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+    ViewData["Title"] = "Cambiar foto de perfil";
 }
 
-<div id="content" class="d-flex justify-content-center align-items-center">
+<div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">
     <div class="form-card">
-        <h2 class="form-title">Cambiar Foto de Perfil</h2>
+        <h2 class="form-title">Cambiar foto de perfil</h2>
+        <p class="form-subtitle">Seleccioná una nueva imagen para tu avatar</p>
 
-        <form asp-action="PerfilImagen" method="post" enctype="multipart/form-data">
-            <input type="hidden" asp-for="IdUsuario" />
+        <form asp-action="PerfilImagen" asp-controller="Usuario" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="idUsuario" value="@Model.IdUsuario" />
 
+            <!-- Imagen actual -->
             <div class="text-center mb-3">
-                <img src="@(!string.IsNullOrEmpty(Model.ImagenPerfil) 
-                              ? Model.ImagenPerfil 
-                              : "/img/default-user.png")"
-                     alt="Foto de perfil"
-                     class="rounded-circle mb-3"
-                     style="width:150px; height:150px; object-fit:cover; border:2px solid #523A02;" />
+                <img src="@fotoPerfil"
+                     alt="Avatar actual"
+                     class="rounded-circle shadow-sm"
+                     style="width:120px; height:120px; object-fit:cover;" />
             </div>
 
-            <div class="form-group mb-3">
-                <label class="form-label">Seleccionar nueva foto</label>
-                <input type="file" name="ImagenPerfil" class="form-control" />
+            <!-- Selector de archivo -->
+            <div class="mb-3">
+                <label for="AvatarFile" class="form-label">Seleccionar nueva foto</label>
+                <input type="file" class="form-control" id="AvatarFile" name="AvatarFile" accept="image/*" required />
             </div>
 
-            <div class="d-flex justify-content-between">
-                <a asp-action="Perfil" class="btn btn-back">Volver</a>
-                <button type="submit" class="btn btn-save">Actualizar Foto</button>
+            <!-- Botones -->
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Perfil" class="btn btn-back">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Volver
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <i class="bi bi-upload me-1"></i> Guardar
+                </button>
             </div>
         </form>
     </div>

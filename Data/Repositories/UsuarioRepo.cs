@@ -42,8 +42,11 @@ namespace Inmobiliaria10.Data.Repositories
                             apellido_nombres = @ApellidoNombres,
                             alias = @Alias,
                             email = @Email,
-                            id_rol = @IdRol,
                             updated_at = @UpdatedAt";
+
+            // ⚠️ Solo actualizo rol si viene un valor > 0
+            if (u.IdRol > 0)
+                sql += ", id_rol = @IdRol";
 
             if (!string.IsNullOrEmpty(u.Password))
                 sql += ", password = @Password";
@@ -54,17 +57,25 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@ApellidoNombres", u.ApellidoNombres);
             cmd.Parameters.AddWithValue("@Alias", u.Alias);
             cmd.Parameters.AddWithValue("@Email", u.Email ?? "");
-            cmd.Parameters.AddWithValue("@IdRol", u.IdRol);
             cmd.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@IdUsuario", u.IdUsuario);
+
+            // ⚠️ Protegido: nunca se manda 0
+            if (u.IdRol > 0)
+                cmd.Parameters.AddWithValue("@IdRol", u.IdRol);
 
             if (!string.IsNullOrEmpty(u.Password))
                 cmd.Parameters.AddWithValue("@Password", u.Password);
 
             await conn.OpenAsync();
+            Console.WriteLine("[SQL DEBUG] " + cmd.CommandText);
+            foreach (MySqlParameter p in cmd.Parameters)
+            {
+                Console.WriteLine($"   {p.ParameterName} = {p.Value}");
+            }
+
             return await cmd.ExecuteNonQueryAsync();
         }
-
         public async Task<List<Usuario>> ListarTodos()
         {
             var lista = new List<Usuario>();

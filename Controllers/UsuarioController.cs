@@ -19,13 +19,15 @@ namespace Inmobiliaria10.Controllers
         private readonly IRolRepo _rolRepo;
         private readonly IEmailService _emailService;
         private readonly IImagenRepo _imagenRepo;
+        private readonly IWebHostEnvironment _env;
 
-        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo, IEmailService emailService, IImagenRepo imagenRepo)
+        public UsuarioController(IUsuarioRepo repo, IRolRepo rolRepo, IEmailService emailService, IImagenRepo imagenRepo,IWebHostEnvironment env)
         {
             _repo = repo;
             _rolRepo = rolRepo;
             _emailService = emailService;
             _imagenRepo = imagenRepo;
+            _env = env;
         }
 
         // LISTADO
@@ -161,57 +163,6 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction("Index");
         }
 
-        // PERFIL
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> Perfil()
-        {
-            var idClaim = User.FindFirst("IdUsuario");
-            if (idClaim == null) return RedirectToAction("Login");
-
-            int idUsuario = int.Parse(idClaim.Value);
-            var usuario = await _repo.ObtenerPorId(idUsuario);
-
-            if (usuario == null) return NotFound();
-
-            return View(usuario);
-        }
-
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Perfil(Usuario vm, IFormFile? ImagenPerfil, [FromServices] IWebHostEnvironment env)
-        {
-            if (!ModelState.IsValid)
-                return View(vm);
-
-            var usuarioActual = await _repo.ObtenerPorId(vm.IdUsuario);
-            if (usuarioActual == null)
-                return NotFound();
-
-            usuarioActual.ApellidoNombres = vm.ApellidoNombres;
-            usuarioActual.Email = vm.Email;
-
-            // Subida de imagen (si decidís mantener ImagenPerfil en el modelo Usuario)
-            if (ImagenPerfil != null && ImagenPerfil.Length > 0)
-            {
-                string carpeta = Path.Combine(env.WebRootPath, "Uploads", "Perfiles", vm.IdUsuario.ToString());
-                if (!Directory.Exists(carpeta))
-                    Directory.CreateDirectory(carpeta);
-
-                var extension = Path.GetExtension(ImagenPerfil.FileName);
-                var nombreArchivo = $"{Guid.NewGuid()}{extension}";
-                var ruta = Path.Combine(carpeta, nombreArchivo);
-
-                using var stream = new FileStream(ruta, FileMode.Create);
-                await ImagenPerfil.CopyToAsync(stream);
-
-                usuarioActual.ImagenPerfil = $"/Uploads/Perfiles/{vm.IdUsuario}/{nombreArchivo}";
-            }
-
-            await _repo.Actualizar(usuarioActual);
-            TempData["Mensaje"] = "Perfil actualizado correctamente.";
-            return RedirectToAction("Perfil");
-        }
-
         // CAMBIAR PASSWORD
         [HttpGet]
         public async Task<IActionResult> CambiarPassword(int id)
@@ -332,7 +283,8 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel vm)
         {
-            if (!ModelState.IsValid) return View(vm);
+            if (!ModelState.IsValid)
+                return View(vm);
 
             var input = (vm.Email ?? "").Trim();
             var emailNorm = input.ToLowerInvariant();
@@ -340,8 +292,8 @@ namespace Inmobiliaria10.Controllers
 
             var usuarios = await _repo.ListarTodos();
             var usuario = usuarios.FirstOrDefault(u =>
-                (u.Email?.ToLowerInvariant() == emailNorm) ||
-                (u.Alias?.ToUpperInvariant() == aliasNorm));
+                (!string.IsNullOrEmpty(u.Email) && u.Email.ToLowerInvariant() == emailNorm) ||
+                (!string.IsNullOrEmpty(u.Alias) && u.Alias.ToUpperInvariant() == aliasNorm));
 
             if (usuario == null || !VerifyPassword(vm.Password, usuario.Password))
             {
@@ -349,19 +301,36 @@ namespace Inmobiliaria10.Controllers
                 return View(vm);
             }
 
+            // 🔎 Buscar foto en filesystem
+            var fotoPerfil = "/img/user.png"; // fallback
+            var userFolder = Path.Combine(_env.WebRootPath, "uploads", "usuarios", usuario.IdUsuario.ToString());
+
+            if (Directory.Exists(userFolder))
+            {
+                var file = Directory.GetFiles(userFolder).FirstOrDefault();
+                if (file != null)
+                {
+                    fotoPerfil = $"/uploads/usuarios/{usuario.IdUsuario}/{Path.GetFileName(file)}";
+                }
+            }
+
+            // Claims
             var claims = new List<Claim>
             {
-                new Claim("IdUsuario", usuario.IdUsuario.ToString()),
-                new Claim(ClaimTypes.Name, usuario.Email),
-                new Claim("FullName", usuario.ApellidoNombres),
+                new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Alias),
+                new Claim(ClaimTypes.Email, usuario.Email ?? string.Empty),
+                new Claim("FullName", usuario.ApellidoNombres ?? string.Empty),
                 new Claim(ClaimTypes.Role, usuario.Rol?.DenominacionRol ?? "Empleado"),
-                new Claim("Foto", usuario.ImagenPerfil ?? "/img/default-user.png"),
+                new Claim("Foto", fotoPerfil)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
+                principal);
 
             return RedirectToAction("Index", "Home");
         }
@@ -396,35 +365,167 @@ namespace Inmobiliaria10.Controllers
             return BCrypt.Net.BCrypt.Verify(password, hash);
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Perfil()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idClaim == null)
+            {
+                TempData["Error"] = "Debes iniciar sesión para ver tu perfil.";
+                return RedirectToAction("Login");
+            }
+
+            int idUsuario = int.Parse(idClaim.Value);
+            var usuario = await _repo.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+                return NotFound();
+
+            return View(usuario);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Perfil(Usuario vm, IFormFile? AvatarFile, [FromServices] IImageStorageService storage)
+        public async Task<IActionResult> Perfil(Usuario vm)
         {
             if (!ModelState.IsValid)
                 return View(vm);
+
+            // Asegurar Id (si no vino en el hidden, lo tomo del claim)
+            if (vm.IdUsuario <= 0)
+            {
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(idClaim, out var idFromClaim))
+                    vm.IdUsuario = idFromClaim;
+            }
 
             var usuarioActual = await _repo.ObtenerPorId(vm.IdUsuario);
             if (usuarioActual == null)
                 return NotFound();
 
-            usuarioActual.ApellidoNombres = vm.ApellidoNombres;
-            usuarioActual.Email = vm.Email;
+            // Solo actualizamos los campos editables desde el perfil
+            usuarioActual.ApellidoNombres = (vm.ApellidoNombres ?? "").Trim();
+            usuarioActual.Alias           = (vm.Alias ?? "").Trim();
+            usuarioActual.Email           = (vm.Email ?? "").Trim();
 
-            if (AvatarFile != null && AvatarFile.Length > 0)
+            try
             {
-                // Guardar en carpeta /wwwroot/uploads/Usuarios/{id}
-                var url = await storage.UploadAsync(AvatarFile, $"Usuarios/{vm.IdUsuario}");
+                Console.WriteLine($"[DEBUG PERFIL] IdUsuario={usuarioActual.IdUsuario}, Nombre={usuarioActual.ApellidoNombres}, Alias={usuarioActual.Alias}, Email={usuarioActual.Email}, Rol={usuarioActual.IdRol}");
 
-                // Registrar en la tabla Imagenes
-                await _imagenRepo.AltaPerfil(vm.IdUsuario, url);
+                var filas = await _repo.Actualizar(usuarioActual);
+                Console.WriteLine($"[DEBUG] Filas afectadas: {filas}, Id={usuarioActual.IdUsuario}, Rol={usuarioActual.IdRol}");
+
+                if (filas == 0)
+                {
+                    TempData["Error"] = "No se guardaron cambios (0 filas afectadas).";
+                    return View(vm);
+                }
+
+                // Refrescar claim del alias en sesión
+                var identity = User.Identity as ClaimsIdentity;
+                if (identity != null)
+                {
+                    var aliasClaim = identity.FindFirst(ClaimTypes.Name);
+                    if (aliasClaim != null) identity.RemoveClaim(aliasClaim);
+                    identity.AddClaim(new Claim(ClaimTypes.Name, usuarioActual.Alias ?? ""));
+                    await HttpContext.SignInAsync(new ClaimsPrincipal(identity));
+                }
+
+                TempData["Mensaje"] = "Perfil actualizado correctamente.";
+                return RedirectToAction("Perfil");
             }
-
-            await _repo.Actualizar(usuarioActual);
-
-            TempData["Mensaje"] = "Perfil actualizado correctamente.";
-            return RedirectToAction("Perfil");
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR UPDATE PERFIL: " + ex);
+                TempData["Error"] = ex.Message;
+                return View(vm);
+            }
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> PerfilImagen()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idClaim == null)
+            {
+                TempData["Error"] = "Debes iniciar sesión para cambiar la foto de perfil.";
+                return RedirectToAction("Login");
+            }
 
+            int idUsuario = int.Parse(idClaim.Value);
+            var usuario = await _repo.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+                return NotFound();
+
+            return View(usuario);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PerfilImagen(int idUsuario, IFormFile AvatarFile)
+        {
+            if (AvatarFile == null || AvatarFile.Length == 0)
+            {
+                TempData["Error"] = "Debe seleccionar una imagen válida.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            var wwwPath = _env.WebRootPath;
+            var userFolder = Path.Combine(wwwPath, "uploads", "usuarios", idUsuario.ToString());
+            if (!Directory.Exists(userFolder))
+                Directory.CreateDirectory(userFolder);
+
+            // Borrar foto anterior si existía
+            foreach (var oldFile in Directory.GetFiles(userFolder))
+            {
+                System.IO.File.Delete(oldFile);
+            }
+
+            // Guardar nueva imagen
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(AvatarFile.FileName)}";
+            var filePath = Path.Combine(userFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await AvatarFile.CopyToAsync(stream);
+            }
+
+            var relativeUrl = $"/uploads/usuarios/{idUsuario}/{fileName}";
+
+            // 🔄 Actualizar claim "Foto"
+            var identity = User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                var fotoClaim = identity.FindFirst("Foto");
+                if (fotoClaim != null)
+                    identity.RemoveClaim(fotoClaim);
+
+                identity.AddClaim(new Claim("Foto", relativeUrl));
+                await HttpContext.SignInAsync(new ClaimsPrincipal(identity));
+            }
+
+            TempData["Mensaje"] = "Foto de perfil actualizada correctamente.";
+            return RedirectToAction(nameof(Perfil));
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> PerfilDatos()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idClaim == null)
+                return RedirectToAction("Login");
+
+            int idUsuario = int.Parse(idClaim.Value);
+            var usuario = await _repo.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+                return NotFound();
+
+            return View(usuario);
+        }
     }
 }

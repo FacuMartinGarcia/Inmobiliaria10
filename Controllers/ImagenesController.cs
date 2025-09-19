@@ -1,6 +1,9 @@
 using Inmobiliaria10.Data.Repositories;
 using Inmobiliaria10.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Inmobiliaria10.Controllers
 {
@@ -89,6 +92,69 @@ namespace Inmobiliaria10.Controllers
                 TempData["MensajeError"] = $"Error al eliminar la imagen: {ex.Message}";
                 return RedirectToAction("Imagenes", "Inmueble", new { id });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CambiarImagenPerfil(IFormFile AvatarFile, [FromServices] IWebHostEnvironment env)
+        {
+            if (AvatarFile == null || AvatarFile.Length == 0)
+            {
+                TempData["MensajeError"] = "No se recibió ninguna imagen.";
+                return RedirectToAction("Perfil", "Usuario");
+            }
+
+            // Id del usuario desde las claims (evita hidden manipulables)
+            var idUsuario = int.Parse(User.FindFirst("IdUsuario")!.Value);
+            Console.WriteLine($"🟡 idUsuario detectado: {idUsuario}");
+
+            // Buscar imagen anterior (puede ser null)
+            var anterior = await _repositorio.ObtenerPerfilPorUsuario(idUsuario);
+
+            // Carpeta física por usuario (usa 'uploads' en minúscula)
+            var www = env.WebRootPath;
+            var carpetaUsuario = Path.Combine(www, "uploads", "Usuarios", idUsuario.ToString());
+            if (!Directory.Exists(carpetaUsuario))
+                Directory.CreateDirectory(carpetaUsuario);
+
+            // Guardar archivo nuevo
+            var ext = Path.GetExtension(AvatarFile.FileName);
+            var nombre = $"{Guid.NewGuid()}{ext}";
+            var rutaFisica = Path.Combine(carpetaUsuario, nombre);
+
+            using (var fs = new FileStream(rutaFisica, FileMode.Create))
+                await AvatarFile.CopyToAsync(fs);
+
+            // Ruta relativa que se guarda en DB (sin slash inicial, normalizada en minúscula)
+            var nuevaRuta = Path.Combine("uploads", "Usuarios", idUsuario.ToString(), nombre)
+                            .Replace("\\", "/");
+
+            await _repositorio.AltaPerfil(idUsuario, nuevaRuta);
+
+            // Eliminar imagen anterior si existía
+            if (anterior != null && !string.IsNullOrEmpty(anterior.Url))
+            {
+                var rutaAnterior = Path.Combine(www, anterior.Url.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                if (System.IO.File.Exists(rutaAnterior))
+                {
+                    System.IO.File.Delete(rutaAnterior);
+                }
+            }
+
+            // 🔄 Actualizar claim "Foto" para reflejar la nueva imagen sin re-loguear
+            var identity = (ClaimsIdentity)User.Identity!;
+            var fotoClaim = identity.FindFirst("Foto");
+            if (fotoClaim != null)
+                identity.RemoveClaim(fotoClaim);
+
+            identity.AddClaim(new Claim("Foto", "/" + nuevaRuta));
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity)
+            );
+
+            TempData["Mensaje"] = "Imagen de perfil actualizada correctamente.";
+            return RedirectToAction("Perfil", "Usuario");
         }
     }
 }

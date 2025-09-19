@@ -25,6 +25,20 @@ namespace Inmobiliaria10.Data.Repositories
             return await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task<int> AltaPerfil(int idUsuario, string ruta)
+        {
+            using var conn = _db.GetConnection();
+            string sql = @"INSERT INTO Imagenes (id_usuario, ruta) 
+                        VALUES (@idUsuario, @ruta)
+                        ON DUPLICATE KEY UPDATE ruta=@ruta"; 
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@ruta", ruta);
+
+            await conn.OpenAsync();
+            return await cmd.ExecuteNonQueryAsync();
+        }
+
         public async Task<int> Baja(int id)
         {
             using var conn = _db.GetConnection();
@@ -119,44 +133,32 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return res;
         }
-        public async Task<int> AltaPerfil(int idUsuario, string ruta)
+        
+        public async Task<Imagen?> ObtenerPerfilPorUsuario(int idUsuario)
         {
-            using var conn = _db.GetConnection();
-            string sql = @"INSERT INTO Imagenes (id_usuario, ruta) VALUES (@idUsuario, @ruta)";
-            using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
-            cmd.Parameters.AddWithValue("@ruta", ruta);
-
-            await conn.OpenAsync();
-            return await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task<IList<Imagen>> BuscarPorUsuario(int idUsuario)
-        {
-            var res = new List<Imagen>();
             using var conn = _db.GetConnection();
             string sql = @"SELECT id_imagen, id_usuario, ruta
                         FROM Imagenes
-                        WHERE id_usuario=@idUsuario";
+                        WHERE id_usuario=@idUsuario
+                        LIMIT 1";
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
 
             await conn.OpenAsync();
             using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            if (await reader.ReadAsync())
             {
-                res.Add(new Imagen
+                return new Imagen
                 {
                     IdImagen = reader.GetInt32(reader.GetOrdinal("id_imagen")),
-                    IdUsuario = reader.IsDBNull(reader.GetOrdinal("id_usuario")) 
-                                ? null 
+                    IdUsuario = reader.IsDBNull(reader.GetOrdinal("id_usuario"))
+                                ? null
                                 : reader.GetInt32(reader.GetOrdinal("id_usuario")),
                     Url = reader.GetString(reader.GetOrdinal("ruta"))
-                });
+                };
             }
-            return res;
-        }
 
-        
+            return null;
+        }
     }
 }
