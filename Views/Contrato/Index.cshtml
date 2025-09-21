@@ -26,6 +26,7 @@
     var firstId = 0;
     foreach (var row in Model) { firstId = row.IdContrato; break; }
     var hayContratos = firstId > 0;
+    Layout = "_Layout";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -157,55 +158,6 @@
     </nav>
 }
 
-@section Scripts{
-    <!-- jQuery + Select2 (solo para esta vista) -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <link  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-
-    <script>
-    $(function () {
-      // Inicializar Select2 en Inquilino e Inmueble
-      const $inq = $('#inquilinoSelect').select2({
-        width: '100%', placeholder: 'Todos', allowClear: true,
-        language: { noResults: ()=>'Sin resultados', searching:()=> 'Buscando…' }
-      });
-
-      const $inm = $('#inmuebleSelect').select2({
-        width: '100%', placeholder: 'Todos', allowClear: true,
-        language: { noResults: ()=>'Sin resultados', searching:()=> 'Buscando…' }
-      });
-
-      // Cascada: Tipo -> Inmueble (refresca opciones y Select2)
-      $('#tipoSelect').on('change', async function () {
-        const idTipo = this.value;
-        const $sel = $('#inmuebleSelect');
-
-        // limpiar y deshabilitar mientras carga
-        $sel.prop('disabled', true);
-        $sel.empty().append(new Option('Todos', '', true, false));
-
-        try {
-          if (idTipo) {
-            const resp = await fetch(`/Contrato/InmueblesPorTipo?idTipo=${encodeURIComponent(idTipo)}`);
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json(); // [{id, texto}]
-            data.forEach(x => $sel.append(new Option(x.texto, x.id)));
-          }
-        } catch (e) {
-          console.error(e);
-        }
-
-        // re-habilitar y refrescar Select2
-        $sel.prop('disabled', false).trigger('change.select2');
-      });
-    });
-    </script>
-
-    <!-- Ajuste visual para que Select2 tenga altura de form-control -->
-    <style>
-      .select2-container .select2-selection--single { height: 38px; }
-      .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px; }
-      .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
-    </style>
+@section Scripts {
+    <script src="~/js/contrato-index.js"></script>
 }

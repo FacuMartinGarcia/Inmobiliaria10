@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Eliminar Rol";
-    Layout = "_Layout";
 }
 
 <div class="container mt-5">
@@ -19,7 +18,10 @@
                         <strong>@Model.DenominacionRol</strong>
                     </p>
 
-                    <form asp-action="Eliminar" method="post">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Eliminar" method="post" class="form-delete"
+                          data-msg="¿Confirmás eliminar el rol '@Model.DenominacionRol'?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdRol" />
 
                         <div class="d-flex justify-content-between mt-4">

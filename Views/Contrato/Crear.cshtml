@@ -1,6 +1,7 @@
 @model Inmobiliaria10.Models.Contrato
 @{
     ViewData["Title"] = "Nuevo contrato";
+    Layout = "_Layout";
 }
 
 <div class="d-flex justify-content-center py-4">
@@ -53,62 +54,6 @@
     </form>
   </div>
 </div>
-
 @section Scripts {
-    <!-- quitá estos includes si ya están en tu _Layout -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-
-    <script>
-    $(function () {
-      // Inquilinos
-      $('#IdInquilino').select2({
-        placeholder: 'Buscar inquilino…',
-        allowClear: true,
-        ajax: {
-          url: '/Contrato/SearchInquilinos',
-          dataType: 'json',
-          delay: 250,
-          data: params => ({ term: params.term }),
-          processResults: data => ({ results: data.results })
-        }
-      });
-
-      // Inmuebles
-      $('#IdInmueble').select2({
-        placeholder: 'Buscar inmueble…',
-        allowClear: true,
-        ajax: {
-          url: '/Contrato/SearchInmuebles',
-          dataType: 'json',
-          delay: 250,
-          data: params => ({ term: params.term }),
-          processResults: data => ({ results: data.results })
-        }
-      });
-
-      // Preselección Inquilino
-      const preInquilino = @Model.IdInquilino;
-      if (preInquilino && preInquilino > 0) {
-        $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
-          if (res && res.item) {
-            const opt = new Option(res.item.text, res.item.id, true, true);
-            $('#IdInquilino').append(opt).trigger('change');
-          }
-        });
-      }
-
-      // Preselección Inmueble
-      const preInmueble = @Model.IdInmueble;
-      if (preInmueble && preInmueble > 0) {
-        $.getJSON('/Contrato/SearchInmuebles', { id: preInmueble }, function (res) {
-          if (res && res.item) {
-            const opt = new Option(res.item.text, res.item.id, true, true);
-            $('#IdInmueble').append(opt).trigger('change');
-          }
-        });
-      }
-    });
-    </script>
+    <script src="~/js/contrato.js"></script>
 }

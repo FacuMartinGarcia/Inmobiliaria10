@@ -172,15 +172,10 @@
         </div>
     </div>
     
-    @if (TempData["Mensaje"] != null)
-        {
-            <input type="hidden" id="mensajeTemp" value="@TempData["Mensaje"]" />
-        }
+    <input type="hidden" id="mensajeTemp" value="@TempData["Ok"]" />
+    <input type="hidden" id="errorTemp"   value="@TempData["Err"]" />
+    <input type="hidden" id="infoTemp"    value="@TempData["Info"]" />
 
-    @if (TempData["Error"] != null)
-        {
-            <input type="hidden" id="errorTemp" value="@TempData["Error"]" />
-        }
     
     <footer class="bg-dark text-white text-center py-3 mt-auto shadow-sm">
         <div class="container">
@@ -211,6 +206,8 @@
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 
     <!-- Scripts propios -->
+   
+
     <script src="~/js/layout.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 

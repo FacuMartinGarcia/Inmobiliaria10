@@ -24,7 +24,10 @@
                         <strong>Propietario:</strong> @Model.Propietario?.ApellidoNombres
                     </p>
 
-                    <form asp-action="Eliminar" method="post">
+                    <!-- 🔹 Ahora con .form-delete y data-msg -->
+                    <form asp-action="Eliminar" method="post" class="form-delete"
+                          data-msg="¿Confirmás eliminar este inmueble? Puede afectar contratos relacionados.">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdInmueble" />
 
                         <div class="d-flex justify-content-between mt-4">

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Eliminar Inquilino";
+    Layout = "_Layout";
 }
 
 <div class="container mt-5">
@@ -15,12 +16,14 @@
                     <h4 class="mb-4">¿Seguro que querés eliminar este inquilino?</h4>
 
                     <p class="mb-4">
-                        <strong>@Model.ApellidoNombres</strong>  
-                        <br />
+                        <strong>@Model.ApellidoNombres</strong><br />
                         <span class="text-muted">(@Model.Documento)</span>
                     </p>
 
-                    <form asp-action="Borrar" method="post" class="d-flex justify-content-center gap-3">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Borrar" method="post" class="form-delete d-flex justify-content-center gap-3"
+                          data-msg="¿Confirmás eliminar al inquilino '@Model.ApellidoNombres'?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdInquilino" />
 
                         <button type="submit" class="btn btn-danger px-4">

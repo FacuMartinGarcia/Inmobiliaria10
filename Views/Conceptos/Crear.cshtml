@@ -2,40 +2,21 @@
 @{
     ViewData["Title"] = "Nuevo concepto";
 }
-@using System.Text.Json
+
 <h2 class="mb-3">Nuevo concepto</h2>
 
 <form asp-action="Crear" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <partial name="_Form" />
+
     <div class="d-flex gap-2">
-        <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
-        <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+        <a class="btn btn-secondary" asp-action="Index">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg"></i> Guardar
+        </button>
     </div>
 </form>
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- quitar si ya está -->
-    @if (!ViewData.ModelState.IsValid)
-    {
-        // Toma los mensajes del ValidationSummary
-        var errores = ViewData.ModelState.Values
-            .SelectMany(v => v.Errors)
-            .Select(e => e.ErrorMessage)
-            .Where(m => !string.IsNullOrWhiteSpace(m))
-            .ToList();
-        if (errores.Count > 0)
-        {
-            <text>
-            <script>
-            Swal.fire({
-              icon: 'error',
-              title: 'Revisá los datos',
-              html: @Html.Raw(JsonSerializer.Serialize(string.Join("<br/>", errores))),
-              confirmButtonText: 'Aceptar'
-            });
-            </script>
-            </text>
-        }
-    }
-}

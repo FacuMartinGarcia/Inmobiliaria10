@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Eliminar Usuario";
-    Layout = "_Layout";
 }
 
 <div class="container mt-5">
@@ -28,7 +27,10 @@
                         <strong>Rol:</strong> @Model.Rol?.DenominacionRol
                     </p>
 
-                    <form asp-action="Eliminar" method="post">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Eliminar" method="post" class="form-delete"
+                          data-msg="¿Confirmás eliminar al usuario '@Model.ApellidoNombres' (@Model.Alias)?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdUsuario" />
 
                         <div class="d-flex justify-content-between mt-4">

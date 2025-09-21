@@ -4,6 +4,7 @@
     ViewData["Title"] = "Inquilinos";
     int paginaActual = ViewData["PaginaActual"] != null ? Convert.ToInt32(ViewData["PaginaActual"]) : 1;
     int totalPaginas = ViewData["TotalPaginas"] != null ? Convert.ToInt32(ViewData["TotalPaginas"]) : 1;
+    Layout = "_Layout";
 }
 
 <div class="text-center mb-3">
@@ -95,18 +96,3 @@
     </nav>
 }
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        @if (TempData["Mensaje"] != null)
-        {
-            <text>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: '@TempData["Mensaje"]'
-                });
-            </text>
-        }
-    </script>
-}

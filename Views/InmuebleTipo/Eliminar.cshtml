@@ -18,7 +18,10 @@
                         <strong>@Model.DenominacionTipo</strong>
                     </p>
 
-                    <form asp-action="Eliminar" method="post">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Eliminar" method="post" class="form-delete"
+                          data-msg="¿Confirmás eliminar el tipo de inmueble '@Model.DenominacionTipo'?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdTipo" />
 
                         <div class="d-flex justify-content-between mt-4">

@@ -1,40 +1,65 @@
 ﻿// wwwroot/js/site.js
 document.addEventListener("DOMContentLoaded", () => {
-    // Mensajes de TempData (éxito/error)
+    // =======================
+    // Alertas desde TempData
+    // =======================
     const mensaje = document.getElementById("mensajeTemp")?.value;
-    const error = document.getElementById("errorTemp")?.value;
+    const error   = document.getElementById("errorTemp")?.value;
+    const info    = document.getElementById("infoTemp")?.value;
 
     if (mensaje) {
         Swal.fire({
+            toast: true,
+            position: 'top-end',
             icon: 'success',
-            title: 'Éxito',
-            text: mensaje
+            title: mensaje,
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    }
+
+    if (info) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: info,
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
         });
     }
 
     if (error) {
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: error
+            title: 'Ups…',
+            text: error,
+            confirmButtonText: 'Cerrar'
         });
     }
-});
 
-// Confirmación genérica (ejemplo para eliminar)
-function confirmarEliminacion(url, mensaje = "¿Seguro que desea eliminar este registro?") {
-    Swal.fire({
-        title: 'Confirmar',
-        text: mensaje,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
-        }
+    // =======================
+    // Confirmación genérica de eliminación
+    // =======================
+    document.querySelectorAll("form.form-delete").forEach(form => {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "¿Eliminar?",
+                text: form.dataset.msg || "Esta acción no se puede deshacer.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+                reverseButtons: true
+            }).then(result => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
     });
-}
+});

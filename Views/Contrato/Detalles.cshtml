@@ -9,6 +9,7 @@
     var finTxt       = Model.FechaFin.ToString("yyyy-MM-dd");
     var rescisionTxt = Model.Rescision.HasValue ? Model.Rescision.Value.ToString("yyyy-MM-dd") : "-";
     var montoTxt     = Model.MontoMulta.HasValue ? Model.MontoMulta.Value.ToString("0.##") : "-";
+    Layout = "_Layout";
 }
 
 <div class="d-flex justify-content-center">

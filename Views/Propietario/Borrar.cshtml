@@ -2,25 +2,28 @@
 
 @{
     ViewData["Title"] = "Eliminar Propietario";
-    Layout = "_Layout";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card form-card">
-                <h2 class="form-title">@ViewData["Title"]</h2>
+            <div class="card form-card border-danger">
+                <div class="card-header form-card-header bg-danger text-white">
+                    <h2 class="form-title text-white">@ViewData["Title"]</h2>
+                </div>
 
                 <div class="card-body text-center">
                     <h4 class="mb-4">¿Seguro que querés eliminar este propietario?</h4>
 
                     <p class="mb-4">
-                        <strong>@Model.ApellidoNombres</strong>  
-                        <br />
+                        <strong>@Model.ApellidoNombres</strong><br />
                         <span class="text-muted">(@Model.Documento)</span>
                     </p>
 
-                    <form asp-action="Borrar" method="post" class="d-flex justify-content-center gap-3">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Borrar" method="post" class="form-delete d-flex justify-content-center gap-3"
+                          data-msg="¿Confirmás eliminar al propietario '@Model.ApellidoNombres'?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdPropietario" />
 
                         <button type="submit" class="btn btn-danger px-4">

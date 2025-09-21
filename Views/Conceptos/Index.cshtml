@@ -1,6 +1,7 @@
 @model IEnumerable<Inmobiliaria10.Models.Concepto>
 @{
     ViewData["Title"] = "Conceptos";
+    Layout = "_Layout";
     var total = (int?)ViewBag.Total ?? 0;
     var page = (int?)ViewBag.Page ?? 1;
     var pageSize = (int?)ViewBag.PageSize ?? 20;
@@ -79,26 +80,4 @@ else
             </li>
         </ul>
     </nav>
-}
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- si ya lo cargás en _Layout, quitá esta línea -->
-    <script>
-    (function () {
-      const ok   = @Html.Raw(JsonSerializer.Serialize(TempData["Ok"] as string));
-      const err  = @Html.Raw(JsonSerializer.Serialize(TempData["Error"] as string));
-      const info = @Html.Raw(JsonSerializer.Serialize(TempData["Info"] as string));
-
-      if (ok) {
-        Swal.fire({ toast:true, position:'top-end', icon:'success', title: ok,
-          showConfirmButton:false, timer:2500, timerProgressBar:true });
-      }
-      if (info) {
-        Swal.fire({ toast:true, position:'top-end', icon:'info', title: info,
-          showConfirmButton:false, timer:2500, timerProgressBar:true });
-      }
-      if (err) {
-        Swal.fire({ icon:'error', title:'Ups…', text: err, confirmButtonText:'Cerrar' });
-      }
-    })();
-    </script>
 }

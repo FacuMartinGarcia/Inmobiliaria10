@@ -16,7 +16,10 @@
 
                     <h5 class="fw-bold">@Model.DenominacionUso</h5>
 
-                    <form asp-action="Eliminar" method="post">
+                    <!-- 🔹 Usa .form-delete y mensaje personalizado -->
+                    <form asp-action="Eliminar" method="post" class="form-delete"
+                          data-msg="¿Confirmás eliminar el uso de inmueble '@Model.DenominacionUso'?">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="IdUso" />
 
                         <div class="d-flex justify-content-between mt-4">

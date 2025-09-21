@@ -123,100 +123,10 @@
 
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-
-        @if (TempData["Mensaje"] != null)
-        {
-            <text>
-            Swal.fire({
-                icon: 'success',
-                title: 'Éxito',
-                text: '@Html.Raw(TempData["Mensaje"])',
-                timer: 1500,
-                timerProgressBar: true,
-                showConfirmButton: false
-            });
-            </text>
-        }
-
-        @if (TempData["MensajeError"] != null)
-        {
-            <text>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: '@Html.Raw(TempData["MensajeError"])',
-                timer: 1500,
-                timerProgressBar: true,
-                showConfirmButton: true
-            });
-            </text>
-        }
-        document.querySelectorAll('.eliminar-portada').forEach(form => {
-            form.addEventListener('submit', function(e){
-                e.preventDefault();
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¡No podrás deshacer esta acción!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-
-        document.querySelectorAll('.eliminar-imagen').forEach(form => {
-            form.addEventListener('submit', function(e){
-                e.preventDefault();
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¡No podrás deshacer esta acción!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-
-        const inputArchivo = document.getElementById('Archivo');
-        const nombreArchivoSpan = document.getElementById('nombreArchivoSeleccionado');
-
-        inputArchivo.addEventListener('change', function() {
-            if (inputArchivo.files.length > 0) {
-                nombreArchivoSpan.textContent = inputArchivo.files[0].name;
-            } else {
-                nombreArchivoSpan.textContent = 'Ningún archivo seleccionado';
-            }
-        });
-
-        const inputImagenes = document.getElementById('imagenes');
-        const archivosSeleccionados = document.getElementById('archivosSeleccionados');
-
-        inputImagenes.addEventListener('change', function() {
-            if (inputImagenes.files.length > 0) {
-                let nombres = Array.from(inputImagenes.files).map(f => f.name).join(', ');
-                archivosSeleccionados.textContent = nombres;
-            } else {
-                archivosSeleccionados.textContent = 'Ningún archivo seleccionado';
-            }
-        });
-
-    });
-</script>
+@section Scripts {
+    <script>
+        window.mensajeOk = "@Html.Raw(TempData["Mensaje"])";
+        window.mensajeErr = "@Html.Raw(TempData["MensajeError"])";
+    </script>
+    <script src="~/js/imagenes.js" asp-append-version="true"></script>
+}

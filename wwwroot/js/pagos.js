@@ -75,7 +75,15 @@ $(function () {
                     render: id => !id ? '' : `
                         <a href="/Pagos/Detalles/${id}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
                         <a href="/Pagos/Editar/${id}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></a>
-                        <a href="javascript:void(0)" onclick="confirmarEliminacion('/Pagos/Eliminar/${id}')" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash-can"></i></a>
+
+                        <!-- 🔹 Ahora usamos form-delete en lugar de onclick -->
+                        <form action="/Pagos/Eliminar/${id}" method="post" class="d-inline form-delete"
+                              data-msg="¿Confirmás eliminar el pago #${id}?">
+                            <input type="hidden" name="__RequestVerificationToken" value="${$('input[name="__RequestVerificationToken"]').val()}"/>
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
                     `
                 }
             ],
@@ -157,23 +165,3 @@ $(function () {
         });
     }
 });
-
-// ============================================================
-// Función global para confirmar eliminación con SweetAlert2
-// ============================================================
-function confirmarEliminacion(url) {
-    Swal.fire({
-        title: '¿Está seguro?',
-        text: "Esta acción no se puede deshacer.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
-        }
-    });
-}
