@@ -2,80 +2,60 @@
 
 @{
     ViewData["Title"] = "Editar Usuario";
+    Layout = "_Layout";
 }
 
-<div id="content" class="d-flex justify-content-center align-items-center">
-    <div class="form-card">
-        <h2 class="form-title">Editar Usuario</h2>
-        <p class="form-subtitle">Modifique los datos y guarde los cambios</p>
+<body id="page-edit-user">
+    <div id="content" class="d-flex justify-content-center align-items-center">
+        <div class="form-card">
+            <h2 class="form-title">Editar Usuario</h2>
+            <p class="form-subtitle">Modifique los datos y guarde los cambios</p>
 
-        <form asp-action="Editar" method="post">
-            @* Resumen de errores *@
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <form asp-action="Editar" method="post">
+                @* Resumen de errores *@
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <input type="hidden" asp-for="IdUsuario" />
+                <input type="hidden" asp-for="IdUsuario" />
 
-            <div class="form-group mb-3">
-                <label asp-for="ApellidoNombres" class="form-label">Apellido, Nombres</label>
-                <input asp-for="ApellidoNombres" class="form-control" />
-                <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ApellidoNombres" class="form-label">Apellido, Nombres</label>
+                    <input asp-for="ApellidoNombres" class="form-control" />
+                    <span asp-validation-for="ApellidoNombres" class="text-danger"></span>
+                </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Alias" class="form-label">Alias</label>
-                <input asp-for="Alias" class="form-control" />
-                <span asp-validation-for="Alias" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Alias" class="form-label">Alias</label>
+                    <input asp-for="Alias" class="form-control" />
+                    <span asp-validation-for="Alias" class="text-danger"></span>
+                </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Email" class="form-label">Email</label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Password" class="form-label">Contraseña</label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="(Dejar vacío si no desea cambiarla)" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-3">
+                    <label asp-for="Password" class="form-label">Contraseña</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="(Dejar vacío si no desea cambiarla)" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
 
-            <div class="form-group mb-4">
-                <label asp-for="IdRol" class="form-label">Rol</label>
-                <select asp-for="IdRol" asp-items="ViewBag.Roles" class="form-control"></select>
-                <span asp-validation-for="IdRol" class="text-danger"></span>
-            </div>
+                <div class="form-group mb-4">
+                    <label asp-for="IdRol" class="form-label">Rol</label>
+                    <select asp-for="IdRol" asp-items="ViewBag.Roles" class="form-control"></select>
+                    <span asp-validation-for="IdRol" class="text-danger"></span>
+                </div>
 
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-back">Volver</a>
-                <button type="submit" class="btn btn-save">Guardar cambios</button>
-            </div>
-        </form>
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-back">Volver</a>
+                    <button type="submit" class="btn btn-save">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+</body>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
-
-    <script>
-        $(document).ready(function() {
-            $('#rol').select2({
-                theme: 'bootstrap4',
-                placeholder: '-- Seleccione Rol --',
-                allowClear: true,
-                width: '100%'
-            });
-            $("#Password").removeAttr("data-val");
-            $("#Password").removeAttr("data-val-required");
-
-
-
-            var passwordInput = document.getElementById('Password');
-            var passwordTooltip = new bootstrap.Tooltip(passwordInput);
-
-        });
-    </script>
+    <script src="~/js/usuarios.js" asp-append-version="true"></script>
 }

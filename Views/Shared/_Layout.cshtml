@@ -18,7 +18,7 @@
           integrity="sha512-SWLK..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/css/form.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Inmobiliaria10.styles.css" asp-append-version="true" />
+    
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -74,16 +74,13 @@
             </div>
         </nav>
     </header>
-
-    <!-- CONTENEDOR PRINCIPAL CON SIDEBAR + CONTENT -->
     <div class="container-fluid flex-grow-1">
         <div class="row flex-nowrap">
-
             <!-- SIDEBAR (colapsable horizontal) -->
             <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
                 <div class="sidebar-inner d-flex flex-column h-100">
                     <ul class="nav nav-pills flex-column p-2">
-                        <!-- Menús existentes -->
+                        <!-- Menús principales -->
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
                                 <i class="fa-solid fa-user-tie"></i>
@@ -92,7 +89,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilino" asp-action="Index">
-                                <i class="fa-solid fa-users"></i>
+                                <i class="fa-solid fa-people-roof"></i>
                                 <span>Inquilinos</span>
                             </a>
                         </li>
@@ -110,36 +107,52 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link d-flex align-items-center gap-2" asp-controller="Pagos" asp-action="Index">
-                                <i class="fa-solid fa-receipt"></i>
+                                <i class="fa-solid fa-dollar-sign"></i>
                                 <span>Pagos</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuarios" asp-action="Index">
+                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuario" asp-action="Index">
+                                <i class="fa-solid fa-users"></i>
                                 <span>Usuarios</span>
                             </a>
                         </li>
+
+                        <!-- Submenú Sistema -->
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2 collapsed" data-bs-toggle="collapse" href="#menuSistema" role="button" aria-expanded="false" aria-controls="menuSistema">
+                            <a class="nav-link d-flex align-items-center gap-2 collapsed" 
+                            data-bs-toggle="collapse" href="#menuSistema" 
+                            role="button" aria-expanded="false" aria-controls="menuSistema">
                                 <i class="fa-solid fa-cogs"></i>
                                 <span>Sistema</span>
                                 <i class="fa-solid fa-chevron-down ms-auto"></i>
                             </a>
                             <div class="collapse" id="menuSistema">
-                                <ul class="nav-item ms-3">
+                                <ul class="nav flex-column ms-3">
                                     <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Rol" asp-action="Index">Roles</a>
+                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Rol" asp-action="Index">
+                                            <i class="fa-solid fa-key"></i>
+                                            <span>Roles</span>
+                                        </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleTipo" asp-action="Index">Tipos de Inmuebles</a>
+                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleTipo" asp-action="Index">
+                                            <i class="fa-solid fa-building-circle-check"></i>
+                                            <span>Tipos de Inmuebles</span>
+                                        </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleUso" asp-action="Index">Usos de Inmuebles</a>
+                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleUso" asp-action="Index">
+                                            <i class="fa-solid fa-toolbox"></i>
+                                            <span>Usos de Inmuebles</span>
+                                        </a>
                                     </li>
-                                    <li class="nav-item"></li>
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Conceptos" asp-action="Index">Conceptos de Pago</a>
+                                    <li class="nav-item">
+                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Conceptos" asp-action="Index">
+                                            <i class="fa-solid fa-receipt"></i>
+                                            <span>Conceptos de Pago</span>
+                                        </a>
                                     </li>
-
                                 </ul>
                             </div>
                         </li>
@@ -156,42 +169,52 @@
                     min-height: 100vh;">
                 @RenderBody()
             </main>
-
         </div>
     </div>
+    
+    @if (TempData["Mensaje"] != null)
+        {
+            <input type="hidden" id="mensajeTemp" value="@TempData["Mensaje"]" />
+        }
 
-    <partial name="~/Views/Shared/footer.cshtml" />
+    @if (TempData["Error"] != null)
+        {
+            <input type="hidden" id="errorTemp" value="@TempData["Error"]" />
+        }
+    
+    <footer class="bg-dark text-white text-center py-3 mt-auto shadow-sm">
+        <div class="container">
+            <p class="mb-0">© @DateTime.Now.Year - InnovaPropiedades | Todos los derechos reservados</p>
+        </div>
+    </footer>
 
-
+    <!-- jQuery -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap (usa jQuery) -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"/> 
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+
+    <!-- Select2 + tema Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/@@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Validaciones jQuery -->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Scripts propios -->
+    <script src="~/js/layout.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-
-    <script>
-        (function () {
-            const sidebar = document.getElementById('sidebar');
-            const btn = document.getElementById('btnSidebarToggle');
-            const key = 'sidebar-collapsed';
-
-            const wasCollapsed = localStorage.getItem(key) === 'true';
-            if (wasCollapsed) {
-
-                sidebar.classList.remove('show');
-            }
-
-
-            btn?.addEventListener('click', function () {
-                const willBeCollapsed = sidebar.classList.contains('show'); 
-
-                setTimeout(() => {
-                    localStorage.setItem(key, String(!willBeCollapsed));
-                }, 350);
-            });
-        })();
-    </script>
-
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

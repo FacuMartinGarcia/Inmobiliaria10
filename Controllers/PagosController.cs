@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 
+
 namespace Inmobiliaria10.Controllers
 {
     [Authorize]
@@ -39,9 +40,11 @@ namespace Inmobiliaria10.Controllers
             int draw, int start = 0, int length = 10,
             CancellationToken ct = default)
         {
+            // Calcular paginación
             int pageIndex = Math.Max(1, (start / Math.Max(1, length)) + 1);
             int pageSize  = Math.Max(1, length);
 
+            // Traer datos desde el repo
             var (items, total) = await _repo.ListAsync(
                 idContrato : contrato,
                 idConcepto : null,
@@ -52,16 +55,16 @@ namespace Inmobiliaria10.Controllers
                 idInquilino: inquilino
             );
 
-            // Conceptos: Id -> Denominación (tu repo expone Id/Nombre)
+            // Conceptos para mapear Id -> Nombre
             var conceptos   = await _repo.GetConceptosAsync(ct);
             var conceptoMap = conceptos.ToDictionary(x => x.Id, x => x.Nombre);
 
-            // Contratos que aparecen en la página
+            // Contratos de la página actual
             var contratoIds   = items.Select(p => p.IdContrato).Distinct().ToList();
             var contratosInfo = await _contratoRepo.GetContratosInfoAsync(contratoIds, ct);
             var contratoMap   = contratosInfo.ToDictionary(c => c.Id, c => $"{c.Direccion} - {c.Inquilino}");
 
-            // Orden DataTables
+            // Orden recibido desde DataTables
             var orderColIdx = int.TryParse(Request.Query["order[0][column]"], out var oc) ? oc : 0;
             var orderDir    = (Request.Query["order[0][dir]"].FirstOrDefault() ?? "desc").ToLower();
 
@@ -80,6 +83,7 @@ namespace Inmobiliaria10.Controllers
                 ? items.OrderBy(keySelector)
                 : items.OrderByDescending(keySelector);
 
+            // Proyección al objeto que DataTables consume
             var data = ordered.Select(p => new
             {
                 idPago    = p.IdPago,
@@ -91,16 +95,27 @@ namespace Inmobiliaria10.Controllers
                 estado = p.DeletedAt.HasValue ? "Eliminado" : "Activo"
             }).ToList();
 
-            return Json(new { draw, recordsTotal = total, recordsFiltered = total, data });
+            // 🔹 Devolver el mismo draw que vino en la request
+            var safeDraw = draw < 0 ? 0 : draw;
+
+            return Json(new {
+                draw = safeDraw,
+                recordsTotal = total,
+                recordsFiltered = total,
+                data
+            });
         }
+
 
 
         [HttpGet("Detalles/{id:int}")]
         public async Task<IActionResult> Detalles(int id, CancellationToken ct = default)
         {
-            var x = await _repo.GetByIdAsync(id, ct);
-            return x is null ? NotFound() : View(x);
+            var vm = await _repo.GetDetalleAsync(id, ct);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
+
 
         [HttpGet("Crear")]
         public async Task<IActionResult> Crear(int? contrato, CancellationToken ct = default)
@@ -120,6 +135,15 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Detalles), new { id });
         }
 
+        [HttpPost("RegistrarMulta/{contratoId:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarMulta(int contratoId, CancellationToken ct = default)
+        {
+            var idPago = await _repo.RegistrarMultaAsync(contratoId, DateTime.Today, GetUserIdOrDefault(), ct);
+            TempData["Ok"] = "Multa registrada como pago.";
+            return RedirectToAction("Detalles", "Pagos", new { id = idPago });
+        }
+
         [HttpGet("Editar/{id:int}")]
         public async Task<IActionResult> Editar(int id, CancellationToken ct = default)
         {
@@ -134,10 +158,34 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> Editar(int id, Pago m, CancellationToken ct = default)
         {
             if (id != m.IdPago) return BadRequest();
-            if (!ModelState.IsValid) { await CargarSelectsAsync(m.IdConcepto, ct); return View(m); }
-            await _repo.UpdateAsync(m, ct);
-            TempData["Ok"] = "Pago actualizado.";
+            if (!ModelState.IsValid) 
+            { 
+                await CargarSelectsAsync(m.IdConcepto, ct); 
+                return View(m); 
+            }
+
+            // 🔹 Solo actualizar concepto
+            await _repo.UpdateConceptoAsync(id, m.IdConcepto, ct);
+
+            TempData["Ok"] = "Concepto del pago actualizado.";
             return RedirectToAction(nameof(Detalles), new { id = m.IdPago });
+        }
+
+        [HttpPost("Anular/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Anular(int id, string motivo, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                TempData["Error"] = "Debe ingresar un motivo para anular el pago.";
+                return RedirectToAction(nameof(Eliminar), new { id });
+            }
+
+            var ok = await _repo.AnularPagoAsync(id, motivo, GetUserIdOrDefault(), ct);
+            if (!ok) return NotFound();
+
+            TempData["Ok"] = "Pago anulado correctamente.";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost("Editar")]
@@ -169,6 +217,8 @@ namespace Inmobiliaria10.Controllers
             ViewBag.IdPago = id;
             return View(eventos);
         }
+
+    
 
         // --- Endpoints Select2 ---
 

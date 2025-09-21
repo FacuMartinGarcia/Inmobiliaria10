@@ -25,6 +25,7 @@ namespace Inmobiliaria10.Models
         public DateTime? CreatedAt { get; set; }     // DEFAULT NOW
         public DateTime? DeletedAt { get; set; }     // NULL
         public int? DeletedBy { get; set; }          // NULL FK usuarios
+        public int NumeroPago { get; set; }
     }
 
     public class PagoAudit

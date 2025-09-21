@@ -1,7 +1,8 @@
-@model Inmobiliaria10.Models.Pago
+@model Inmobiliaria10.Models.ViewModels.PagoDetalleViewModel
 @{
     ViewData["Title"] = "Detalle de pago";
     var eliminado = Model.DeletedAt.HasValue;
+    Layout = "_Layout";
 }
 
 <div id="content" class="d-flex justify-content-center align-items-center">
@@ -9,23 +10,27 @@
         <h2 class="form-title">Detalle de Pago</h2>
 
         <dl class="row mb-0">
-            <dt class="col-sm-3">Id</dt>
-            <dd class="col-sm-9">#@Model.IdPago</dd>
+            <dt class="col-sm-3">N° Pago</dt>
+            <dd class="col-sm-9">@Model.NumeroPago</dd>
 
             <dt class="col-sm-3">Fecha</dt>
-            <dd class="col-sm-9">@Model.FechaPago:yyyy-MM-dd</dd>
+            <dd class="col-sm-9">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
 
             <dt class="col-sm-3">Detalle</dt>
             <dd class="col-sm-9">@Model.Detalle</dd>
 
             <dt class="col-sm-3">Concepto</dt>
-            <dd class="col-sm-9">@Model.IdConcepto</dd>
+            <dd class="col-sm-9">
+                @(string.IsNullOrEmpty(Model.ConceptoTexto) ? $"Id: {Model.IdConcepto}" : Model.ConceptoTexto)
+            </dd>
 
             <dt class="col-sm-3">Importe</dt>
-            <dd class="col-sm-9">@Model.Importe.ToString("C")</dd>
+            <dd class="col-sm-9">@Model.Importe.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</dd>
 
             <dt class="col-sm-3">Contrato</dt>
-            <dd class="col-sm-9">@Model.IdContrato</dd>
+            <dd class="col-sm-9">
+                @(string.IsNullOrEmpty(Model.ContratoTexto) ? $"Id: {Model.IdContrato}" : Model.ContratoTexto)
+            </dd>
 
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">
@@ -43,18 +48,19 @@
 
             <dt class="col-sm-3">Creado</dt>
             <dd class="col-sm-9">
-                @(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-") (UTC)
-                @if (Model.CreatedBy.HasValue) { <span>— UserId: @Model.CreatedBy</span> }
+                @(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-") (UTC)
+                @if (!string.IsNullOrEmpty(Model.CreatedByAlias)) { <span>— @Model.CreatedByAlias</span> }
             </dd>
 
             @if (Model.DeletedAt.HasValue)
             {
                 <dt class="col-sm-3">Eliminado</dt>
                 <dd class="col-sm-9">
-                    @(Model.DeletedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-") (UTC)
-                    @if (Model.DeletedBy.HasValue) { <span>— UserId: @Model.DeletedBy</span> }
+                    @(Model.DeletedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-") (UTC)
+                    @if (!string.IsNullOrEmpty(Model.DeletedByAlias)) { <span>— @Model.DeletedByAlias</span> }
                 </dd>
             }
+
         </dl>
 
         <div class="d-flex gap-2 mt-4 justify-content-between">
@@ -68,32 +74,8 @@
                 <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@Model.IdPago">
                     <i class="bi bi-trash"></i> Baja
                 </a>
-                <a class="btn btn-dark" asp-action="Auditoria" asp-route-id="@Model.IdPago">
-                    <i class="bi bi-clock-history"></i> Auditoría
-                </a>
+                
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts{
-  <!-- Quitar si SweetAlert2 ya está en el _Layout -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    (function(){
-      // Toast de éxito si viene desde Editar/Crear
-      const ok = '@TempData["Ok"]';
-      if (ok) {
-        Swal.fire({ 
-          toast:true, 
-          position:'top-end', 
-          icon:'success', 
-          title: ok,
-          showConfirmButton:false, 
-          timer:2200, 
-          timerProgressBar:true 
-        });
-      }
-    })();
-  </script>
-}

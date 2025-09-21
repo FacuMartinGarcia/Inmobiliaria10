@@ -1,101 +1,61 @@
 @model Inmobiliaria10.Models.Pago
 @{
     ViewData["Title"] = "Editar pago";
+    Layout = "_Layout";
 }
 
-<div class="d-flex justify-content-center py-4">
-  <div class="form-card">
-    <div class="form-title">Editar pago</div>
+<body id="page-edit-pago">
+    <div class="d-flex justify-content-center py-4">
+        <div class="form-card">
+            <div class="form-title">Editar pago</div>
 
-    <form asp-action="Editar" asp-route-id="@Model.IdPago" method="post" class="needs-validation" novalidate>
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form asp-action="Editar" asp-route-id="@Model.IdPago" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <input type="hidden" asp-for="IdPago" />
-        <partial name="_Form" />
+                <input type="hidden" asp-for="IdPago" />
 
-        <div class="d-flex gap-2 mt-3">
-            <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdPago">
-                <i class="bi bi-eye"></i> Ver
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save"></i> Guardar cambios
-            </button>
+                <dl class="row">
+                    <dt class="col-sm-3">Fecha</dt>
+                    <dd class="col-sm-9">
+                        <input value="@Model.FechaPago.ToString("dd/MM/yyyy")" class="form-control" readonly />
+                    </dd>
+
+                    <dt class="col-sm-3">Importe</dt>
+                    <dd class="col-sm-9">
+                        <input value="@Model.Importe.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))" class="form-control" readonly />
+                    </dd>
+
+                    <dt class="col-sm-3">Contrato</dt>
+                    <dd class="col-sm-9">
+                        <input value="@Model.IdContrato" class="form-control" readonly />
+                    </dd>
+
+                    <dt class="col-sm-3">Detalle</dt>
+                    <dd class="col-sm-9">
+                        <input value="@Model.Detalle" class="form-control" readonly />
+                    </dd>
+
+                    <dt class="col-sm-3">Concepto</dt>
+                    <dd class="col-sm-9">
+                        <select asp-for="IdConcepto" asp-items="ViewBag.Conceptos" class="form-control"></select>
+                        <span asp-validation-for="IdConcepto" class="text-danger"></span>
+                    </dd>
+                </dl>
+
+                <div class="d-flex gap-2 mt-3">
+                    <a class="btn btn-secondary" asp-action="Detalles" asp-route-id="@Model.IdPago">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
-  </div>
-</div>
+    </div>
+</body>
 
 @section Scripts {
-    <!-- Quitá estos includes si ya están en tu _Layout -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-
-    <script>
-    (function () {
-        const $orig = $('#IdContrato'); // input original generado por asp-for
-        if ($orig.length) {
-            // Crear nuevo select y copiar validaciones del input original
-            const $sel = $('<select class="form-select" style="width:100%"></select>');
-            $.each($orig[0].attributes, function (_, a) {
-                if (a && a.name && a.name.startsWith('data-val')) {
-                    $sel.attr(a.name, a.value);
-                }
-            });
-
-            // Insertar nuevo select después del input original
-            $orig.after($sel);
-            // Ocultar el input original y cambiar su id/name
-            $orig.attr('id', 'IdContrato_original').attr('name', '').hide();
-            // Asignar id y name correctos al select2
-            $sel.attr('id', 'IdContrato').attr('name', 'IdContrato');
-
-            // Inicializar Select2 con AJAX
-            $('#IdContrato').select2({
-                placeholder: 'Buscar contrato (Contrato + Inmueble)…',
-                allowClear: true,
-                width: '100%',
-                ajax: {
-                    url: '/Pagos/search-contratos',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            term: params.term || '',
-                            page: params.page || 1
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: (data.results || []).map(function (x) {
-                                return { id: x.id, text: x.text };
-                            })
-                        };
-                    }
-                }
-            });
-
-            // Preselección si el modelo trae valor
-            const pre = @Model.IdContrato;
-            if (pre && pre > 0) {
-                $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
-                    if (res && res.item) {
-                        const opt = new Option(res.item.text, res.item.id, true, true);
-                        $('#IdContrato').append(opt).trigger('change');
-                    }
-                });
-            }
-        }
-    })();
-    </script>
-    <script>
-        $(function () {
-            $('#IdConcepto').select2({
-                placeholder: "Seleccione un concepto",
-                allowClear: true,
-                width: '100%'
-            });
-        });
-    </script>
+    <script src="~/js/pagos.js" asp-append-version="true"></script>
 }

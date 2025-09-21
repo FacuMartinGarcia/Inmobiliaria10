@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Usuarios";
+    Layout = "_Layout";
     int paginaActual = ViewBag.PaginaActual != null ? Convert.ToInt32(ViewBag.PaginaActual) : 1;
     int cantidadPorPagina = ViewBag.CantidadPorPagina != null ? Convert.ToInt32(ViewBag.CantidadPorPagina) : 10;
     int totalRegistros = ViewBag.TotalRegistros != null ? Convert.ToInt32(ViewBag.TotalRegistros) : 0;
@@ -95,18 +96,4 @@
     </nav>
 }
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        @if (TempData["Mensaje"] != null)
-        {
-            <text>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    text: '@TempData["Mensaje"]',
-                });
-            </text>
-        }
-    </script>
-}
+

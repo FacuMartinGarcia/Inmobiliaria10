@@ -1,6 +1,7 @@
 @model Inmobiliaria10.Models.Pago
 @{
     ViewData["Title"] = "Baja de pago";
+    Layout = "_Layout";
 }
 
 <div id="content" class="d-flex justify-content-center align-items-center">
@@ -16,37 +17,21 @@
             </div>
         </div>
 
-        <form asp-action="Borrar" asp-route-id="@Model.IdPago" method="post" id="frmDelete">
+        <form asp-action="Anular" asp-route-id="@Model.IdPago" method="post">
             @Html.AntiForgeryToken()
-            <div class="d-flex gap-2 justify-content-between">
-                <a class="btn btn-back" asp-action="Detalles" asp-route-id="@Model.IdPago">
-                    <i class="bi bi-arrow-left"></i> Cancelar
-                </a>
+            <div class="form-group">
+                <label for="motivo">Motivo de anulación</label>
+                <textarea id="motivo" name="motivo" class="form-control" required></textarea>
+            </div>
+            <div class="mt-3">
                 <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Eliminar
+                    <i class="bi bi-x-circle"></i> Confirmar Anulación
                 </button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
+
     </div>
 </div>
 
-@section Scripts{
-  <!-- Quitar si SweetAlert2 ya está en el _Layout -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    // Confirmación con SweetAlert antes de enviar el POST
-    document.getElementById('frmDelete')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const r = await Swal.fire({
-        title: '¿Eliminar pago?',
-        text: 'Se registrará la baja lógica del pago.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-      });
-      if (r.isConfirmed) e.target.submit();
-    });
-  </script>
-}
+

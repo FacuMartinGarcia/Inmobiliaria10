@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Editar datos del perfil";
+    Layout = "_Layout";
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">
@@ -53,6 +54,4 @@
     </div>
 </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+

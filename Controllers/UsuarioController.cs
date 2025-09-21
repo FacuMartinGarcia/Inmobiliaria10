@@ -166,15 +166,25 @@ namespace Inmobiliaria10.Controllers
 
         // CAMBIAR PASSWORD
         [HttpGet]
-        public async Task<IActionResult> CambiarPassword(int id)
+        [Authorize]
+        public async Task<IActionResult> CambiarPassword()
         {
-            var usuario = await _repo.ObtenerPorId(id);
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (idClaim == null)
+            {
+                TempData["Error"] = "Debes iniciar sesión para cambiar tu contraseña.";
+                return RedirectToAction("Login");
+            }
+
+            int idUsuario = int.Parse(idClaim.Value);
+            var usuario = await _repo.ObtenerPorId(idUsuario);
             if (usuario == null)
                 return NotFound();
 
             var vm = new CambiarPasswordViewModel { IdUsuario = usuario.IdUsuario };
             return View(vm);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

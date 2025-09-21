@@ -1,6 +1,7 @@
 using System.Data;
 using Inmobiliaria10.Models;
 using MySql.Data.MySqlClient;
+using Inmobiliaria10.Models.ViewModels;
 
 namespace Inmobiliaria10.Data.Repositories
 {
@@ -22,34 +23,34 @@ namespace Inmobiliaria10.Data.Repositories
         // Mappers
         // -----------------------------
         // Helpers para leer DBNull de forma segura
-        private static int?     IntN (IDataRecord r, string n) => r[n] is DBNull ? (int?)null : Convert.ToInt32(r[n]);
+        private static int? IntN(IDataRecord r, string n) => r[n] is DBNull ? (int?)null : Convert.ToInt32(r[n]);
         private static DateTime? DateN(IDataRecord r, string n) => r[n] is DBNull ? (DateTime?)null : Convert.ToDateTime(r[n]);
-        private static string?  StrN (IDataRecord r, string n) => r[n] is DBNull ? null : Convert.ToString(r[n]);
+        private static string? StrN(IDataRecord r, string n) => r[n] is DBNull ? null : Convert.ToString(r[n]);
 
         private static Pago MapPago(IDataRecord r) => new()
         {
-            IdPago          = Convert.ToInt32(r["IdPago"]),
-            IdContrato      = Convert.ToInt32(r["IdContrato"]),
-            FechaPago       = Convert.ToDateTime(r["FechaPago"]),
-            Detalle         = StrN(r, "Detalle") ?? string.Empty,
-            IdConcepto      = Convert.ToInt32(r["IdConcepto"]),
-            Importe         = Convert.ToDecimal(r["Importe"]),
+            IdPago = Convert.ToInt32(r["IdPago"]),
+            IdContrato = Convert.ToInt32(r["IdContrato"]),
+            FechaPago = Convert.ToDateTime(r["FechaPago"]),
+            Detalle = StrN(r, "Detalle") ?? string.Empty,
+            IdConcepto = Convert.ToInt32(r["IdConcepto"]),
+            Importe = Convert.ToDecimal(r["Importe"]),
             MotivoAnulacion = StrN(r, "MotivoAnulacion"),
-            CreatedBy       = IntN(r, "CreatedBy"),
-            CreatedAt       = Convert.ToDateTime(r["CreatedAt"]),
-            DeletedAt       = DateN(r, "DeletedAt"),
-            DeletedBy       = IntN(r, "DeletedBy")
+            CreatedBy = IntN(r, "CreatedBy"),
+            CreatedAt = Convert.ToDateTime(r["CreatedAt"]),
+            DeletedAt = DateN(r, "DeletedAt"),
+            DeletedBy = IntN(r, "DeletedBy")
         };
 
         private static PagoAudit MapAudit(IDataRecord r) => new PagoAudit
         {
-            IdAudit   = Convert.ToInt32(r["IdAudit"]),
-            IdPago    = Convert.ToInt32(r["IdPago"]),
-            Accion    = r["Accion"].ToString()!,
-            AccionAt  = Convert.ToDateTime(r["AccionAt"]),
-            AccionBy  = r["AccionBy"] is DBNull ? null : (int?)Convert.ToInt32(r["AccionBy"]),
-            OldData   = r["OldData"] as string,
-            NewData   = r["NewData"] as string
+            IdAudit = Convert.ToInt32(r["IdAudit"]),
+            IdPago = Convert.ToInt32(r["IdPago"]),
+            Accion = r["Accion"].ToString()!,
+            AccionAt = Convert.ToDateTime(r["AccionAt"]),
+            AccionBy = r["AccionBy"] is DBNull ? null : (int?)Convert.ToInt32(r["AccionBy"]),
+            OldData = r["OldData"] as string,
+            NewData = r["NewData"] as string
         };
 
         // -----------------------------
@@ -98,7 +99,7 @@ namespace Inmobiliaria10.Data.Repositories
 
             var pars = new List<MySqlParameter>();
             var where = " WHERE 1=1 ";
-            var from  = " FROM pagos p ";
+            var from = " FROM pagos p ";
 
             if (idInquilino is > 0)
             {
@@ -178,7 +179,7 @@ namespace Inmobiliaria10.Data.Repositories
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
             return id;
         }
-
+        
         public async Task UpdateAsync(Pago e, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -204,6 +205,118 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        public async Task UpdateConceptoAsync(int idPago, int idConcepto, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                UPDATE pagos
+                SET id_concepto = @id_concepto
+                WHERE id_pago = @id;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", idPago);
+            cmd.Parameters.AddWithValue("@id_concepto", idConcepto);
+
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        public async Task<int> RegistrarMultaAsync(int contratoId, DateTime fecha, int userId, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            // 1. Traemos info del contrato (inicio, fin, monto mensual)
+            const string sqlContrato = @"
+                SELECT fecha_inicio, fecha_fin, monto
+                FROM contratos
+                WHERE id_contrato = @id;";
+
+            DateTime inicio, fin;
+            decimal montoMensual;
+
+            using (var cmd = new MySqlCommand(sqlContrato, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", contratoId);
+                using var r = await cmd.ExecuteReaderAsync(ct);
+                if (!await r.ReadAsync(ct)) throw new InvalidOperationException("Contrato no encontrado.");
+
+                inicio = Convert.ToDateTime(r["fecha_inicio"]);
+                fin = Convert.ToDateTime(r["fecha_fin"]);
+                montoMensual = Convert.ToDecimal(r["monto"]);
+            }
+
+            // 2. Calcular la mitad de duración
+            var duracion = (fin - inicio).TotalDays;
+            var mitad = inicio.AddDays(duracion / 2);
+
+            // 3. Determinar multa
+            decimal importeMulta = fecha < mitad
+                ? montoMensual * 2   // antes de la mitad → 2 meses
+                : montoMensual;      // después de la mitad → 1 mes
+
+            // 4. Generar número de pago secuencial
+            var numeroPago = await GetNextNumeroPagoAsync(contratoId, ct);
+
+            // 5. Insertar el pago de multa
+            const string sqlInsert = @"
+                INSERT INTO pagos
+                    (id_contrato, numero_pago, fecha_pago, detalle, id_concepto, importe, created_by, created_at)
+                VALUES
+                    (@id_contrato, @numero_pago, @fecha_pago, @detalle, @id_concepto, @importe, @created_by, UTC_TIMESTAMP());
+                SELECT LAST_INSERT_ID();";
+
+            using var cmdInsert = new MySqlCommand(sqlInsert, conn);
+            cmdInsert.Parameters.AddWithValue("@id_contrato", contratoId);
+            cmdInsert.Parameters.AddWithValue("@numero_pago", numeroPago);
+            cmdInsert.Parameters.AddWithValue("@fecha_pago", fecha);
+            cmdInsert.Parameters.AddWithValue("@detalle", "Multa por rescisión anticipada");
+            cmdInsert.Parameters.AddWithValue("@id_concepto", /* id del concepto "Multa" */ 3);
+            cmdInsert.Parameters.AddWithValue("@importe", importeMulta);
+            cmdInsert.Parameters.AddWithValue("@created_by", userId);
+
+            var idPago = Convert.ToInt32(await cmdInsert.ExecuteScalarAsync(ct));
+            return idPago;
+        }
+
+        public async Task<int> GetNextNumeroPagoAsync(int idContrato, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT IFNULL(MAX(numero_pago), 0) + 1
+                                FROM pagos
+                                WHERE id_contrato = @idContrato;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@idContrato", idContrato);
+
+            var result = await cmd.ExecuteScalarAsync(ct);
+            return Convert.ToInt32(result);
+        }
+
+        public async Task<bool> AnularPagoAsync(int id, string motivo, int userId, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                UPDATE pagos
+                SET deleted_at = UTC_TIMESTAMP(),
+                    deleted_by = @by,
+                    motivo_anulacion = @motivo
+                WHERE id_pago = @id AND deleted_at IS NULL;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@by", userId);
+            cmd.Parameters.AddWithValue("@motivo", motivo);
+
+            var rows = await cmd.ExecuteNonQueryAsync(ct);
+            return rows > 0;
         }
 
         public async Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default)
@@ -418,6 +531,65 @@ namespace Inmobiliaria10.Data.Repositories
             if (await r.ReadAsync(ct))
                 return (Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!);
             return null;
+        }
+
+
+        public async Task<PagoDetalleViewModel?> GetDetalleAsync(int id, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT  p.id_pago         AS IdPago,
+                        p.id_contrato     AS IdContrato,
+                        p.numero_pago     AS NumeroPago, 
+                        p.fecha_pago      AS FechaPago,
+                        p.detalle         AS Detalle,
+                        p.id_concepto     AS IdConcepto,
+                        p.importe         AS Importe,
+                        p.motivo_anulacion AS MotivoAnulacion,
+                        p.created_by      AS CreatedBy,
+                        u1.alias          AS CreatedByAlias,
+                        p.created_at      AS CreatedAt,
+                        p.deleted_at      AS DeletedAt,
+                        p.deleted_by      AS DeletedBy,
+                        u2.alias          AS DeletedByAlias
+                FROM pagos p
+                LEFT JOIN usuarios u1 ON u1.id_usuario = p.created_by
+                LEFT JOIN usuarios u2 ON u2.id_usuario = p.deleted_by
+                WHERE p.id_pago = @id
+                LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            if (!await r.ReadAsync(ct)) return null;
+
+            var pago = MapPago(r);
+
+            var concepto = (await GetConceptosAsync(ct))
+                            .FirstOrDefault(x => x.Id == pago.IdConcepto).Nombre;
+            var contrato = await GetContratoItemAsync(pago.IdContrato, ct);
+
+            return new PagoDetalleViewModel
+            {
+                IdPago = pago.IdPago,
+                FechaPago = pago.FechaPago,
+                Detalle = pago.Detalle,
+                Importe = pago.Importe,
+                IdConcepto = pago.IdConcepto,
+                ConceptoTexto = concepto,
+                IdContrato = pago.IdContrato,
+                ContratoTexto = contrato?.Text,
+                CreatedAt = pago.CreatedAt,
+                CreatedBy = pago.CreatedBy,
+                CreatedByAlias = r["CreatedByAlias"] as string,
+                DeletedAt = pago.DeletedAt,
+                DeletedBy = pago.DeletedBy,
+                DeletedByAlias = r["DeletedByAlias"] as string,
+                MotivoAnulacion = pago.MotivoAnulacion
+            };
         }
 
     }

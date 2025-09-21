@@ -1,6 +1,4 @@
 using Inmobiliaria10.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Inmobiliaria10.Data.Repositories
 {

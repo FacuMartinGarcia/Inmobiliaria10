@@ -5,6 +5,7 @@
     var baseFoto = string.IsNullOrWhiteSpace(claimFoto) ? "/img/user.png" : claimFoto;
     var fotoPerfil = $"{baseFoto}?v={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
     ViewData["Title"] = "Cambiar foto de perfil";
+    Layout = "_Layout";
 }
 
 <div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">

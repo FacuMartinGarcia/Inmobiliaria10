@@ -1,96 +1,28 @@
 @model Inmobiliaria10.Models.Pago
 @{
     ViewData["Title"] = "Nuevo pago";
+    Layout = "_Layout";
 }
+<body id="page-create-pago">
+    <div class="d-flex justify-content-center py-4">
+        <div class="form-card">
+            <div class="form-title">Nuevo pago</div>
 
-<div class="d-flex justify-content-center py-4">
-  <div class="form-card">
-    <div class="form-title">Nuevo pago</div>
+            <form asp-action="Crear" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <form asp-action="Crear" method="post" class="needs-validation" novalidate>
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <partial name="_Form" />
 
-        <partial name="_Form" />
-
-        <div class="d-flex gap-2 mt-3">
-            <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
-            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+                <div class="d-flex gap-2 mt-3">
+                    <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+                </div>
+            </form>
         </div>
-    </form>
-  </div>
-</div>
+    </div>
+</body>
 
 @section Scripts {
-    <!-- Quitá estos includes si ya están en tu _Layout -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-
-    <script>
-    (function () {
-        const $orig = $('#IdContrato'); // input original generado por asp-for
-        if ($orig.length) {
-            // Crear nuevo select y copiar validaciones del input original
-            const $sel = $('<select class="form-select" style="width:100%"></select>');
-            $.each($orig[0].attributes, function (_, a) {
-                if (a && a.name && a.name.startsWith('data-val')) {
-                    $sel.attr(a.name, a.value);
-                }
-            });
-
-            // Insertar nuevo select después del input original
-            $orig.after($sel);
-            // Ocultar el input original y cambiar su id/name
-            $orig.attr('id', 'IdContrato_original').attr('name', '').hide();
-            // Asignar id y name correctos al select2
-            $sel.attr('id', 'IdContrato').attr('name', 'IdContrato');
-
-            // Inicializar Select2 con AJAX
-            $('#IdContrato').select2({
-                placeholder: 'Buscar contrato (Contrato + Inmueble)…',
-                allowClear: true,
-                width: '100%',
-                ajax: {
-                    url: '/Pagos/search-contratos',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            term: params.term || '',
-                            page: params.page || 1
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: (data.results || []).map(function (x) {
-                                return { id: x.id, text: x.text };
-                            })
-                        };
-                    }
-                }
-            });
-
-            // Preselección si el modelo trae valor
-            const pre = @Model.IdContrato;
-            if (pre && pre > 0) {
-                $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
-                    if (res && res.item) {
-                        const opt = new Option(res.item.text, res.item.id, true, true);
-                        $('#IdContrato').append(opt).trigger('change');
-                    }
-                });
-            }
-        }
-    })();
-    </script>
-    <script>
-        $(function () {
-            $('#IdConcepto').select2({
-                placeholder: "Seleccione un concepto",
-                allowClear: true,
-                width: '100%'
-            });
-        });
-    </script>
+    <script src="~/js/pagos.js" asp-append-version="true"></script>
 }

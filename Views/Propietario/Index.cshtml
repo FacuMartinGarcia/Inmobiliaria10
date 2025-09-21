@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Propietarios";
     var pr = Model.Data;
+    Layout = "_Layout";
 }
 
 <div class="text-center mb-3">
@@ -119,20 +120,4 @@ else
             </li>
         </ul>
     </nav>
-}
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        @if (TempData["Mensaje"] != null)
-        {
-            <text>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Éxito',
-                    //text: '@TempData.Peek("Mensaje")'
-                    text: '@TempData["Mensaje"]'
-                });
-            </text>
-        }
-    </script>
 }

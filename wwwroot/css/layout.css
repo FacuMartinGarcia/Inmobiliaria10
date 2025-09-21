@@ -120,3 +120,16 @@ button.accept-policy {
     white-space: nowrap;
     line-height: 60px;
 }
+
+/* MAIN */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--nav-h));
+  background: url('/img/edificio1.webp') center/cover no-repeat;
+}
+.app-content {
+  flex: 1;
+  padding: 1.5rem;
+  z-index: 1;
+}
