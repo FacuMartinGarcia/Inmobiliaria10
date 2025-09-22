@@ -15,14 +15,18 @@ namespace Inmobiliaria10.Controllers
         private readonly IInmuebleRepo _repoInmueble;
         private readonly IInmuebleTipoRepo _repoTipo;
 
+        private readonly IPagoRepo _repoPago;
+
         public ContratoController(
             IContratoRepo repo,
             IInmuebleRepo repoInmueble,
-            IInmuebleTipoRepo repoTipo)
+            IInmuebleTipoRepo repoTipo,
+            IPagoRepo repoPago)
         {
             _repo = repo;
             _repoInmueble = repoInmueble;
             _repoTipo = repoTipo;
+            _repoPago = repoPago;
         }
 
         // ------------------- INDEX -------------------
@@ -122,7 +126,7 @@ namespace Inmobiliaria10.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, Contrato model, CancellationToken ct = default)
+        public async Task<IActionResult> Editar(int id, Contrato model, bool generarPagoMulta = false, CancellationToken ct = default)
         {
             if (id != model.IdContrato)
             {
@@ -131,6 +135,7 @@ namespace Inmobiliaria10.Controllers
                 return View(model);
             }
 
+            // Si no hay rescisión, anulamos multa
             if (!model.Rescision.HasValue)
             {
                 model.MontoMulta = null;
@@ -145,12 +150,35 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 await _repo.UpdateAsync(model, ct);
-                TempData["Mensaje"] = "Contrato actualizado correctamente.";
-                return RedirectToAction(nameof(Index));
+
+                // Lógica de generación de pago de multa
+                if (model.Rescision.HasValue && generarPagoMulta && model.MontoMulta > 0)
+                {
+                    // Validar que no exista pago anterior de multa
+                    
+                    bool existePago = false; 
+                    if (!existePago)
+                    {
+                        var pagoMulta = new Pago
+                        {
+                            IdContrato = model.IdContrato,
+                            IdConcepto = 2, 
+                            FechaPago = DateTime.Today,
+                            Importe = model.MontoMulta.GetValueOrDefault(),
+                            Detalle = $"Multa por rescisión del contrato {model.IdContrato}",
+                            CreatedAt = DateTime.UtcNow,
+                            CreatedBy = GetUserIdOrDefault()
+                        };
+                        await _repoPago.CreateAsync(pagoMulta, ct);
+                    }
+                }
+
+                TempData["Ok"] = "Contrato actualizado correctamente.";
+                return RedirectToAction("Detalles", new { id = model.IdContrato });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"No se pudo actualizar el contrato. {ex.Message}\n{ex.StackTrace}");
+                ModelState.AddModelError(string.Empty, $"No se pudo actualizar el contrato. {ex.Message}");
                 await CargarSelectsAsync(model.IdInmueble, model.IdInquilino, ct);
                 return View(model);
             }

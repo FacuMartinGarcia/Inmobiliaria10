@@ -1,7 +1,5 @@
 $(function () {
-  // =======================
-  // Select2 Inquilinos
-  // =======================
+
   if ($("#IdInquilino").length) {
     $('#IdInquilino').select2({
       placeholder: 'Buscar inquilino…',
@@ -15,7 +13,6 @@ $(function () {
       }
     });
 
-    // Precarga inquilino en Editar
     const preInquilino = $("#IdInquilino").val();
     if (preInquilino && parseInt(preInquilino) > 0) {
       $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
@@ -27,9 +24,7 @@ $(function () {
     }
   }
 
-  // =======================
-  // Select2 Inmuebles
-  // =======================
+
   if ($("#IdInmueble").length) {
     $('#IdInmueble').select2({
       placeholder: 'Buscar inmueble…',
@@ -67,17 +62,18 @@ $(function () {
   }
 
   // =======================
-  // Cálculo de multa (solo en Editar)
+  // Cálculo de multa (solo en Editar - cuando existe #Rescision)
   // =======================
   if ($("#Rescision").length) {
     async function calcularMulta() {
       const idContrato = $("#IdContrato").val();
       const fechaRescision = $("#Rescision").val();
-      const inputMontoMulta = $("#MontoMulta")[0];
-      const spanValidacion = inputMontoMulta.nextElementSibling;
+      const inputMontoMultaEl = $("#MontoMulta")[0];
+      const spanValidacion = inputMontoMultaEl ? inputMontoMultaEl.nextElementSibling : null;
 
-      inputMontoMulta.value = '';
-      spanValidacion.textContent = '';
+      if (!inputMontoMultaEl) return;
+      inputMontoMultaEl.value = '';
+      if (spanValidacion) spanValidacion.textContent = '';
 
       if (!fechaRescision) return;
 
@@ -94,22 +90,25 @@ $(function () {
 
         const data = await resp.json();
         if (data.ok && data.multa != null) {
-          inputMontoMulta.value = data.multa.toFixed(2);
+          inputMontoMultaEl.value = Number(data.multa).toFixed(2);
         } else {
-          spanValidacion.textContent = data.mensaje ?? "No se pudo calcular la multa.";
+          if (spanValidacion) spanValidacion.textContent = data.mensaje ?? "No se pudo calcular la multa.";
         }
-      } catch {
-        spanValidacion.textContent = "Error al comunicarse con el servidor.";
+      } catch (ex) {
+        if (spanValidacion) spanValidacion.textContent = "Error al comunicarse con el servidor.";
       }
     }
+
     $("#Rescision").on("change", calcularMulta);
   }
 
   // =======================
   // Confirmación al enviar (crear o editar)
   // =======================
-  $('form').on('submit', function (e) {
-    if (!$("#Rescision").length) return; // en Crear no hay rescisión
+  // Nota: si la página de Crear NO tiene #Rescision, no afectamos el submit.
+  $('form').on('submit', async function (e) {
+    // en Crear: si no existe #Rescision devolvemos (no interferimos)
+    if (!$("#Rescision").length) return;
 
     e.preventDefault();
     const form = this;
@@ -118,7 +117,8 @@ $(function () {
       ? "El contrato se va a rescindir. ¿Está seguro?"
       : "Se actualizarán los datos del contrato.";
 
-    Swal.fire({
+    // Primera confirmación (guardar/ rescindir)
+    const r1 = await Swal.fire({
       title: 'Confirmación',
       text: mensaje,
       icon: 'warning',
@@ -126,10 +126,66 @@ $(function () {
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'Cancelar',
       reverseButtons: true
-    }).then((result) => {
-      if (result.isConfirmed && $(form).valid()) {
-        form.submit();
-      }
     });
+
+    if (!r1.isConfirmed) return;
+
+    // Si hay rescisión, comprobamos multa y preguntamos si desea generar pago
+    if (fechaRescision) {
+      const $montoMulta = $("#MontoMulta");
+
+      // Si aún no se calculó el monto, forzamos cálculo antes de preguntar
+      if ($montoMulta.length && !$montoMulta.val()) {
+        // calcularMulta puede existir solo si #Rescision está presente (ver arriba)
+        if (typeof calcularMulta === "function") {
+          await calcularMulta();
+        }
+      }
+
+      // Parseo seguro del monto (reemplazamos coma por punto por las dudas)
+      const montoRaw = ($montoMulta.val() || '0').toString().replace(',', '.');
+      const montoMulta = parseFloat(montoRaw) || 0;
+
+      if (montoMulta > 0) {
+        // Segunda confirmación: generar pago de multa
+        const r2 = await Swal.fire({
+          title: 'Generar pago por multa',
+          text: `Se detectó una multa de $${montoMulta.toFixed(2)}. ¿Desea generar el pago ahora?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, generar pago',
+          cancelButtonText: 'No',
+          reverseButtons: true
+        });
+
+        if (r2.isConfirmed) {
+          // Añadimos campo oculto si no existe
+          if (!$('#GenerarPagoMulta').length) {
+            $('<input>').attr({
+              type: 'hidden',
+              id: 'GenerarPagoMulta',
+              name: 'GenerarPagoMulta',
+              value: 'true'
+            }).appendTo(form);
+          } else {
+            $('#GenerarPagoMulta').val('true');
+          }
+        } else {
+          // Si no quiere generar pago, nos aseguramos de que no exista el campo
+          $('#GenerarPagoMulta').remove();
+        }
+      } else {
+        // No hay multa: nos aseguramos de limpiar el campo oculto si existe
+        $('#GenerarPagoMulta').remove();
+      }
+    } else {
+      // No hay rescisión: limpiamos por si acaso
+      $('#GenerarPagoMulta').remove();
+    }
+
+    // Validación del formulario y envío final
+    if ($(form).valid()) {
+      form.submit();
+    }
   });
 });
