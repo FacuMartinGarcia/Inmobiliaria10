@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 20-09-2025 a las 01:14:25
+-- Tiempo de generación: 22-09-2025 a las 16:26:44
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -40,22 +40,8 @@ CREATE TABLE `conceptos` (
 
 INSERT INTO `conceptos` (`id_concepto`, `denominacion_concepto`) VALUES
 (3, 'Expensas'),
-(11, 'Mes Abril'),
-(15, 'Mes Agosto'),
 (1, 'Mes Alquiler'),
-(19, 'Mes Diciembre'),
-(8, 'Mes Enero'),
-(9, 'Mes Febrero'),
-(14, 'Mes Julio'),
-(13, 'Mes Junio'),
-(10, 'Mes Marzo'),
-(12, 'Mes Mayo'),
-(18, 'Mes Noviembre'),
-(17, 'Mes Octubre'),
-(16, 'Mes Septiembre'),
-(2, 'Multa'),
-(7, 'Reajuste 4 meses'),
-(5, 'Reajuste de 6 meses');
+(2, 'Multa');
 
 -- --------------------------------------------------------
 
@@ -84,7 +70,7 @@ CREATE TABLE `contratos` (
 --
 
 INSERT INTO `contratos` (`id_contrato`, `fecha_firma`, `id_inmueble`, `id_inquilino`, `fecha_inicio`, `fecha_fin`, `monto_mensual`, `rescision`, `monto_multa`, `created_by`, `created_at`, `deleted_at`, `deleted_by`) VALUES
-(1, NULL, 1, 14, '2025-09-05', '2026-09-05', 120000.00, NULL, NULL, 1, '2025-09-05 18:30:25', NULL, NULL);
+(1, NULL, 1, 11, '2025-09-05', '2026-09-05', 120000.00, '2025-09-17', 240000.00, 1, '2025-09-05 18:30:25', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -105,6 +91,20 @@ CREATE TABLE `contratos_audit` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `imagenes`
+--
+
+CREATE TABLE `imagenes` (
+  `id_imagen` int(10) UNSIGNED NOT NULL,
+  `id_inmueble` int(10) UNSIGNED NOT NULL,
+  `ruta` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `inmuebles`
 --
 
@@ -120,6 +120,7 @@ CREATE TABLE `inmuebles` (
   `lon` decimal(9,6) DEFAULT NULL,
   `ambientes` int(10) UNSIGNED DEFAULT NULL,
   `precio` decimal(15,2) DEFAULT NULL,
+  `portada` varchar(255) DEFAULT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -129,8 +130,8 @@ CREATE TABLE `inmuebles` (
 -- Volcado de datos para la tabla `inmuebles`
 --
 
-INSERT INTO `inmuebles` (`id_inmueble`, `id_propietario`, `id_uso`, `id_tipo`, `direccion`, `piso`, `depto`, `lat`, `lon`, `ambientes`, `precio`, `activo`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 4, 'AV SIEMPREVIVA', '1', '1', NULL, NULL, 1, 120000.00, 1, '2025-09-05 15:29:44', '2025-09-05 15:29:44');
+INSERT INTO `inmuebles` (`id_inmueble`, `id_propietario`, `id_uso`, `id_tipo`, `direccion`, `piso`, `depto`, `lat`, `lon`, `ambientes`, `precio`, `portada`, `activo`, `created_at`, `updated_at`) VALUES
+(1, 1, 2, 4, 'AV SIEMPREVIVA', '1', '1', NULL, NULL, 1, 120000.00, NULL, 1, '2025-09-05 15:29:44', '2025-09-05 15:29:44');
 
 -- --------------------------------------------------------
 
@@ -215,13 +216,45 @@ INSERT INTO `inquilinos` (`id_inquilino`, `documento`, `apellido_nombres`, `domi
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `meses`
+--
+
+CREATE TABLE `meses` (
+  `id_mes` int(11) NOT NULL,
+  `nombre` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `meses`
+--
+
+INSERT INTO `meses` (`id_mes`, `nombre`) VALUES
+(4, 'Abril'),
+(8, 'Agosto'),
+(12, 'Diciembre'),
+(1, 'Enero'),
+(2, 'Febrero'),
+(7, 'Julio'),
+(6, 'Junio'),
+(3, 'Marzo'),
+(5, 'Mayo'),
+(11, 'Noviembre'),
+(10, 'Octubre'),
+(9, 'Septiembre');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `pagos`
 --
 
 CREATE TABLE `pagos` (
   `id_pago` int(10) UNSIGNED NOT NULL,
   `id_contrato` int(10) UNSIGNED NOT NULL,
+  `numero_pago` int(11) NOT NULL DEFAULT 0,
   `fecha_pago` date NOT NULL,
+  `id_mes` int(11) DEFAULT NULL,
+  `anio` int(11) NOT NULL,
   `detalle` varchar(50) DEFAULT NULL,
   `id_concepto` int(10) UNSIGNED NOT NULL,
   `importe` decimal(15,2) NOT NULL,
@@ -236,9 +269,11 @@ CREATE TABLE `pagos` (
 -- Volcado de datos para la tabla `pagos`
 --
 
-INSERT INTO `pagos` (`id_pago`, `id_contrato`, `fecha_pago`, `detalle`, `id_concepto`, `importe`, `motivo_anulacion`, `created_by`, `created_at`, `deleted_at`, `deleted_by`) VALUES
-(1, 1, '2025-09-05', 'mes comicion', 1, 12000000.00, NULL, 1, '2025-09-05 21:56:39', NULL, NULL),
-(2, 1, '2025-09-06', 'mes septiembre', 3, 6000000.00, NULL, 1, '2025-09-07 00:41:49', '2025-09-07 00:53:46', 1);
+INSERT INTO `pagos` (`id_pago`, `id_contrato`, `numero_pago`, `fecha_pago`, `id_mes`, `anio`, `detalle`, `id_concepto`, `importe`, `motivo_anulacion`, `created_by`, `created_at`, `deleted_at`, `deleted_by`) VALUES
+(1, 1, 4, '2025-09-05', 9, 2025, 'mes comicion', 1, 12000000.00, NULL, 1, '2025-09-05 21:56:39', NULL, NULL),
+(2, 1, 3, '2025-09-06', 9, 2025, 'mes septiembrefvddsf', 1, 6000000.00, NULL, 1, '2025-09-07 00:41:49', '2025-09-07 00:53:46', 1),
+(3, 1, 2, '2025-09-20', 9, 2025, 'fdgdfdfbhdbg', 1, 5000000.00, NULL, 2, '2025-09-20 22:07:07', NULL, NULL),
+(4, 1, 1, '2025-09-20', 9, 2025, 'hbkbhkbj', 1, 46546460.00, NULL, 2, '2025-09-20 22:40:35', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -323,9 +358,9 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id_usuario`, `apellido_nombres`, `alias`, `password`, `email`, `id_rol`, `created_at`, `updated_at`, `reset_token`, `reset_token_expira`) VALUES
 (1, 'Admin', 'admin', 'temp', 'admin@inmo.test', 1, '2025-08-15 17:52:18', '2025-08-15 17:52:18', NULL, NULL),
-(2, 'RICCHIARDI, ROMANELA', 'ROMITHA!!', '$2a$11$C4WZ3li.xwlLuzSfaUJ79ux7DQFZBlrFpZ2txOsLqtn5YzFijrtGC', 'roma.ricchiardi@gmail.com', 1, '2025-09-17 17:17:34', '2025-09-19 16:33:58', NULL, NULL),
+(2, 'RICCHIARDI, ROMA', 'ROMITHA!!', '$2a$11$2i.FeZtE1hjy5r3VNoumGel62ewUVnz0e.AmTj2PVtxW435EC.XWe', 'roma.ricchiardi@gmail.com', 1, '2025-09-17 17:17:34', '2025-09-20 18:03:38', NULL, NULL),
 (3, 'PEREZ, JUAN', 'JUANCHO', '$2a$11$rcmwzKHXf1iY.g5yz6JU/u6uqQQxqSSdy5qgTcXhG2HjHpt259F8.', 'juanp@gmail.com', 2, '2025-09-19 14:40:21', '2025-09-19 16:34:06', NULL, NULL),
-(4, 'GARCIA, FACUNDO', 'FACU', '$2a$11$dWXsCYHuzxGm1Q9ThFNy6e1nIa6Llb4AIPa/DQ7bP7TOgAFH5dFtO', 'elfaculee@gmail.com', 1, '2025-09-19 18:33:15', '2025-09-19 18:33:15', NULL, NULL);
+(4, 'GARCIA, FACUNDO', 'FACUNDO', '$2a$11$dWXsCYHuzxGm1Q9ThFNy6e1nIa6Llb4AIPa/DQ7bP7TOgAFH5dFtO', 'elfaculee@gmail.com', 1, '2025-09-19 18:33:15', '2025-09-19 23:22:30', NULL, NULL);
 
 --
 -- Índices para tablas volcadas
@@ -355,6 +390,13 @@ ALTER TABLE `contratos_audit`
   ADD PRIMARY KEY (`id_audit`),
   ADD KEY `fk_contratos_audit_user` (`accion_by`),
   ADD KEY `fk_contratos_audit_contrato` (`id_contrato`);
+
+--
+-- Indices de la tabla `imagenes`
+--
+ALTER TABLE `imagenes`
+  ADD PRIMARY KEY (`id_imagen`),
+  ADD KEY `fk_imagenes_inmuebles` (`id_inmueble`);
 
 --
 -- Indices de la tabla `inmuebles`
@@ -387,6 +429,13 @@ ALTER TABLE `inquilinos`
   ADD UNIQUE KEY `uq_inq_documento` (`documento`);
 
 --
+-- Indices de la tabla `meses`
+--
+ALTER TABLE `meses`
+  ADD PRIMARY KEY (`id_mes`),
+  ADD UNIQUE KEY `nombre` (`nombre`);
+
+--
 -- Indices de la tabla `pagos`
 --
 ALTER TABLE `pagos`
@@ -394,7 +443,8 @@ ALTER TABLE `pagos`
   ADD KEY `fk_pagos_contrato` (`id_contrato`),
   ADD KEY `fk_pagos_concepto` (`id_concepto`),
   ADD KEY `fk_pagos_cb` (`created_by`),
-  ADD KEY `fk_pagos_db` (`deleted_by`);
+  ADD KEY `fk_pagos_db` (`deleted_by`),
+  ADD KEY `fk_pagos_meses` (`id_mes`);
 
 --
 -- Indices de la tabla `pagos_audit`
@@ -450,6 +500,12 @@ ALTER TABLE `contratos_audit`
   MODIFY `id_audit` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `imagenes`
+--
+ALTER TABLE `imagenes`
+  MODIFY `id_imagen` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `inmuebles`
 --
 ALTER TABLE `inmuebles`
@@ -474,10 +530,16 @@ ALTER TABLE `inquilinos`
   MODIFY `id_inquilino` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
+-- AUTO_INCREMENT de la tabla `meses`
+--
+ALTER TABLE `meses`
+  MODIFY `id_mes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_pago` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos_audit`
@@ -524,6 +586,12 @@ ALTER TABLE `contratos_audit`
   ADD CONSTRAINT `fk_contratos_audit_user` FOREIGN KEY (`accion_by`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL;
 
 --
+-- Filtros para la tabla `imagenes`
+--
+ALTER TABLE `imagenes`
+  ADD CONSTRAINT `fk_imagenes_inmuebles` FOREIGN KEY (`id_inmueble`) REFERENCES `inmuebles` (`id_inmueble`);
+
+--
 -- Filtros para la tabla `inmuebles`
 --
 ALTER TABLE `inmuebles`
@@ -538,7 +606,8 @@ ALTER TABLE `pagos`
   ADD CONSTRAINT `fk_pagos_cb` FOREIGN KEY (`created_by`) REFERENCES `usuarios` (`id_usuario`),
   ADD CONSTRAINT `fk_pagos_concepto` FOREIGN KEY (`id_concepto`) REFERENCES `conceptos` (`id_concepto`),
   ADD CONSTRAINT `fk_pagos_contrato` FOREIGN KEY (`id_contrato`) REFERENCES `contratos` (`id_contrato`),
-  ADD CONSTRAINT `fk_pagos_db` FOREIGN KEY (`deleted_by`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_pagos_db` FOREIGN KEY (`deleted_by`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_pagos_meses` FOREIGN KEY (`id_mes`) REFERENCES `meses` (`id_mes`);
 
 --
 -- Filtros para la tabla `pagos_audit`
