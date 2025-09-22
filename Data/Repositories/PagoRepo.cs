@@ -10,8 +10,6 @@ namespace Inmobiliaria10.Data.Repositories
         private readonly Database _db;
         public PagoRepo(Database db) => _db = db;
 
-        // Ajustá esta condición si tu tabla "contratos" usa otros nombres.
-        // La idea de "vigente/activo": no eliminado, activo=1 (si existe), y fecha actual dentro del rango.
         private const string ONLY_ACTIVE_WHERE = @"
             c.deleted_at IS NULL
             AND IFNULL(c.activo, 1) = 1
@@ -32,14 +30,17 @@ namespace Inmobiliaria10.Data.Repositories
             IdPago = Convert.ToInt32(r["IdPago"]),
             IdContrato = Convert.ToInt32(r["IdContrato"]),
             FechaPago = Convert.ToDateTime(r["FechaPago"]),
+            IdMes = IntN(r, "IdMes"),
+            Anio = Convert.ToInt32(r["Anio"]),
             Detalle = StrN(r, "Detalle") ?? string.Empty,
             IdConcepto = Convert.ToInt32(r["IdConcepto"]),
             Importe = Convert.ToDecimal(r["Importe"]),
             MotivoAnulacion = StrN(r, "MotivoAnulacion"),
             CreatedBy = IntN(r, "CreatedBy"),
-            CreatedAt = Convert.ToDateTime(r["CreatedAt"]),
+            CreatedAt = DateN(r, "CreatedAt"),
             DeletedAt = DateN(r, "DeletedAt"),
-            DeletedBy = IntN(r, "DeletedBy")
+            DeletedBy = IntN(r, "DeletedBy"),
+            NumeroPago = Convert.ToInt32(r["NumeroPago"])
         };
 
         private static PagoAudit MapAudit(IDataRecord r) => new PagoAudit
@@ -63,8 +64,11 @@ namespace Inmobiliaria10.Data.Repositories
 
             const string sql = @"
                 SELECT  p.id_pago         AS IdPago,
+                        p.numero_pago     AS NumeroPago,
                         p.id_contrato     AS IdContrato,
                         p.fecha_pago      AS FechaPago,
+                        p.id_mes          AS IdMes,
+                        p.anio            AS Anio,
                         p.detalle         AS Detalle,
                         p.id_concepto     AS IdConcepto,
                         p.importe         AS Importe,
@@ -123,8 +127,11 @@ namespace Inmobiliaria10.Data.Repositories
             // Items
             var sqlItems = $@"
                 SELECT  p.id_pago         AS IdPago,
+                        p.numero_pago     AS NumeroPago,
                         p.id_contrato     AS IdContrato,
                         p.fecha_pago      AS FechaPago,
+                        p.id_mes          AS IdMes,
+                        p.anio            AS Anio,
                         p.detalle         AS Detalle,
                         p.id_concepto     AS IdConcepto,
                         p.importe         AS Importe,
@@ -162,14 +169,16 @@ namespace Inmobiliaria10.Data.Repositories
 
             const string sql = @"
                 INSERT INTO pagos
-                    (id_contrato, fecha_pago, detalle, id_concepto, importe, motivo_anulacion, created_by, created_at)
+                    (id_contrato, fecha_pago, id_mes, anio, detalle, id_concepto, importe, motivo_anulacion, created_by, created_at)
                 VALUES
-                    (@id_contrato, @fecha_pago, @detalle, @id_concepto, @importe, @motivo, @created_by, UTC_TIMESTAMP());
+                    (@id_contrato, @fecha_pago, @id_mes, @anio, @detalle, @id_concepto, @importe, @motivo, @created_by, UTC_TIMESTAMP());
                 SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
             cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
+            cmd.Parameters.AddWithValue("@id_mes", (object?)e.IdMes ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@anio", e.Anio);
             cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? string.Empty);
             cmd.Parameters.AddWithValue("@id_concepto", e.IdConcepto);
             cmd.Parameters.AddWithValue("@importe", e.Importe);
@@ -189,6 +198,8 @@ namespace Inmobiliaria10.Data.Repositories
                 UPDATE pagos
                    SET id_contrato     = @id_contrato,
                        fecha_pago      = @fecha_pago,
+                       id_mes          = @id_mes,
+                       anio            = @anio,
                        detalle         = @detalle,
                        id_concepto     = @id_concepto,
                        importe         = @importe,
@@ -199,6 +210,8 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@id", e.IdPago);
             cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
             cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
+            cmd.Parameters.AddWithValue("@id_mes", (object?)e.IdMes ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@anio", e.Anio);
             cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? string.Empty);
             cmd.Parameters.AddWithValue("@id_concepto", e.IdConcepto);
             cmd.Parameters.AddWithValue("@importe", e.Importe);
@@ -207,22 +220,23 @@ namespace Inmobiliaria10.Data.Repositories
             await cmd.ExecuteNonQueryAsync(ct);
         }
 
-        public async Task UpdateConceptoAsync(int idPago, int idConcepto, CancellationToken ct = default)
+        public async Task<bool> UpdateConceptoAsync(int idPago, int idConcepto, string detalle, CancellationToken ct)
         {
-            using var conn = _db.GetConnection();
-            await conn.OpenAsync(ct);
+                using var conn = _db.GetConnection();
+                await conn.OpenAsync(ct);
 
-            const string sql = @"
-                UPDATE pagos
-                SET id_concepto = @id_concepto
-                WHERE id_pago = @id;";
+                var sql = @"UPDATE pagos 
+                            SET id_concepto = @idConcepto, 
+                                detalle = @detalle 
+                            WHERE id_pago = @idPago";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@idConcepto", idConcepto);
+                cmd.Parameters.AddWithValue("@detalle", detalle ?? "");
+                cmd.Parameters.AddWithValue("@idPago", idPago);
 
-            using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@id", idPago);
-            cmd.Parameters.AddWithValue("@id_concepto", idConcepto);
-
-            await cmd.ExecuteNonQueryAsync(ct);
-        }
+                var rows = await cmd.ExecuteNonQueryAsync(ct);
+                return rows > 0;
+            }
 
         public async Task<int> RegistrarMultaAsync(int contratoId, DateTime fecha, int userId, CancellationToken ct = default)
         {
@@ -361,7 +375,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
 
         // -----------------------------
-        // Auditoría (si tenés tabla pagos_audit)
+        // Auditoría 
         // -----------------------------
         public async Task<IReadOnlyList<PagoAudit>> GetAuditoriaAsync(int idPago, CancellationToken ct = default)
         {
@@ -533,7 +547,6 @@ namespace Inmobiliaria10.Data.Repositories
             return null;
         }
 
-
         public async Task<PagoDetalleViewModel?> GetDetalleAsync(int id, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -544,6 +557,9 @@ namespace Inmobiliaria10.Data.Repositories
                         p.id_contrato     AS IdContrato,
                         p.numero_pago     AS NumeroPago, 
                         p.fecha_pago      AS FechaPago,
+                        p.id_mes          AS IdMes,
+                        m.nombre          AS MesTexto,
+                        p.anio            AS Anio,
                         p.detalle         AS Detalle,
                         p.id_concepto     AS IdConcepto,
                         p.importe         AS Importe,
@@ -557,6 +573,7 @@ namespace Inmobiliaria10.Data.Repositories
                 FROM pagos p
                 LEFT JOIN usuarios u1 ON u1.id_usuario = p.created_by
                 LEFT JOIN usuarios u2 ON u2.id_usuario = p.deleted_by
+                LEFT JOIN meses m ON m.id_mes = p.id_mes
                 WHERE p.id_pago = @id
                 LIMIT 1;";
 
@@ -566,29 +583,27 @@ namespace Inmobiliaria10.Data.Repositories
             using var r = await cmd.ExecuteReaderAsync(ct);
             if (!await r.ReadAsync(ct)) return null;
 
-            var pago = MapPago(r);
-
-            var concepto = (await GetConceptosAsync(ct))
-                            .FirstOrDefault(x => x.Id == pago.IdConcepto).Nombre;
-            var contrato = await GetContratoItemAsync(pago.IdContrato, ct);
-
             return new PagoDetalleViewModel
             {
-                IdPago = pago.IdPago,
-                FechaPago = pago.FechaPago,
-                Detalle = pago.Detalle,
-                Importe = pago.Importe,
-                IdConcepto = pago.IdConcepto,
-                ConceptoTexto = concepto,
-                IdContrato = pago.IdContrato,
-                ContratoTexto = contrato?.Text,
-                CreatedAt = pago.CreatedAt,
-                CreatedBy = pago.CreatedBy,
+                IdPago = Convert.ToInt32(r["IdPago"]),
+                FechaPago = Convert.ToDateTime(r["FechaPago"]),
+                IdMes = IntN(r, "IdMes"),
+                MesTexto = r["MesTexto"] as string,
+                Anio = Convert.ToInt32(r["Anio"]),
+                Detalle = r["Detalle"] as string,
+                Importe = Convert.ToDecimal(r["Importe"]),
+                IdConcepto = Convert.ToInt32(r["IdConcepto"]),
+                ConceptoTexto = null, 
+                IdContrato = Convert.ToInt32(r["IdContrato"]),
+                ContratoTexto = null, 
+                NumeroPago = Convert.ToInt32(r["NumeroPago"]),
+                CreatedAt = DateN(r, "CreatedAt"),
+                CreatedBy = IntN(r, "CreatedBy"),
                 CreatedByAlias = r["CreatedByAlias"] as string,
-                DeletedAt = pago.DeletedAt,
-                DeletedBy = pago.DeletedBy,
+                DeletedAt = DateN(r, "DeletedAt"),
+                DeletedBy = IntN(r, "DeletedBy"),
                 DeletedByAlias = r["DeletedByAlias"] as string,
-                MotivoAnulacion = pago.MotivoAnulacion
+                MotivoAnulacion = r["MotivoAnulacion"] as string
             };
         }
 

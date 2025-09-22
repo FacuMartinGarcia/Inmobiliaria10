@@ -23,7 +23,7 @@ namespace Inmobiliaria10.Data.Repositories
         Task<bool> AnularPagoAsync(int id, string motivo, int userId, CancellationToken ct = default);
         Task<int> GetNextNumeroPagoAsync(int idContrato, CancellationToken ct = default);
         Task<int> RegistrarMultaAsync(int contratoId, DateTime fecha, int userId, CancellationToken ct = default);
-        Task UpdateConceptoAsync(int idPago, int idConcepto, CancellationToken ct = default);
+        Task<bool> UpdateConceptoAsync(int idPago, int idConcepto, string detalle, CancellationToken ct);
         // Combos
         Task<IReadOnlyList<(int Id, string Nombre)>> GetConceptosAsync(CancellationToken ct = default);
 

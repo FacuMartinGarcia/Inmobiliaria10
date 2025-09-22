@@ -48,6 +48,8 @@ $(function () {
             },
             columns: [
                 { data: 'fechaPago' },
+                { data: 'mes' },     
+                { data: 'anio' },   
                 { data: 'detalle' },
                 { data: 'conceptoDenominacion' },
                 {
@@ -75,8 +77,6 @@ $(function () {
                     render: id => !id ? '' : `
                         <a href="/Pagos/Detalles/${id}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
                         <a href="/Pagos/Editar/${id}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></a>
-
-                        <!-- 🔹 Ahora usamos form-delete en lugar de onclick -->
                         <form action="/Pagos/Eliminar/${id}" method="post" class="d-inline form-delete"
                               data-msg="¿Confirmás eliminar el pago #${id}?">
                             <input type="hidden" name="__RequestVerificationToken" value="${$('input[name="__RequestVerificationToken"]').val()}"/>
@@ -146,7 +146,11 @@ $(function () {
             });
 
             // --- Preselección de contrato ---
-            const pre = $('#IdContrato_original').val();
+            let pre = $('#IdContrato_original').val();
+            if (!pre) {
+                pre = $('#IdContrato').val();
+            }
+
             if (pre && pre > 0) {
                 $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
                     if (res && res.item) {
@@ -158,10 +162,18 @@ $(function () {
         }
 
         // --- Concepto con Select2 ---
-        $('#IdConcepto').select2({
+        const $concepto = $('#IdConcepto');
+
+        $concepto.select2({
             placeholder: "Seleccione un concepto",
             allowClear: true,
             width: '100%'
         });
+
+        // 🔹 Forzar selección del concepto al editar
+        let selectedConcepto = $concepto.find("option:selected").val();
+        if (selectedConcepto) {
+            $concepto.val(selectedConcepto).trigger('change');
+        }
     }
 });

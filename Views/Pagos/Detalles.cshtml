@@ -1,80 +1,108 @@
 @model Inmobiliaria10.Models.ViewModels.PagoDetalleViewModel
 @{
-    ViewData["Title"] = "Detalle de pago";
-    var eliminado = Model.DeletedAt.HasValue;
+    ViewData["Title"] = "Detalles del Pago";
     Layout = "_Layout";
 }
 
-<div id="content" class="d-flex justify-content-center align-items-center">
-    <div class="form-card w-100" style="max-width: 800px;">
-        <h2 class="form-title">Detalle de Pago</h2>
+<div class="mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card form-card mx-auto">
+                <div class="card-header form-card-header">
+                    <h4 class="form-title">@ViewData["Title"]</h4>
+                </div>
 
-        <dl class="row mb-0">
-            <dt class="col-sm-3">N° Pago</dt>
-            <dd class="col-sm-9">@Model.NumeroPago</dd>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3 form-label">Contrato</dt>
+                        <dd class="col-sm-9">@Model.ContratoTexto</dd>
 
-            <dt class="col-sm-3">Fecha</dt>
-            <dd class="col-sm-9">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
+                        <dt class="col-sm-3 form-label">Fecha de pago</dt>
+                        <dd class="col-sm-9">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
 
-            <dt class="col-sm-3">Detalle</dt>
-            <dd class="col-sm-9">@Model.Detalle</dd>
+                        <!-- 🔹 Nuevo: Mes y Año -->
+                        <dt class="col-sm-3 form-label">Mes</dt>
+                        <dd class="col-sm-9">
+                            @(string.IsNullOrEmpty(Model.MesTexto) 
+                                ? (Model.IdMes.HasValue ? Model.IdMes.ToString() : "—") 
+                                : Model.MesTexto)
+                        </dd>
 
-            <dt class="col-sm-3">Concepto</dt>
-            <dd class="col-sm-9">
-                @(string.IsNullOrEmpty(Model.ConceptoTexto) ? $"Id: {Model.IdConcepto}" : Model.ConceptoTexto)
-            </dd>
+                        <dt class="col-sm-3 form-label">Año</dt>
+                        <dd class="col-sm-9">@Model.Anio</dd>
 
-            <dt class="col-sm-3">Importe</dt>
-            <dd class="col-sm-9">@Model.Importe.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</dd>
+                        <dt class="col-sm-3 form-label">Concepto</dt>
+                        <dd class="col-sm-9">@Model.ConceptoTexto</dd>
 
-            <dt class="col-sm-3">Contrato</dt>
-            <dd class="col-sm-9">
-                @(string.IsNullOrEmpty(Model.ContratoTexto) ? $"Id: {Model.IdContrato}" : Model.ContratoTexto)
-            </dd>
+                        <dt class="col-sm-3 form-label">Importe</dt>
+                        <dd class="col-sm-9">
+                            @Model.Importe.ToString("C", new System.Globalization.CultureInfo("es-AR"))
+                        </dd>
 
-            <dt class="col-sm-3">Estado</dt>
-            <dd class="col-sm-9">
-                @if (eliminado)
-                { <span class="badge bg-warning text-dark">Eliminado</span> }
-                else
-                { <span class="badge bg-success">Activo</span> }
-            </dd>
+                        <dt class="col-sm-3 form-label">Detalle</dt>
+                        <dd class="col-sm-9">
+                            @if (string.IsNullOrWhiteSpace(Model.Detalle))
+                            {
+                                <span class="text-muted">Sin detalle</span>
+                            }
+                            else
+                            {
+                                @Model.Detalle
+                            }
+                        </dd>
 
-            @if (!string.IsNullOrWhiteSpace(Model.MotivoAnulacion))
-            {
-                <dt class="col-sm-3">Motivo anulación</dt>
-                <dd class="col-sm-9">@Model.MotivoAnulacion</dd>
-            }
+                        <dt class="col-sm-3 form-label">Estado</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.DeletedAt.HasValue)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Anulado (@Model.MotivoAnulacion)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                        </dd>
 
-            <dt class="col-sm-3">Creado</dt>
-            <dd class="col-sm-9">
-                @(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-") (UTC)
-                @if (!string.IsNullOrEmpty(Model.CreatedByAlias)) { <span>— @Model.CreatedByAlias</span> }
-            </dd>
+                        <dt class="col-sm-3 form-label">Creado</dt>
+                        <dd class="col-sm-9">
+                            @(Model.CreatedAt.HasValue
+                                ? Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                : "—")
+                            por @(string.IsNullOrEmpty(Model.CreatedByAlias)
+                                ? $"Usuario #{Model.CreatedBy}"
+                                : Model.CreatedByAlias)
+                        </dd>
 
-            @if (Model.DeletedAt.HasValue)
-            {
-                <dt class="col-sm-3">Eliminado</dt>
-                <dd class="col-sm-9">
-                    @(Model.DeletedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-") (UTC)
-                    @if (!string.IsNullOrEmpty(Model.DeletedByAlias)) { <span>— @Model.DeletedByAlias</span> }
-                </dd>
-            }
+                        @if (Model.DeletedAt.HasValue)
+                        {
+                            <dt class="col-sm-3 form-label">Anulado el</dt>
+                            <dd class="col-sm-9">
+                                @(Model.DeletedAt.HasValue
+                                    ? Model.DeletedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    : "—")
+                                por @(string.IsNullOrEmpty(Model.DeletedByAlias)
+                                    ? $"Usuario #{Model.DeletedBy}"
+                                    : Model.DeletedByAlias)
+                            </dd>
+                        }
+                    </dl>
+                </div>
 
-        </dl>
-
-        <div class="d-flex gap-2 mt-4 justify-content-between">
-            <a class="btn btn-back" asp-action="Index">
-                <i class="bi bi-arrow-left"></i> Volver
-            </a>
-            <div class="d-flex gap-2">
-                <a class="btn btn-save" asp-action="Editar" asp-route-id="@Model.IdPago">
-                    <i class="bi bi-pencil"></i> Editar
-                </a>
-                <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@Model.IdPago">
-                    <i class="bi bi-trash"></i> Baja
-                </a>
-                
+                <div class="card-footer d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-back">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <div>
+                        <a asp-action="Editar" asp-route-id="@Model.IdPago" class="btn btn-save">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a asp-action="Auditoria" asp-route-id="@Model.IdPago" class="btn btn-outline-dark">
+                            <i class="bi bi-clock-history"></i> Auditoría
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

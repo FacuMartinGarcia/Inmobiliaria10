@@ -100,7 +100,7 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 await _repo.CreateAsync(model, ct);
-                TempData["Ok"] = "Contrato creado correctamente.";
+                TempData["Mensaje"] = "Contrato creado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -145,7 +145,7 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 await _repo.UpdateAsync(model, ct);
-                TempData["Ok"] = "Contrato actualizado correctamente.";
+                TempData["Mensaje"] = "Contrato actualizado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

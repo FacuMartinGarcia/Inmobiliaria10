@@ -44,7 +44,7 @@ public class PropietarioController : Controller
         if (!ModelState.IsValid) return View(p);
 
         p.IdPropietario = await _repo.Crear(p);
-        TempData["ok"] = "Propietario creado.";
+        TempData["Mensaje"] = "Propietario creado.";
         return RedirectToAction(nameof(Detalles), new { id = p.IdPropietario });
     }
 
@@ -70,7 +70,7 @@ public class PropietarioController : Controller
         var ok = await _repo.Modificar(p);
         if (!ok) return NotFound();
 
-        TempData["ok"] = "Propietario actualizado.";
+         TempData["Mensaje"]= "Propietario actualizado.";
         return RedirectToAction(nameof(Detalles), new { id });
     }
 
@@ -88,7 +88,7 @@ public class PropietarioController : Controller
     {
         var ok = await _repo.Borrar(id);
         if (!ok) return NotFound();
-        TempData["ok"] = "Propietario eliminado.";
+        TempData["Mensaje"] = "Propietario eliminado.";
         return RedirectToAction(nameof(Index));
     }
 }

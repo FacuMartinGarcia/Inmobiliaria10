@@ -54,14 +54,6 @@
     </div>
 </div>
 
-@if (TempData["Ok"] is string okMsg)
-{
-    <div class="alert alert-success">@okMsg</div>
-}
-@if (TempData["Err"] is string errMsg)
-{
-    <div class="alert alert-danger">@errMsg</div>
-}
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-12 col-md-2">

@@ -47,7 +47,7 @@ namespace Inmobiliaria10.Controllers
             if (!ModelState.IsValid) return View(m);
 
             var id = await _repo.CreateAsync(m, ct);
-            TempData["Ok"] = "Concepto creado.";
+            TempData["Mensaje"] = "Concepto creado.";
             return RedirectToAction(nameof(Index), new { id });
         }
 
@@ -74,7 +74,7 @@ namespace Inmobiliaria10.Controllers
             if (!ModelState.IsValid) return View(m);
 
             await _repo.UpdateAsync(m, ct);
-            TempData["Ok"] = "Concepto actualizado.";
+            TempData["Mensaje"] = "Concepto actualizado.";
             return RedirectToAction(nameof(Index), new { id });
         }
 
@@ -101,7 +101,7 @@ namespace Inmobiliaria10.Controllers
             {
                 var ok = await _repo.DeleteAsync(id, ct);
                 if (!ok) return NotFound();
-                TempData["Ok"] = "Concepto eliminado.";
+                TempData["Mensaje"] = "Concepto eliminado.";
                 return RedirectToAction(nameof(Index));
             }
             catch (MySql.Data.MySqlClient.MySqlException ex) when (ex.Number == 1451) // FK constraint

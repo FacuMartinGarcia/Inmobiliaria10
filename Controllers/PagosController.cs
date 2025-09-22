@@ -88,6 +88,10 @@ namespace Inmobiliaria10.Controllers
             {
                 idPago    = p.IdPago,
                 fechaPago = p.FechaPago.ToString("dd/MM/yyyy"),
+                mes       = p.IdMes.HasValue 
+                    ? System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(p.IdMes.Value) 
+                    : "",
+                anio      = p.Anio,
                 detalle   = p.Detalle,
                 conceptoDenominacion = conceptoMap.TryGetValue(p.IdConcepto, out var nom) ? nom : "",
                 importe   = p.Importe,
@@ -105,7 +109,6 @@ namespace Inmobiliaria10.Controllers
                 data
             });
         }
-
 
 
         [HttpGet("Detalles/{id:int}")]
@@ -128,29 +131,47 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Pago m, CancellationToken ct = default)
         {
-            if (!ModelState.IsValid) { await CargarSelectsAsync(m.IdConcepto, ct); return View(m); }
-            m.CreatedBy = GetUserIdOrDefault(); m.CreatedAt = DateTime.UtcNow;
+            if (!ModelState.IsValid) 
+            { 
+                await CargarSelectsAsync(m.IdConcepto, ct); 
+                return View(m); 
+            }
+
+            // 🔹 Calcular mes y año automáticamente
+            m.IdMes = m.FechaPago.Month;   // 1–12 → coincide con tabla meses
+            m.Anio = m.FechaPago.Year;
+
+            m.CreatedBy = GetUserIdOrDefault(); 
+            m.CreatedAt = DateTime.UtcNow;
+
             var id = await _repo.CreateAsync(m, ct);
-            TempData["Ok"] = "Pago registrado.";
+
+            TempData["Mensaje"] = "Pago registrado.";
             return RedirectToAction(nameof(Detalles), new { id });
         }
+
 
         [HttpPost("RegistrarMulta/{contratoId:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarMulta(int contratoId, CancellationToken ct = default)
         {
             var idPago = await _repo.RegistrarMultaAsync(contratoId, DateTime.Today, GetUserIdOrDefault(), ct);
-            TempData["Ok"] = "Multa registrada como pago.";
+            TempData["Mensaje"] = "Multa registrada como pago.";
             return RedirectToAction("Detalles", "Pagos", new { id = idPago });
         }
 
         [HttpGet("Editar/{id:int}")]
         public async Task<IActionResult> Editar(int id, CancellationToken ct = default)
         {
-            var x = await _repo.GetByIdAsync(id, ct);
-            if (x is null) return NotFound();
-            await CargarSelectsAsync(x.IdConcepto, ct);
-            return View(x);
+            var pago = await _repo.GetByIdAsync(id, ct);
+            if (pago == null) return NotFound();
+
+            await CargarSelectsAsync(pago.IdConcepto, ct); 
+
+            var contrato = await _repo.GetContratoItemAsync(pago.IdContrato, ct);
+            ViewBag.ContratoTexto = contrato?.Text;
+
+            return View(pago);
         }
 
         [HttpPost("Editar/{id:int}")]
@@ -158,16 +179,19 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> Editar(int id, Pago m, CancellationToken ct = default)
         {
             if (id != m.IdPago) return BadRequest();
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             { 
                 await CargarSelectsAsync(m.IdConcepto, ct); 
                 return View(m); 
             }
 
-            // 🔹 Solo actualizar concepto
-            await _repo.UpdateConceptoAsync(id, m.IdConcepto, ct);
+            // 🔹 Recalcular mes y año si cambió la fecha
+            m.IdMes = m.FechaPago.Month;
+            m.Anio = m.FechaPago.Year;
 
-            TempData["Ok"] = "Concepto del pago actualizado.";
+            await _repo.UpdateAsync(m, ct);
+
+            TempData["Mensaje"] = "Pago actualizado correctamente.";
             return RedirectToAction(nameof(Detalles), new { id = m.IdPago });
         }
 
@@ -184,7 +208,7 @@ namespace Inmobiliaria10.Controllers
             var ok = await _repo.AnularPagoAsync(id, motivo, GetUserIdOrDefault(), ct);
             if (!ok) return NotFound();
 
-            TempData["Ok"] = "Pago anulado correctamente.";
+            TempData["Mensaje"] = "Pago anulado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -206,7 +230,7 @@ namespace Inmobiliaria10.Controllers
         {
             var ok = await _repo.SoftDeleteAsync(id, GetUserIdOrDefault(), ct);
             if (!ok) return NotFound();
-            TempData["Ok"] = "Pago eliminado.";
+            TempData["Mensaje"] = "Pago eliminado.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -217,8 +241,6 @@ namespace Inmobiliaria10.Controllers
             ViewBag.IdPago = id;
             return View(eventos);
         }
-
-    
 
         // --- Endpoints Select2 ---
 

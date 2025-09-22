@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 namespace Inmobiliaria10.Models
 {
     public class Pago
@@ -9,6 +10,13 @@ namespace Inmobiliaria10.Models
         [Required]
         [DataType(DataType.Date)]
         public DateTime FechaPago { get; set; }      // DATE NOT NULL
+
+        // 🔹 Nuevo: FK a tabla Meses
+        public int? IdMes { get; set; }              // FK meses (nullable para compatibilidad)
+
+        // 🔹 Nuevo: Año del pago
+        [Range(1900, 2100, ErrorMessage = "El año debe estar entre 1900 y 2100.")]
+        public int Anio { get; set; }                // INT NOT NULL
 
         [StringLength(50)]
         public string? Detalle { get; set; }         // varchar(50) NULL
@@ -25,7 +33,8 @@ namespace Inmobiliaria10.Models
         public DateTime? CreatedAt { get; set; }     // DEFAULT NOW
         public DateTime? DeletedAt { get; set; }     // NULL
         public int? DeletedBy { get; set; }          // NULL FK usuarios
-        public int NumeroPago { get; set; }
+
+        public int NumeroPago { get; set; }          // Secuencia dentro del contrato
     }
 
     public class PagoAudit
@@ -38,7 +47,4 @@ namespace Inmobiliaria10.Models
         public string? OldData { get; set; }         // longtext
         public string? NewData { get; set; }         // longtext
     }
-
 }
-
-

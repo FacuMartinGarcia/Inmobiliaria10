@@ -212,6 +212,19 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <!-- TempData para SweetAlert2 -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <input type="hidden" id="mensajeTemp" value="@TempData["Mensaje"]" />
+    }
+    @if (TempData["Error"] != null)
+    {
+        <input type="hidden" id="errorTemp" value="@TempData["Error"]" />
+    }
+    @if (TempData["Info"] != null)
+    {
+        <input type="hidden" id="infoTemp" value="@TempData["Info"]" />
+    }
 
 </body>
 </html>
