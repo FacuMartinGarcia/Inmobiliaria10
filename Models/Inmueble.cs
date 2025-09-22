@@ -94,5 +94,7 @@ namespace Inmobiliaria10.Models
         public IFormFile? PortadaFile { get; set; }
 
         public IList<Imagen> Imagenes { get; set; } = new List<Imagen>();
+        public bool EstaAlquilado { get; set; }
+        public bool TieneRescisionFutura { get; set; }
     }
 }

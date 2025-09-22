@@ -1,0 +1,105 @@
+@model IEnumerable<Inmobiliaria10.Models.Inmueble>
+
+@{
+    ViewData["Title"] = "Inmuebles del Propietario";
+    Layout = "_Layout";
+
+    int paginaActual = ViewBag.PaginaActual != null ? Convert.ToInt32(ViewBag.PaginaActual) : 1;
+    int cantidadPorPagina = ViewBag.CantidadPorPagina != null ? Convert.ToInt32(ViewBag.CantidadPorPagina) : 10;
+    int totalRegistros = ViewBag.TotalInmuebles != null ? Convert.ToInt32(ViewBag.TotalInmuebles) : 0;
+    int totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+
+    var propietario = ViewBag.Propietario as Inmobiliaria10.Models.Propietario;
+    int idPropietario = propietario?.IdPropietario ?? 0;
+
+    string? returnUrl = idPropietario != 0 
+        ? Url.Action("VerInmuebles", "Propietario", new { id = idPropietario, pagina = paginaActual }) 
+        : Url.Action("Index", "Propietario");
+
+}
+
+<div class="text-center mb-3">
+    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Inmuebles de @propietario?.ApellidoNombres</h2>
+    <p  class="fw-bold mb-0" style="color:#e6dabe;"">@totalRegistros Inmuebles Registrados</p>
+</div>
+
+<div class="mb-3">
+    <a class="btn btn-secondary" asp-controller="Propietario" asp-action="Index">
+        <i class="fa-solid fa-arrow-left"></i> Volver a Propietarios
+    </a>
+</div>
+
+<table class="table table-hover table-striped align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>@Html.DisplayNameFor(m => m.Direccion)</th>
+            <th>@Html.DisplayNameFor(m => m.Piso)</th>
+            <th>@Html.DisplayNameFor(m => m.Depto)</th>
+            <th>Uso</th>
+            <th>Tipo</th>
+            <th>@Html.DisplayNameFor(m => m.Ambientes)</th>
+            <th>@Html.DisplayNameFor(m => m.Precio)</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Direccion</td>
+                    <td>@item.Piso</td>
+                    <td>@item.Depto</td>
+                    <td>@item.Uso?.DenominacionUso</td>
+                    <td>@item.Tipo?.DenominacionTipo</td>
+                    <td>@item.Ambientes</td>
+                    <td>@item.Precio?.ToString("C")</td>
+                    <td>
+                        @if (item.EstaAlquilado && item.TieneRescisionFutura)
+                        {
+                            <span class="badge bg-warning text-dark">ALQUILADO c/RESCISIÓN</span>
+                        }
+                        else if (item.EstaAlquilado)
+                        {
+                            <span class="badge bg-danger">ALQUILADO</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">DESOCUPADO</span>
+                        }
+                    </td>
+              
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="8" class="text-center text-muted">Este propietario no tiene inmuebles registrados</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (totalPaginas > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="VerInmuebles" asp-route-id="@idPropietario" asp-route-pagina="@(paginaActual - 1)">« Anterior</a>
+            </li>
+
+            @for (int i = 1; i <= totalPaginas; i++)
+            {
+                <li class="page-item @(i == paginaActual ? "active" : "")">
+                    <a class="page-link" asp-action="VerInmuebles" asp-route-id="@idPropietario" asp-route-pagina="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-action="VerInmuebles" asp-route-id="@idPropietario" asp-route-pagina="@(paginaActual + 1)">Siguiente »</a>
+            </li>
+        </ul>
+    </nav>
+}

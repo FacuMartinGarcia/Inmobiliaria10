@@ -40,6 +40,7 @@
             <th>Tipo</th>
             <th>@Html.DisplayNameFor(m => m.Ambientes)</th>
             <th>@Html.DisplayNameFor(m => m.Precio)</th>
+            <th>@Html.DisplayNameFor(m => m.Propietario)</th>            
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -56,6 +57,7 @@
                     <td>@item.Tipo?.DenominacionTipo</td>
                     <td>@item.Ambientes</td>
                     <td>@item.Precio?.ToString("C")</td>
+                    <td>@item.Propietario?.ApellidoNombres @item.Propietario?.ApellidoNombres</td>
                     <td class="text-center">
                         <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
                             <i class="fa-solid fa-pen"></i>

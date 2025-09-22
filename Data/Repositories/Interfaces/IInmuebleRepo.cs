@@ -12,5 +12,7 @@ namespace Inmobiliaria10.Data.Repositories
         Task<List<Inmueble>> ListarTodos();
         Task<(List<Inmueble> registros, int totalRegistros)> ListarTodosPaginado(
             int pagina, int cantidadPorPagina, string? searchString = null);
+        Task<(List<Inmueble> registros, int totalRegistros)> ListarPorPropietario(
+        int idPropietario, int pagina, int cantidadPorPagina, string? searchString = null);
     }
 }

@@ -5,16 +5,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers;
+
 [Authorize]
 public class PropietarioController : Controller
 {
     private readonly IPropietarioRepo _repo;
+    private readonly IInmuebleRepo _repoInmueble;
 
-    public PropietarioController(IPropietarioRepo repo)
+    public PropietarioController(
+        IPropietarioRepo repo,
+        IInmuebleRepo repoInmueble
+        )
     {
         _repo = repo;
+        _repoInmueble = repoInmueble;
     }
 
+ 
     // GET: /Propietarios
     public async Task<IActionResult> Index(string? q, int page = 1, int pageSize = 10)
     {
@@ -70,7 +77,7 @@ public class PropietarioController : Controller
         var ok = await _repo.Modificar(p);
         if (!ok) return NotFound();
 
-         TempData["Mensaje"]= "Propietario actualizado.";
+        TempData["Mensaje"] = "Propietario actualizado.";
         return RedirectToAction(nameof(Detalles), new { id });
     }
 
@@ -91,4 +98,21 @@ public class PropietarioController : Controller
         TempData["Mensaje"] = "Propietario eliminado.";
         return RedirectToAction(nameof(Index));
     }
+
+    public async Task<IActionResult> VerInmuebles(int id, int pagina = 1, string? search = null)
+    {
+        int cantidadPorPagina = 10; 
+        var propietario = await _repo.ObtenerPorId(id);
+        if (propietario == null) return NotFound();
+
+        var (inmuebles, total) = await _repoInmueble.ListarPorPropietario(id, pagina, cantidadPorPagina, search);
+
+        ViewBag.Propietario = propietario;
+        ViewBag.TotalInmuebles = total;
+        ViewBag.PaginaActual = pagina;
+        ViewBag.CantidadPorPagina = cantidadPorPagina;
+
+        return View(inmuebles);
+    }
+
 }
