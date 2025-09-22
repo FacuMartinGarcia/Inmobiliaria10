@@ -26,19 +26,22 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label asp-for="IdPropietario" class="form-label w-100 text-center">Propietario</label>
-                                <select id="propietario" asp-for="IdPropietario" class="form-select"></select>
+                                <select id="propietario"></select>
                                 <span asp-validation-for="IdPropietario" class="text-danger"></span>
                             </div>
+
                             <div class="col-md-3">
                                 <label asp-for="IdTipo" class="form-label w-100 text-center">Tipo</label>
-                                <select id="tipo" asp-for="IdTipo" class="form-select"></select>
+                                <select id="tipo"></select>
                                 <span asp-validation-for="IdTipo" class="text-danger"></span>
                             </div>
+
                             <div class="col-md-3">
                                 <label asp-for="IdUso" class="form-label w-100 text-center">Uso</label>
-                                <select id="uso" asp-for="IdUso" class="form-select"></select>
+                                <select id="uso"></select>
                                 <span asp-validation-for="IdUso" class="text-danger"></span>
                             </div>
+
                             <div class="col-md-2">
                                 <label asp-for="Ambientes" class="form-label w-100 text-center">Ambientes</label>
                                 <input asp-for="Ambientes" type="number" class="form-control text-center" min="1"/>
@@ -108,13 +111,12 @@
 
 @section Scripts {
     <script src="~/js/inmueble.js" asp-append-version="true"></script>
-
     <script>
-        // Variables globales para precargar Select2 en edición
         window.inmuebleData = {
             propietario: { id: "@Model.IdPropietario", text: "@Model.Propietario?.ApellidoNombres" },
             tipo: { id: "@Model.IdTipo", text: "@Model.Tipo?.DenominacionTipo" },
             uso: { id: "@Model.IdUso", text: "@Model.Uso?.DenominacionUso" }
         };
     </script>
+
 }
