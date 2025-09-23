@@ -82,5 +82,13 @@
 </div>
 
 @section Scripts {
+
+<script>
+    window.contratoData = {
+        inquilino: { id: "@Model.IdInquilino", text: "@Model.Inquilino?.ApellidoNombres" ?? "" },
+        inmueble: { id: "@Model.IdInmueble", text: "@Model.Inmueble?.Direccion" ?? "", precio: "@Model.Inmueble?.Precio" ?? "" }
+    };
+</script>
+     
     <script src="~/js/contrato.js"></script>
 }

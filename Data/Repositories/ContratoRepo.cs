@@ -52,7 +52,9 @@ namespace Inmobiliaria10.Data.Repositories
                 SELECT  c.id_contrato   AS IdContrato,
                         c.fecha_firma   AS FechaFirma,
                         c.id_inmueble   AS IdInmueble,
+                        i.direccion     AS InmuebleDireccion,
                         c.id_inquilino  AS IdInquilino,
+                        q.apellido_nombres AS InquilinoNombre,
                         c.fecha_inicio  AS FechaInicio,
                         c.fecha_fin     AS FechaFin,
                         c.monto_mensual AS MontoMensual,
@@ -63,6 +65,8 @@ namespace Inmobiliaria10.Data.Repositories
                         c.deleted_at    AS DeletedAt,
                         c.deleted_by    AS DeletedBy
                 FROM contratos c
+                INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                INNER JOIN inquilinos q ON q.id_inquilino = c.id_inquilino
                 WHERE c.id_contrato = @id;";
 
             using var cmd = new MySqlCommand(sql, conn);
@@ -70,9 +74,25 @@ namespace Inmobiliaria10.Data.Repositories
 
             using var r = await cmd.ExecuteReaderAsync(ct);
             if (await r.ReadAsync(ct))
-                return MapContrato((MySqlDataReader)r);
+            {
+                var contrato = MapContrato((MySqlDataReader)r);
+                contrato.Inmueble = new Inmueble
+                {
+                    IdInmueble = contrato.IdInmueble,
+                    Direccion = r.GetString("InmuebleDireccion")
+                };
+                contrato.Inquilino = new Inquilino
+                {
+                    IdInquilino = contrato.IdInquilino,
+                    ApellidoNombres = r.GetString("InquilinoNombre")
+                };
+
+                return contrato;
+            }
+
             return null;
         }
+
 
         public async Task<(IReadOnlyList<Contrato> Items, int Total)> ListAsync(
             int? tipo = null,
