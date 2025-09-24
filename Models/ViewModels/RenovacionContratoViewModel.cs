@@ -6,12 +6,14 @@ namespace Inmobiliaria10.Models
         public int IdInmueble { get; set; }
         public int IdInquilino { get; set; }
 
-        public DateTime FechaInicio { get; set; }   //fecha fin + 1
-        public DateTime FechaFin { get; set; }      // +AddYears(PlazoAnios)
+        // Pre-cargados en GET
+        public DateTime FechaInicio { get; set; }   // = contrato.FechaFin.AddDays(1)
+        public DateTime FechaFin { get; set; }      // = FechaInicio.AddYears(PlazoAnios)
 
-
+        // Editable por usuario
         public decimal MontoMensual { get; set; }
 
+        // Seleccionado por usuario (1|2|3 años)
         public int PlazoAnios { get; set; }
     }
 }
