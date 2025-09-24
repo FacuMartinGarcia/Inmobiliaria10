@@ -1,0 +1,64 @@
+@model Inmobiliaria10.Models.RenovacionContratoViewModel
+@{
+    ViewData["Title"] = "Renovar contrato";
+    Layout = "_Layout";
+}
+
+<div class="d-flex justify-content-center py-4">
+  <div class="form-card w-100" style="max-width: 900px;">
+    <h1 class="form-title">Renovar contrato</h1>
+
+    <form asp-action="Renovar" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <input type="hidden" asp-for="IdContratoPadre" />
+        <input type="hidden" asp-for="IdInmueble" />
+        <input type="hidden" asp-for="IdInquilino" />
+
+        <div class="mb-2">
+            <strong>Inmueble:</strong> @ViewBag.InmuebleTxt
+        </div>
+        <div class="mb-3">
+            <strong>Inquilino:</strong> @ViewBag.InquilinoTxt
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="PlazoAnios" class="form-label">Plazo</label>
+                <select asp-for="PlazoAnios" asp-items="(IEnumerable<SelectListItem>)ViewBag.Plazos" class="form-select"></select>
+                <span asp-validation-for="PlazoAnios" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="FechaInicio" class="form-label">Fecha inicio</label>
+                <input asp-for="FechaInicio" type="date" class="form-control" readonly />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="FechaFin" class="form-label">Fecha fin</label>
+                <input asp-for="FechaFin" type="date" class="form-control" readonly />
+            </div>
+            <div class="col-md-4 ms-auto">
+                <label asp-for="MontoMensual" class="form-label">Monto mensual</label>
+                <input asp-for="MontoMensual" 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    class="form-control text-center" />
+                <span asp-validation-for="MontoMensual" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+            <a class="btn btn-back" asp-action="Index">
+                <i class="fa-solid fa-arrow-left me-2"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-save">
+                <i class="fa-solid fa-floppy-disk me-2"></i> Renovar
+            </button>
+        </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/renovar.js"></script>
+}

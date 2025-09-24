@@ -432,8 +432,8 @@ namespace Inmobiliaria10.Controllers
 
             if (hoy < inicioVentana || hoy >= contrato.FechaFin)
             {
-                TempData["Err"] = $"El contrato sólo puede renovarse entre {inicioVentana:yyyy-MM-dd} y {(contrato.FechaFin.AddDays(-1)):yyyy-MM-dd}.";
-                return RedirectToAction(nameof(Detalles), new { id });
+                TempData["Err"] = $"El contrato sólo puede renovarse con {ContratoConstantes.DiasAnticipacionRenovacion} dias de anticipacion antes de su vencimiento.";
+                return RedirectToAction(nameof(Index), new { id });
             }
 
             var vm = new RenovacionContratoViewModel
@@ -442,7 +442,7 @@ namespace Inmobiliaria10.Controllers
                 IdInmueble = contrato.IdInmueble,
                 IdInquilino = contrato.IdInquilino,
                 FechaInicio = contrato.FechaFin.AddDays(1),
-                FechaFin = contrato.FechaFin.AddYears(1), 
+                FechaFin = contrato.FechaFin.AddYears(ContratoConstantes.PlazosRenovacionAnios.First()), 
                 MontoMensual = contrato.MontoMensual,
                 PlazoAnios = ContratoConstantes.PlazosRenovacionAnios.First() 
             };
@@ -519,7 +519,7 @@ namespace Inmobiliaria10.Controllers
             {
                 var nuevoId = await _repo.CreateAsync(nuevoContrato, ct);
                 TempData["Ok"] = $"Contrato renovado por {vm.PlazoAnios} año(s).";
-                return RedirectToAction(nameof(Detalles), new { id = nuevoId });
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
