@@ -1,5 +1,15 @@
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
 $(function () {
 
+  // =======================
+  // Select2 Inquilino
+  // =======================
   if ($("#IdInquilino").length) {
     $('#IdInquilino').select2({
       placeholder: 'Buscar inquilino…',
@@ -13,18 +23,28 @@ $(function () {
       }
     });
 
-    const preInquilino = $("#IdInquilino").val();
-    if (preInquilino && parseInt(preInquilino) > 0) {
-      $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
-        if (res && res.item) {
-          const opt = new Option(res.item.text, res.item.id, true, true);
-          $('#IdInquilino').append(opt).trigger('change');
-        }
-      });
+    // --- Precarga en Editar con window.contratoData ---
+    if (window.contratoData?.inquilino?.id) {
+      const d = window.contratoData.inquilino;
+      const opt = new Option(d.text, d.id, true, true);
+      $('#IdInquilino').append(opt).trigger('change');
+    } else {
+      // --- Precarga vía AJAX si existe value en el select ---
+      const preInquilino = $("#IdInquilino").val();
+      if (preInquilino && parseInt(preInquilino) > 0) {
+        $.getJSON('/Contrato/SearchInquilinos', { id: preInquilino }, function (res) {
+          if (res && res.item) {
+            const opt = new Option(res.item.text, res.item.id, true, true);
+            $('#IdInquilino').append(opt).trigger('change');
+          }
+        });
+      }
     }
   }
 
-
+  // =======================
+  // Select2 Inmueble
+  // =======================
   if ($("#IdInmueble").length) {
     $('#IdInmueble').select2({
       placeholder: 'Buscar inmueble…',
@@ -38,7 +58,6 @@ $(function () {
       }
     });
 
-    // Autocompletar precio mensual al seleccionar inmueble
     $('#IdInmueble').on('select2:select', function (e) {
       const data = e.params.data;
       if (data && data.precio) {
@@ -46,24 +65,30 @@ $(function () {
       }
     });
 
-    // Precarga inmueble en Editar
-    const preInmueble = $("#IdInmueble").val();
-    if (preInmueble && parseInt(preInmueble) > 0) {
-      $.getJSON('/Contrato/SearchInmuebles', { id: preInmueble }, function (res) {
-        if (res && res.item) {
-          const opt = new Option(res.item.text, res.item.id, true, true);
-          $('#IdInmueble').append(opt).trigger('change');
-          if (res.item.precio) {
-            $('#MontoMensual').val(res.item.precio);
+    if (window.contratoData?.inmueble?.id) {
+      const d = window.contratoData.inmueble;
+      const opt = new Option(d.text, d.id, true, true);
+      $('#IdInmueble').append(opt).trigger('change');
+      if (d.precio) {
+        $('#MontoMensual').val(d.precio);
+      }
+    } else {
+      // AJAX si exsite valor
+      const preInmueble = $("#IdInmueble").val();
+      if (preInmueble && parseInt(preInmueble) > 0) {
+        $.getJSON('/Contrato/SearchInmuebles', { id: preInmueble }, function (res) {
+          if (res && res.item) {
+            const opt = new Option(res.item.text, res.item.id, true, true);
+            $('#IdInmueble').append(opt).trigger('change');
+            if (res.item.precio) {
+              $('#MontoMensual').val(res.item.precio);
+            }
           }
-        }
-      });
+        });
+      }
     }
   }
 
-  // =======================
-  // Cálculo de multa (solo en Editar - cuando existe #Rescision)
-  // =======================
   if ($("#Rescision").length) {
     async function calcularMulta() {
       const idContrato = $("#IdContrato").val();
@@ -102,12 +127,8 @@ $(function () {
     $("#Rescision").on("change", calcularMulta);
   }
 
-  // =======================
-  // Confirmación al enviar (crear o editar)
-  // =======================
-  // Nota: si la página de Crear NO tiene #Rescision, no afectamos el submit.
   $('form').on('submit', async function (e) {
-    // en Crear: si no existe #Rescision devolvemos (no interferimos)
+
     if (!$("#Rescision").length) return;
 
     e.preventDefault();
@@ -117,7 +138,6 @@ $(function () {
       ? "El contrato se va a rescindir. ¿Está seguro?"
       : "Se actualizarán los datos del contrato.";
 
-    // Primera confirmación (guardar/ rescindir)
     const r1 = await Swal.fire({
       title: 'Confirmación',
       text: mensaje,
@@ -134,20 +154,16 @@ $(function () {
     if (fechaRescision) {
       const $montoMulta = $("#MontoMulta");
 
-      // Si aún no se calculó el monto, forzamos cálculo antes de preguntar
       if ($montoMulta.length && !$montoMulta.val()) {
-        // calcularMulta puede existir solo si #Rescision está presente (ver arriba)
         if (typeof calcularMulta === "function") {
           await calcularMulta();
         }
       }
 
-      // Parseo seguro del monto (reemplazamos coma por punto por las dudas)
       const montoRaw = ($montoMulta.val() || '0').toString().replace(',', '.');
       const montoMulta = parseFloat(montoRaw) || 0;
 
       if (montoMulta > 0) {
-        // Segunda confirmación: generar pago de multa
         const r2 = await Swal.fire({
           title: 'Generar pago por multa',
           text: `Se detectó una multa de $${montoMulta.toFixed(2)}. ¿Desea generar el pago ahora?`,
@@ -159,7 +175,6 @@ $(function () {
         });
 
         if (r2.isConfirmed) {
-          // Añadimos campo oculto si no existe
           if (!$('#GenerarPagoMulta').length) {
             $('<input>').attr({
               type: 'hidden',
@@ -171,19 +186,15 @@ $(function () {
             $('#GenerarPagoMulta').val('true');
           }
         } else {
-          // Si no quiere generar pago, nos aseguramos de que no exista el campo
           $('#GenerarPagoMulta').remove();
         }
       } else {
-        // No hay multa: nos aseguramos de limpiar el campo oculto si existe
         $('#GenerarPagoMulta').remove();
       }
     } else {
-      // No hay rescisión: limpiamos por si acaso
       $('#GenerarPagoMulta').remove();
     }
 
-    // Validación del formulario y envío final
     if ($(form).valid()) {
       form.submit();
     }

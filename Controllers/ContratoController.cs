@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Inmobiliaria10.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class ContratoController : Controller
     {
         private readonly IContratoRepo _repo;
@@ -155,14 +155,14 @@ namespace Inmobiliaria10.Controllers
                 if (model.Rescision.HasValue && generarPagoMulta && model.MontoMulta > 0)
                 {
                     // Validar que no exista pago anterior de multa
-                    
-                    bool existePago = false; 
+
+                    bool existePago = false;
                     if (!existePago)
                     {
                         var pagoMulta = new Pago
                         {
                             IdContrato = model.IdContrato,
-                            IdConcepto = 2, 
+                            IdConcepto = 2,
                             FechaPago = DateTime.Today,
                             Importe = model.MontoMulta.GetValueOrDefault(),
                             Detalle = $"Multa por rescisión del contrato {model.IdContrato}",
@@ -419,6 +419,119 @@ namespace Inmobiliaria10.Controllers
                 return Json(new { ok = false, mensaje = ex.Message });
             }
         }
+
+        // GET: Renovar
+        [HttpGet]
+        public async Task<IActionResult> Renovar(int id, CancellationToken ct = default)
+        {
+            var contrato = await _repo.GetByIdAsync(id, ct);
+            if (contrato == null) return NotFound();
+
+            var hoy = DateTime.Today;
+            var inicioVentana = contrato.FechaFin.AddDays(-ContratoConstantes.DiasAnticipacionRenovacion);
+
+            if (hoy < inicioVentana || hoy >= contrato.FechaFin)
+            {
+                TempData["Err"] = $"El contrato sólo puede renovarse con {ContratoConstantes.DiasAnticipacionRenovacion} dias de anticipacion antes de su vencimiento.";
+                return RedirectToAction(nameof(Index), new { id });
+            }
+
+            var vm = new RenovacionContratoViewModel
+            {
+                IdContratoPadre = contrato.IdContrato,
+                IdInmueble = contrato.IdInmueble,
+                IdInquilino = contrato.IdInquilino,
+                FechaInicio = contrato.FechaFin.AddDays(1),
+                FechaFin = contrato.FechaFin.AddYears(ContratoConstantes.PlazosRenovacionAnios.First()), 
+                MontoMensual = contrato.MontoMensual,
+                PlazoAnios = ContratoConstantes.PlazosRenovacionAnios.First() 
+            };
+
+            ViewBag.Plazos = ContratoConstantes.PlazosRenovacionAnios
+                .Select(x => new SelectListItem { Value = x.ToString(), Text = $"{x} año(s)" })
+                .ToList();
+
+
+            await SetContratoEtiquetasAsync(contrato, ct);
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Renovar(RenovacionContratoViewModel vm, CancellationToken ct = default)
+        {
+
+            if (!ContratoConstantes.PlazosRenovacionAnios.Contains(vm.PlazoAnios))
+            {
+                ModelState.AddModelError(nameof(vm.PlazoAnios), "Plazo inválido.");
+            }
+
+            // Recuperamos contrato padre para recalcular fechas desde su FechaFin
+            var padre = await _repo.GetByIdAsync(vm.IdContratoPadre, ct);
+            if (padre == null) return NotFound();
+
+            vm.FechaInicio = padre.FechaFin.AddDays(1);
+            vm.FechaFin = vm.FechaInicio.AddYears(vm.PlazoAnios);
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Plazos = ContratoConstantes.PlazosRenovacionAnios
+                    .Select(x => new SelectListItem { Value = x.ToString(), Text = $"{x} año(s)" })
+                    .ToList();
+                await SetContratoEtiquetasAsync(padre, ct);
+                return View(vm);
+            }
+
+            // verificar que no exista un contrato con las fechas que tdeterminamos para el inmueble    
+            var existeOverlap = await _repo.ExistsOverlapAsync(
+                idInmueble: vm.IdInmueble,
+                fechaInicio: vm.FechaInicio,
+                fechaFin: vm.FechaFin,
+                rescision: null,
+                excludeContratoId: null,
+                ct: ct
+            );
+            if (existeOverlap)
+            {
+                ModelState.AddModelError(string.Empty, "No se puede renovar: el inmueble tiene otro contrato en ese período.");
+                ViewBag.Plazos = ContratoConstantes.PlazosRenovacionAnios
+                    .Select(x => new SelectListItem { Value = x.ToString(), Text = $"{x} año(s)" })
+                    .ToList();
+                await SetContratoEtiquetasAsync(padre, ct);
+                return View(vm);
+            }
+
+            // Crear nuevo contrato
+            var nuevoContrato = new Contrato
+            {
+                IdInmueble = vm.IdInmueble,
+                IdInquilino = vm.IdInquilino,
+                FechaFirma = DateTime.Today,
+                FechaInicio = vm.FechaInicio,
+                FechaFin = vm.FechaFin,
+                MontoMensual = vm.MontoMensual,
+                CreatedBy = GetUserIdOrDefault(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            try
+            {
+                var nuevoId = await _repo.CreateAsync(nuevoContrato, ct);
+                TempData["Ok"] = $"Contrato renovado por {vm.PlazoAnios} año(s).";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo renovar el contrato: " + ex.Message);
+                ViewBag.Plazos = ContratoConstantes.PlazosRenovacionAnios
+                    .Select(x => new SelectListItem { Value = x.ToString(), Text = $"{x} año(s)" })
+                    .ToList();
+                await SetContratoEtiquetasAsync(padre, ct);
+                return View(vm);
+            }
+        }
+
     }
 
 }

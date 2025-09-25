@@ -73,7 +73,7 @@ namespace Inmobiliaria10.Data.Repositories
             cmd.Parameters.AddWithValue("@ambientes", (object?)i.Ambientes ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@precio", (object?)i.Precio ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@activo", i.Activo);
-            cmd.Parameters.AddWithValue("@portada", (object?)i.Portada ?? DBNull.Value); 
+            cmd.Parameters.AddWithValue("@portada", (object?)i.Portada ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@updatedAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@id", i.IdInmueble);
 
@@ -198,9 +198,9 @@ namespace Inmobiliaria10.Data.Repositories
             {
                 i = Map(reader);
             }
-            
-            
-                if (i != null)
+
+
+            if (i != null)
             {
                 i.Imagenes = (await _imagenRepo.BuscarPorInmueble(id)).ToList();
             }
@@ -296,6 +296,111 @@ namespace Inmobiliaria10.Data.Repositories
 
             return inmueble;
         }
+
+    public async Task<(List<Inmueble> registros, int totalRegistros)> ListarPorPropietario(
+        int idPropietario, int pagina, int cantidadPorPagina, string? searchString = null)
+    {
+        var lista = new List<Inmueble>();
+        using var conn = _db.GetConnection();
+
+        int offset = (pagina - 1) * cantidadPorPagina;
+
+        string where = "WHERE i.id_propietario = @idPropietario";
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            where += @" AND (
+                            i.direccion LIKE @search
+                            OR CAST(i.ambientes AS CHAR) LIKE @search
+                            OR t.denominacion_tipo LIKE @search
+                            OR u.denominacion_uso LIKE @search
+                        )";
+        }
+
+        var sql = $@"
+            SELECT i.*,
+                u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
+                t.id_tipo AS tipo_id_tipo, t.denominacion_tipo AS denominacion_tipo,
+                p.id_propietario, p.documento, p.apellido_nombres, p.domicilio,
+                p.telefono, p.email,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM contratos c
+                        WHERE c.id_inmueble = i.id_inmueble
+                        AND c.deleted_at IS NULL
+                        AND (
+                            (c.rescision IS NULL OR DATE(c.rescision) > CURDATE())
+                        )
+                        AND DATE(c.fecha_inicio) <= CURDATE()
+                        AND DATE(c.fecha_fin) >= CURDATE()
+                    ) THEN 1 ELSE 0
+                END AS esta_alquilado,
+
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM contratos c
+                        WHERE c.id_inmueble = i.id_inmueble
+                        AND c.deleted_at IS NULL
+                        AND DATE(c.rescision) > CURDATE()
+                        AND DATE(c.fecha_inicio) <= CURDATE()
+                        AND DATE(c.fecha_fin) >= CURDATE()
+                    ) THEN 1 ELSE 0
+                END AS tiene_rescision_futura
+
+            FROM inmuebles i
+            LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+            LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+            LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
+            {where}
+            ORDER BY i.direccion
+            LIMIT @cantidad OFFSET @offset;
+        ";
+
+        using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@idPropietario", idPropietario);
+        cmd.Parameters.AddWithValue("@cantidad", cantidadPorPagina);
+        cmd.Parameters.AddWithValue("@offset", offset);
+
+        if (!string.IsNullOrEmpty(searchString))
+            cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
+
+        await conn.OpenAsync();
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+
+            var inmueble = Map(reader);
+
+            int ordEsta = reader.GetOrdinal("esta_alquilado");
+            inmueble.EstaAlquilado = !reader.IsDBNull(ordEsta) && reader.GetInt32(ordEsta) == 1;
+
+            int ordResc = reader.GetOrdinal("tiene_rescision_futura");
+            inmueble.TieneRescisionFutura = !reader.IsDBNull(ordResc) && reader.GetInt32(ordResc) == 1;
+
+
+            lista.Add(inmueble);
+        }
+        await reader.CloseAsync();
+
+        var sqlTotal = $@"
+            SELECT COUNT(*)
+            FROM inmuebles i
+            LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
+            LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
+            LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
+            {where};
+        ";
+
+        using var cmdTotal = new MySqlCommand(sqlTotal, conn);
+        cmdTotal.Parameters.AddWithValue("@idPropietario", idPropietario);
+        if (!string.IsNullOrEmpty(searchString))
+            cmdTotal.Parameters.AddWithValue("@search", "%" + searchString + "%");
+
+        int totalRegistros = Convert.ToInt32(await cmdTotal.ExecuteScalarAsync());
+
+        return (lista, totalRegistros);
+    }
 
     }
 }

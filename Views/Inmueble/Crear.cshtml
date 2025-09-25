@@ -106,5 +106,14 @@
 
 
 @section Scripts {
-    <script src="~/js/inmuebles.js" asp-append-version="true"></script>
+    <script>
+        window.inmuebleData = {
+            propietario: null,
+            tipo: null,
+            uso: null
+        };
+    </script>
+
+    <script src="~/js/inmueble.js" asp-append-version="true"></script>
 }
+
