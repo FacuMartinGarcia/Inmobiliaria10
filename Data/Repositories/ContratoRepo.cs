@@ -442,7 +442,7 @@ namespace Inmobiliaria10.Data.Repositories
 
             return multa;
         }
-        
+
         public async Task<IReadOnlyList<(int Id, string Direccion, string Inquilino)>>
             GetContratosInfoAsync(IEnumerable<int> ids, CancellationToken ct = default)
         {
@@ -481,6 +481,66 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return list;
         }
+        
+        public async Task<IReadOnlyList<Contrato>> GetContratosPorInmuebleAsync(
+            int idInmueble,
+            CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var sql = @"
+                SELECT  c.id_contrato      AS IdContrato,
+                        c.fecha_firma      AS FechaFirma,
+                        c.id_inmueble      AS IdInmueble,
+                        i.direccion        AS InmuebleDireccion,
+                        c.id_inquilino     AS IdInquilino,
+                        q.apellido_nombres AS InquilinoNombre,
+                        q.documento        AS InquilinoDni,
+                        c.fecha_inicio     AS FechaInicio,
+                        c.fecha_fin        AS FechaFin,
+                        c.monto_mensual    AS MontoMensual,
+                        c.rescision        AS Rescision,
+                        c.monto_multa      AS MontoMulta,
+                        c.created_by       AS CreatedBy,
+                        c.created_at       AS CreatedAt,
+                        c.deleted_at       AS DeletedAt,
+                        c.deleted_by       AS DeletedBy
+                FROM contratos c
+                INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                INNER JOIN inquilinos q ON q.id_inquilino = c.id_inquilino
+                WHERE c.id_inmueble = @IdInmueble
+                AND c.deleted_at IS NULL
+                ORDER BY c.fecha_inicio DESC;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            AddParam(cmd, "@IdInmueble", idInmueble, MySqlDbType.Int32);
+
+            var list = new List<Contrato>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+            {
+                var contrato = MapContrato((MySqlDataReader)r);
+
+                contrato.Inmueble = new Inmueble
+                {
+                    IdInmueble = contrato.IdInmueble,
+                    Direccion = r.GetString("InmuebleDireccion")
+                };
+
+                contrato.Inquilino = new Inquilino
+                {
+                    IdInquilino = contrato.IdInquilino,
+                    ApellidoNombres = r.GetString("InquilinoNombre"),
+                    Documento = r.GetString("InquilinoDni")
+                };
+
+                list.Add(contrato);
+            }
+
+            return list;
+        }
+
 
     }
 }

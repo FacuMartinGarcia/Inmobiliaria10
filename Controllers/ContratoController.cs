@@ -442,9 +442,9 @@ namespace Inmobiliaria10.Controllers
                 IdInmueble = contrato.IdInmueble,
                 IdInquilino = contrato.IdInquilino,
                 FechaInicio = contrato.FechaFin.AddDays(1),
-                FechaFin = contrato.FechaFin.AddYears(ContratoConstantes.PlazosRenovacionAnios.First()), 
+                FechaFin = contrato.FechaFin.AddYears(ContratoConstantes.PlazosRenovacionAnios.First()),
                 MontoMensual = contrato.MontoMensual,
-                PlazoAnios = ContratoConstantes.PlazosRenovacionAnios.First() 
+                PlazoAnios = ContratoConstantes.PlazosRenovacionAnios.First()
             };
 
             ViewBag.Plazos = ContratoConstantes.PlazosRenovacionAnios
@@ -530,6 +530,19 @@ namespace Inmobiliaria10.Controllers
                 await SetContratoEtiquetasAsync(padre, ct);
                 return View(vm);
             }
+        }
+        public async Task<IActionResult> VerContratos(int id, CancellationToken ct)
+        {
+            var inmueble = await _repoInmueble.ObtenerPorId(id);
+            if (inmueble == null)
+            {
+                return NotFound();
+            }
+
+            var contratos = await _repo.GetContratosPorInmuebleAsync(id, ct);
+
+            ViewBag.Inmueble = inmueble;
+            return View("~/Views/Inmueble/VerContratos.cshtml", contratos);
         }
 
     }
