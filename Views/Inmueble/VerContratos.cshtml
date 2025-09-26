@@ -40,7 +40,6 @@
             <th>@Html.DisplayNameFor(m => m.Ambientes)</th>
             <th>@Html.DisplayNameFor(m => m.Precio)</th>
             <th>@Html.DisplayNameFor(m => m.Propietario)</th>
-            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -57,23 +56,6 @@
                     <td>@item.Ambientes</td>
                     <td>@item.Precio?.ToString("C")</td>
                     <td>@item.Propietario?.ApellidoNombres</td>
-                    <td class="text-center">
-                        <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble" title="Eliminar">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>
-                        <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <a class="btn btn-sm btn-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble" title="Imágenes">
-                            <i class="fa-solid fa-image"></i>
-                        </a>
-                        <a class="btn btn-sm btn-success" asp-controller="Contratos" asp-action="VerContratos" asp-route-id="@item.IdInmueble" title="Ver Contratos">
-                            <i class="fa-solid fa-image"></i>
-                        </a>
-                    </td>
                 </tr>
             }
         }
@@ -91,34 +73,19 @@
     <nav>
         <ul class="pagination justify-content-center">
             <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-pagina="@(paginaActual - 1)"
-                   asp-route-searchString="@ViewData["SearchString"]">
-                    « Anterior
-                </a>
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)" asp-route-searchString="@ViewData["SearchString"]">« Anterior</a>
             </li>
 
             @for (int i = 1; i <= totalPaginas; i++)
             {
                 <li class="page-item @(i == paginaActual ? "active" : "")">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-pagina="@i"
-                       asp-route-searchString="@ViewData["SearchString"]">
-                        @i
-                    </a>
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-searchString="@ViewData["SearchString"]">@i</a>
                 </li>
             }
 
             <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-pagina="@(paginaActual + 1)"
-                   asp-route-searchString="@ViewData["SearchString"]">
-                    Siguiente »
-                </a>
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)" asp-route-searchString="@ViewData["SearchString"]">Siguiente »</a>
             </li>
         </ul>
     </nav>
-}  
+}
