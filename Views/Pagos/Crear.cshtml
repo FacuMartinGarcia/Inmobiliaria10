@@ -1,28 +1,76 @@
 @model Inmobiliaria10.Models.Pago
 @{
     ViewData["Title"] = "Nuevo pago";
-    ViewData["BodyId"] = "page-create-pago";
+    ViewData["bodyId"] = "page-create-pago";   // <-- para pagos.js
 }
-<body id="page-create-pago">
-    <div class="d-flex justify-content-center py-4">
-        <div class="form-card">
-            <div class="form-title">Nuevo pago</div>
 
-            <form asp-action="Crear" method="post" class="needs-validation" novalidate>
-                @Html.AntiForgeryToken()
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="d-flex justify-content-center py-4">
+  <div class="form-card">
+    <h2 class="form-title">Nuevo pago</h2>
 
-                <partial name="_Form" />
+    <form asp-action="Crear" asp-controller="Pagos" method="post">
+      @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+       
+      <!-- Contrato (hidden -> lo reemplaza Select2 en pagos.js) -->
+      <div class="mb-3">
+        <label asp-for="IdContrato" class="form-label">Contrato</label>
+        <input asp-for="IdContrato" type="hidden" />
+        <span asp-validation-for="IdContrato" class="text-danger"></span>
+      </div>
 
-                <div class="d-flex gap-2 mt-3">
-                    <a class="btn btn-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Volver</a>
-                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
-                </div>
-            </form>
+      <!-- Fecha / Mes / Año -->
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label asp-for="FechaPago" class="form-label">Fecha de pago</label>
+          <input asp-for="FechaPago" type="date" class="form-control" />
+          <span asp-validation-for="FechaPago" class="text-danger"></span>
         </div>
-    </div>
-</body>
 
+        <div class="col-md-4">
+          <label asp-for="IdMes" class="form-label">Mes</label>
+          <select asp-for="IdMes" class="form-select" asp-items="ViewBag.Meses"></select>
+          <span asp-validation-for="IdMes" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+          <label asp-for="Anio" class="form-label">Año</label>
+          <select asp-for="Anio" class="form-select" asp-items="ViewBag.Anios"></select>
+          <span asp-validation-for="Anio" class="text-danger"></span>
+        </div>
+      </div>
+
+      <!-- Importe / Concepto -->
+      <div class="row g-3 mt-0">
+        <div class="col-md-6">
+          <label asp-for="Importe" class="form-label">Importe</label>
+          <input asp-for="Importe" type="number" step="0.01" class="form-control" />
+          <span asp-validation-for="Importe" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+          <label asp-for="IdConcepto" class="form-label">Concepto</label>
+          <select asp-for="IdConcepto" class="form-control select2" asp-items="ViewBag.Conceptos">
+            <option value="">-- Seleccione un concepto --</option>
+          </select>
+          <span asp-validation-for="IdConcepto" class="text-danger"></span>
+        </div>
+      </div>
+
+      <!-- Detalle -->
+      <div class="mb-3 mt-3">
+        <label asp-for="Detalle" class="form-label">Detalle</label>
+        <textarea asp-for="Detalle" class="form-control"></textarea>
+        <span asp-validation-for="Detalle" class="text-danger"></span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-back">← Volver</a>
+        <button type="submit" class="btn btn-save">✓ Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
 @section Scripts {
     <script src="~/js/pagos.js" asp-append-version="true"></script>
 }

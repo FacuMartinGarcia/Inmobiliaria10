@@ -72,6 +72,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/Renovar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cUmVub3Zhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Contrato/_Form.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29udHJhdG9cX0Zvcm0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -196,10 +200,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb3NcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Pagos/_Form.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFnb3NcX0Zvcm0uY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Borrar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cQm9ycmFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -218,6 +218,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Propietario/VerInmuebles.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvcGlldGFyaW9cVmVySW5tdWVibGVzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Rol/Crear.cshtml]
@@ -242,10 +246,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/footer.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXGZvb3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/ROMA/Documents/Desarrollo de Software/Segundo año/PROGRAMACION 2 .NET/Inmobiliaria10/Views/Shared/_Layout.cshtml]

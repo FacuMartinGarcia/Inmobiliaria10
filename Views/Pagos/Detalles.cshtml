@@ -4,106 +4,66 @@
     Layout = "_Layout";
 }
 
-<div class="mt-5">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="card form-card mx-auto">
-                <div class="card-header form-card-header">
-                    <h4 class="form-title">@ViewData["Title"]</h4>
-                </div>
+<div class="d-flex justify-content-center mt-5">
+    <div class="card form-card w-75">
+        <div class="card-header form-card-header">
+            <h4 class="form-title text-center">@ViewData["Title"]</h4>
+        </div>
 
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-3 form-label">Contrato</dt>
-                        <dd class="col-sm-9">@Model.ContratoTexto</dd>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">Contrato</dt>
+                <dd class="col-sm-8">@Model.ContratoTexto</dd>
 
-                        <dt class="col-sm-3 form-label">Fecha de pago</dt>
-                        <dd class="col-sm-9">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
+                <dt class="col-sm-4">Fecha de pago</dt>
+                <dd class="col-sm-8">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
 
-                        <!-- 🔹 Nuevo: Mes y Año -->
-                        <dt class="col-sm-3 form-label">Mes</dt>
-                        <dd class="col-sm-9">
-                            @(string.IsNullOrEmpty(Model.MesTexto) 
-                                ? (Model.IdMes.HasValue ? Model.IdMes.ToString() : "—") 
-                                : Model.MesTexto)
-                        </dd>
+                <dt class="col-sm-4">Mes</dt>
+                <dd class="col-sm-8">@Model.MesTexto</dd>
 
-                        <dt class="col-sm-3 form-label">Año</dt>
-                        <dd class="col-sm-9">@Model.Anio</dd>
+                <dt class="col-sm-4">Año</dt>
+                <dd class="col-sm-8">@Model.Anio</dd>
 
-                        <dt class="col-sm-3 form-label">Concepto</dt>
-                        <dd class="col-sm-9">@Model.ConceptoTexto</dd>
+                <dt class="col-sm-4">Concepto</dt>
+                <dd class="col-sm-8">@Model.ConceptoTexto</dd>
 
-                        <dt class="col-sm-3 form-label">Importe</dt>
-                        <dd class="col-sm-9">
-                            @Model.Importe.ToString("C", new System.Globalization.CultureInfo("es-AR"))
-                        </dd>
+                <dt class="col-sm-4">Detalle</dt>
+                <dd class="col-sm-8">@Model.Detalle</dd>
 
-                        <dt class="col-sm-3 form-label">Detalle</dt>
-                        <dd class="col-sm-9">
-                            @if (string.IsNullOrWhiteSpace(Model.Detalle))
-                            {
-                                <span class="text-muted">Sin detalle</span>
-                            }
-                            else
-                            {
-                                @Model.Detalle
-                            }
-                        </dd>
+                <dt class="col-sm-4">Importe</dt>
+                <dd class="col-sm-8">@Model.Importe.ToString("C")</dd>
 
-                        <dt class="col-sm-3 form-label">Estado</dt>
-                        <dd class="col-sm-9">
-                            @if (Model.DeletedAt.HasValue)
-                            {
-                                <span class="badge bg-warning text-dark">
-                                    Anulado (@Model.MotivoAnulacion)
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">Activo</span>
-                            }
-                        </dd>
+                <dt class="col-sm-4">Número de Pago</dt>
+                <dd class="col-sm-8">@Model.NumeroPago</dd>
 
-                        <dt class="col-sm-3 form-label">Creado</dt>
-                        <dd class="col-sm-9">
-                            @(Model.CreatedAt.HasValue
-                                ? Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")
-                                : "—")
-                            por @(string.IsNullOrEmpty(Model.CreatedByAlias)
-                                ? $"Usuario #{Model.CreatedBy}"
-                                : Model.CreatedByAlias)
-                        </dd>
+                <dt class="col-sm-4">Creado por</dt>
+                <dd class="col-sm-8">@Model.CreatedByAlias</dd>
 
-                        @if (Model.DeletedAt.HasValue)
-                        {
-                            <dt class="col-sm-3 form-label">Anulado el</dt>
-                            <dd class="col-sm-9">
-                                @(Model.DeletedAt.HasValue
-                                    ? Model.DeletedAt.Value.ToString("dd/MM/yyyy HH:mm")
-                                    : "—")
-                                por @(string.IsNullOrEmpty(Model.DeletedByAlias)
-                                    ? $"Usuario #{Model.DeletedBy}"
-                                    : Model.DeletedByAlias)
-                            </dd>
-                        }
-                    </dl>
-                </div>
+                <dt class="col-sm-4">Fecha creación</dt>
+                <dd class="col-sm-8">
+                    @(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                </dd>
 
-                <div class="card-footer d-flex justify-content-between">
-                    <a asp-action="Index" class="btn btn-back">
-                        <i class="bi bi-arrow-left"></i> Volver
-                    </a>
-                    <div>
-                        <a asp-action="Editar" asp-route-id="@Model.IdPago" class="btn btn-save">
-                            <i class="bi bi-pencil"></i> Editar
-                        </a>
-                        <a asp-action="Auditoria" asp-route-id="@Model.IdPago" class="btn btn-outline-dark">
-                            <i class="bi bi-clock-history"></i> Auditoría
-                        </a>
-                    </div>
-                </div>
-            </div>
+                <dt class="col-sm-4">Anulado por</dt>
+                <dd class="col-sm-8">@Model.DeletedByAlias</dd>
+
+                <dt class="col-sm-4">Fecha anulación</dt>
+                <dd class="col-sm-8">
+                    @(Model.DeletedAt.HasValue ? Model.DeletedAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                </dd>
+
+                <dt class="col-sm-4">Motivo de anulación</dt>
+                <dd class="col-sm-8">@Model.MotivoAnulacion</dd>
+            </dl>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a asp-action="Editar" asp-route-id="@Model.IdPago" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
         </div>
     </div>
 </div>

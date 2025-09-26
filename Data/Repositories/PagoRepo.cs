@@ -167,15 +167,28 @@ namespace Inmobiliaria10.Data.Repositories
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
+            // Calcular número de pago por contrato
+            const string sqlNum = @"SELECT IFNULL(MAX(numero_pago), 0) + 1
+                                    FROM pagos
+                                    WHERE id_contrato = @idContrato";
+
+            using (var cmdNum = new MySqlCommand(sqlNum, conn))
+            {
+                cmdNum.Parameters.AddWithValue("@idContrato", e.IdContrato);
+                e.NumeroPago = Convert.ToInt32(await cmdNum.ExecuteScalarAsync(ct));
+            }
+
+            // Insertar con numero_pago incluido
             const string sql = @"
                 INSERT INTO pagos
-                    (id_contrato, fecha_pago, id_mes, anio, detalle, id_concepto, importe, motivo_anulacion, created_by, created_at)
+                    (id_contrato, numero_pago, fecha_pago, id_mes, anio, detalle, id_concepto, importe, motivo_anulacion, created_by, created_at)
                 VALUES
-                    (@id_contrato, @fecha_pago, @id_mes, @anio, @detalle, @id_concepto, @importe, @motivo, @created_by, UTC_TIMESTAMP());
+                    (@id_contrato, @numero_pago, @fecha_pago, @id_mes, @anio, @detalle, @id_concepto, @importe, @motivo, @created_by, UTC_TIMESTAMP());
                 SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
+            cmd.Parameters.AddWithValue("@numero_pago", e.NumeroPago);
             cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
             cmd.Parameters.AddWithValue("@id_mes", (object?)e.IdMes ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@anio", e.Anio);
@@ -188,55 +201,27 @@ namespace Inmobiliaria10.Data.Repositories
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
             return id;
         }
-        
-        public async Task UpdateAsync(Pago e, CancellationToken ct = default)
+        public async Task<bool> UpdateConceptoAsync(Pago e, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
+
             await conn.OpenAsync(ct);
 
             const string sql = @"
                 UPDATE pagos
-                   SET id_contrato     = @id_contrato,
-                       fecha_pago      = @fecha_pago,
-                       id_mes          = @id_mes,
-                       anio            = @anio,
-                       detalle         = @detalle,
-                       id_concepto     = @id_concepto,
-                       importe         = @importe,
-                       motivo_anulacion= @motivo
-                 WHERE id_pago = @id;";
+                SET id_concepto = @idConcepto,
+                    detalle = @detalle,
+                    motivo_anulacion = @motivo
+                WHERE id_pago = @idPago;";
 
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@id", e.IdPago);
-            cmd.Parameters.AddWithValue("@id_contrato", e.IdContrato);
-            cmd.Parameters.AddWithValue("@fecha_pago", e.FechaPago);
-            cmd.Parameters.AddWithValue("@id_mes", (object?)e.IdMes ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@anio", e.Anio);
-            cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? string.Empty);
-            cmd.Parameters.AddWithValue("@id_concepto", e.IdConcepto);
-            cmd.Parameters.AddWithValue("@importe", e.Importe);
+            cmd.Parameters.AddWithValue("@idPago", e.IdPago);
+            cmd.Parameters.AddWithValue("@idConcepto", e.IdConcepto);
+            cmd.Parameters.AddWithValue("@detalle", e.Detalle ?? "");
             cmd.Parameters.AddWithValue("@motivo", (object?)e.MotivoAnulacion ?? DBNull.Value);
 
-            await cmd.ExecuteNonQueryAsync(ct);
+            return await cmd.ExecuteNonQueryAsync(ct) > 0;
         }
-
-        public async Task<bool> UpdateConceptoAsync(int idPago, int idConcepto, string detalle, CancellationToken ct)
-        {
-                using var conn = _db.GetConnection();
-                await conn.OpenAsync(ct);
-
-                var sql = @"UPDATE pagos 
-                            SET id_concepto = @idConcepto, 
-                                detalle = @detalle 
-                            WHERE id_pago = @idPago";
-                using var cmd = new MySqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@idConcepto", idConcepto);
-                cmd.Parameters.AddWithValue("@detalle", detalle ?? "");
-                cmd.Parameters.AddWithValue("@idPago", idPago);
-
-                var rows = await cmd.ExecuteNonQueryAsync(ct);
-                return rows > 0;
-            }
 
         public async Task<int> RegistrarMultaAsync(int contratoId, DateTime fecha, int userId, CancellationToken ct = default)
         {
@@ -312,22 +297,22 @@ namespace Inmobiliaria10.Data.Repositories
             return Convert.ToInt32(result);
         }
 
-        public async Task<bool> AnularPagoAsync(int id, string motivo, int userId, CancellationToken ct = default)
+        public async Task<bool> AnularPagoAsync(int id, string motivo, int? userId, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"
                 UPDATE pagos
-                SET deleted_at = UTC_TIMESTAMP(),
-                    deleted_by = @by,
-                    motivo_anulacion = @motivo
-                WHERE id_pago = @id AND deleted_at IS NULL;";
+                SET motivo_anulacion = @motivo, 
+                    deleted_at = NOW(),
+                    deleted_by = @userId
+                WHERE id_pago = @id;";
 
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.Parameters.AddWithValue("@by", userId);
             cmd.Parameters.AddWithValue("@motivo", motivo);
+            cmd.Parameters.AddWithValue("@userId", (object?)userId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@id", id);
 
             var rows = await cmd.ExecuteNonQueryAsync(ct);
             return rows > 0;
@@ -553,27 +538,34 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync(ct);
 
             const string sql = @"
-                SELECT  p.id_pago         AS IdPago,
-                        p.id_contrato     AS IdContrato,
-                        p.numero_pago     AS NumeroPago, 
-                        p.fecha_pago      AS FechaPago,
-                        p.id_mes          AS IdMes,
-                        m.nombre          AS MesTexto,
-                        p.anio            AS Anio,
-                        p.detalle         AS Detalle,
-                        p.id_concepto     AS IdConcepto,
-                        p.importe         AS Importe,
-                        p.motivo_anulacion AS MotivoAnulacion,
-                        p.created_by      AS CreatedBy,
-                        u1.alias          AS CreatedByAlias,
-                        p.created_at      AS CreatedAt,
-                        p.deleted_at      AS DeletedAt,
-                        p.deleted_by      AS DeletedBy,
-                        u2.alias          AS DeletedByAlias
+                SELECT  
+                    p.id_pago          AS IdPago,
+                    p.id_contrato      AS IdContrato,
+                    CONCAT(i.direccion, ' · ', inq.apellido_nombres) AS ContratoTexto,
+                    p.numero_pago      AS NumeroPago, 
+                    p.fecha_pago       AS FechaPago,
+                    p.id_mes           AS IdMes,
+                    m.nombre           AS MesTexto,
+                    p.anio             AS Anio,
+                    p.detalle          AS Detalle,
+                    p.id_concepto      AS IdConcepto,
+                    c.denominacion_concepto AS ConceptoTexto,
+                    p.importe          AS Importe,
+                    p.motivo_anulacion AS MotivoAnulacion,
+                    p.created_by       AS CreatedBy,
+                    u1.alias           AS CreatedByAlias,
+                    p.created_at       AS CreatedAt,
+                    p.deleted_at       AS DeletedAt,
+                    p.deleted_by       AS DeletedBy,
+                    u2.alias           AS DeletedByAlias
                 FROM pagos p
-                LEFT JOIN usuarios u1 ON u1.id_usuario = p.created_by
-                LEFT JOIN usuarios u2 ON u2.id_usuario = p.deleted_by
-                LEFT JOIN meses m ON m.id_mes = p.id_mes
+                LEFT JOIN usuarios u1    ON u1.id_usuario = p.created_by
+                LEFT JOIN usuarios u2    ON u2.id_usuario = p.deleted_by
+                LEFT JOIN meses m        ON m.id_mes = p.id_mes
+                LEFT JOIN conceptos c    ON c.id_concepto = p.id_concepto
+                LEFT JOIN contratos co   ON co.id_contrato = p.id_contrato
+                LEFT JOIN inmuebles i    ON i.id_inmueble = co.id_inmueble
+                LEFT JOIN inquilinos inq ON inq.id_inquilino = co.id_inquilino
                 WHERE p.id_pago = @id
                 LIMIT 1;";
 
@@ -593,9 +585,9 @@ namespace Inmobiliaria10.Data.Repositories
                 Detalle = r["Detalle"] as string,
                 Importe = Convert.ToDecimal(r["Importe"]),
                 IdConcepto = Convert.ToInt32(r["IdConcepto"]),
-                ConceptoTexto = null, 
+                ConceptoTexto = r["ConceptoTexto"] as string,
                 IdContrato = Convert.ToInt32(r["IdContrato"]),
-                ContratoTexto = null, 
+                ContratoTexto = r["ContratoTexto"] as string,
                 NumeroPago = Convert.ToInt32(r["NumeroPago"]),
                 CreatedAt = DateN(r, "CreatedAt"),
                 CreatedBy = IntN(r, "CreatedBy"),
@@ -606,6 +598,7 @@ namespace Inmobiliaria10.Data.Repositories
                 MotivoAnulacion = r["MotivoAnulacion"] as string
             };
         }
+
 
     }
 }

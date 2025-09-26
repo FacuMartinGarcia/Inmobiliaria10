@@ -48,8 +48,8 @@ $(function () {
             },
             columns: [
                 { data: 'fechaPago' },
-                { data: 'mes' },     
-                { data: 'anio' },   
+                { data: 'mes' },
+                { data: 'anio' },
                 { data: 'detalle' },
                 { data: 'conceptoDenominacion' },
                 {
@@ -112,9 +112,9 @@ $(function () {
     }
 
     // ============================================================
-    // CREAR / EDITAR PAGO
+    // CREAR PAGO
     // ============================================================
-    if (pageId === "page-create-pago" || pageId === "page-edit-pago") {
+    if (pageId === "page-create-pago") {
         // --- Contrato con Select2 + AJAX ---
         const $orig = $('#IdContrato');
         if ($orig.length) {
@@ -147,9 +147,7 @@ $(function () {
 
             // --- Preselección de contrato ---
             let pre = $('#IdContrato_original').val();
-            if (!pre) {
-                pre = $('#IdContrato').val();
-            }
+            if (!pre) pre = $('#IdContrato').val();
 
             if (pre && pre > 0) {
                 $.getJSON('/Pagos/search-contratos', { id: pre }, function (res) {
@@ -163,14 +161,25 @@ $(function () {
 
         // --- Concepto con Select2 ---
         const $concepto = $('#IdConcepto');
+        $concepto.select2({
+            placeholder: "Seleccione un concepto",
+            allowClear: true,
+            width: '100%'
+        });
+    }
 
+    // ============================================================
+    // EDITAR PAGO
+    // ============================================================
+    if (pageId === "page-edit-pago") {
+        // Solo concepto
+        const $concepto = $('#IdConcepto');
         $concepto.select2({
             placeholder: "Seleccione un concepto",
             allowClear: true,
             width: '100%'
         });
 
-        // 🔹 Forzar selección del concepto al editar
         let selectedConcepto = $concepto.find("option:selected").val();
         if (selectedConcepto) {
             $concepto.val(selectedConcepto).trigger('change');

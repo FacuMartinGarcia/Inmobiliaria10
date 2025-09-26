@@ -13,20 +13,22 @@ namespace Inmobiliaria10.Controllers
     public class PagosController : Controller
     {
         private readonly IPagoRepo _repo;
-        private readonly IContratoRepo _contratoRepo; 
+        private readonly IContratoRepo _contratoRepo;
+        private readonly IMesRepo _mesRepo;
 
-        public PagosController(IPagoRepo repo, IContratoRepo contratoRepo) 
+        public PagosController(IPagoRepo repo, IContratoRepo contratoRepo, IMesRepo mesRepo)
         {
             _repo = repo;
-            _contratoRepo = contratoRepo;               
+            _contratoRepo = contratoRepo;
+            _mesRepo = mesRepo;
         }
-        // Index: solo prepara filtros; la grilla se llena por AJAX (DataTables)
+    
         [HttpGet("")]
         public async Task<IActionResult> Index(
             int? contrato, int? inquilino, int? concepto, bool? soloActivos,
             CancellationToken ct = default)
         {
-            await CargarSelectsAsync(concepto, ct);
+            await CargarSelectsAsync(concepto, null, null, ct);
             ViewBag.Contrato = contrato;
             ViewBag.Inquilino = inquilino;
             ViewBag.SoloActivos = soloActivos;
@@ -40,11 +42,9 @@ namespace Inmobiliaria10.Controllers
             int draw, int start = 0, int length = 10,
             CancellationToken ct = default)
         {
-            // Calcular paginación
             int pageIndex = Math.Max(1, (start / Math.Max(1, length)) + 1);
             int pageSize  = Math.Max(1, length);
 
-            // Traer datos desde el repo
             var (items, total) = await _repo.ListAsync(
                 idContrato : contrato,
                 idConcepto : null,
@@ -55,16 +55,13 @@ namespace Inmobiliaria10.Controllers
                 idInquilino: inquilino
             );
 
-            // Conceptos para mapear Id -> Nombre
             var conceptos   = await _repo.GetConceptosAsync(ct);
             var conceptoMap = conceptos.ToDictionary(x => x.Id, x => x.Nombre);
 
-            // Contratos de la página actual
             var contratoIds   = items.Select(p => p.IdContrato).Distinct().ToList();
             var contratosInfo = await _contratoRepo.GetContratosInfoAsync(contratoIds, ct);
             var contratoMap   = contratosInfo.ToDictionary(c => c.Id, c => $"{c.Direccion} - {c.Inquilino}");
 
-            // Orden recibido desde DataTables
             var orderColIdx = int.TryParse(Request.Query["order[0][column]"], out var oc) ? oc : 0;
             var orderDir    = (Request.Query["order[0][dir]"].FirstOrDefault() ?? "desc").ToLower();
 
@@ -83,7 +80,6 @@ namespace Inmobiliaria10.Controllers
                 ? items.OrderBy(keySelector)
                 : items.OrderByDescending(keySelector);
 
-            // Proyección al objeto que DataTables consume
             var data = ordered.Select(p => new
             {
                 idPago    = p.IdPago,
@@ -110,7 +106,6 @@ namespace Inmobiliaria10.Controllers
             });
         }
 
-
         [HttpGet("Detalles/{id:int}")]
         public async Task<IActionResult> Detalles(int id, CancellationToken ct = default)
         {
@@ -119,27 +114,38 @@ namespace Inmobiliaria10.Controllers
             return View(vm);
         }
 
-
         [HttpGet("Crear")]
         public async Task<IActionResult> Crear(int? contrato, CancellationToken ct = default)
         {
-            await CargarSelectsAsync(null, ct);
-            return View(new Pago { IdContrato = contrato ?? 0, FechaPago = DateTime.Today });
+            var hoy = DateTime.Today;
+
+            await CargarSelectsAsync(idConcepto: null, idMes: hoy.Month, anio: hoy.Year, ct);
+
+            return View(new Pago {
+                IdContrato = contrato ?? 0,
+                FechaPago  = hoy,
+                IdMes      = hoy.Month,
+                Anio       = hoy.Year
+            });
         }
 
         [HttpPost("Crear")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Pago m, CancellationToken ct = default)
         {
-            if (!ModelState.IsValid) 
-            { 
-                await CargarSelectsAsync(m.IdConcepto, ct); 
-                return View(m); 
+            var contrato = await _contratoRepo.GetByIdAsync(m.IdContrato, ct);
+            if (contrato == null || contrato.Rescision.HasValue || contrato.DeletedAt.HasValue)
+            {
+                TempData["Error"] = "No se puede registrar un pago en un contrato caducado o rescindido.";
+                await CargarSelectsAsync(m.IdConcepto, m.IdMes, m.Anio, ct);
+                return View(m);
             }
 
-            // 🔹 Calcular mes y año automáticamente
-            m.IdMes = m.FechaPago.Month;   // 1–12 → coincide con tabla meses
-            m.Anio = m.FechaPago.Year;
+            if (!ModelState.IsValid)
+            { 
+                await CargarSelectsAsync(m.IdConcepto, m.IdMes, m.Anio, ct); 
+                return View(m); 
+            }
 
             m.CreatedBy = GetUserIdOrDefault(); 
             m.CreatedAt = DateTime.UtcNow;
@@ -150,26 +156,23 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Detalles), new { id });
         }
 
-
-        [HttpPost("RegistrarMulta/{contratoId:int}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrarMulta(int contratoId, CancellationToken ct = default)
-        {
-            var idPago = await _repo.RegistrarMultaAsync(contratoId, DateTime.Today, GetUserIdOrDefault(), ct);
-            TempData["Mensaje"] = "Multa registrada como pago.";
-            return RedirectToAction("Detalles", "Pagos", new { id = idPago });
-        }
-
         [HttpGet("Editar/{id:int}")]
         public async Task<IActionResult> Editar(int id, CancellationToken ct = default)
         {
             var pago = await _repo.GetByIdAsync(id, ct);
             if (pago == null) return NotFound();
 
-            await CargarSelectsAsync(pago.IdConcepto, ct); 
+            await CargarSelectsAsync(pago.IdConcepto, pago.IdMes, pago.Anio, ct);
 
             var contrato = await _repo.GetContratoItemAsync(pago.IdContrato, ct);
             ViewBag.ContratoTexto = contrato?.Text;
+
+            // 🔹 Obtener nombre del mes
+            var meses = await _mesRepo.GetAllAsync(ct);
+            ViewBag.MesTexto = meses.FirstOrDefault(m => m.IdMes == pago.IdMes)?.Nombre;
+
+            // 🔹 Pasar el año como texto
+            ViewBag.AnioTexto = pago.Anio.ToString();
 
             return View(pago);
         }
@@ -179,25 +182,55 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> Editar(int id, Pago m, CancellationToken ct = default)
         {
             if (id != m.IdPago) return BadRequest();
-            if (!ModelState.IsValid)
-            { 
-                await CargarSelectsAsync(m.IdConcepto, ct); 
-                return View(m); 
+
+            // Validar contrato (opcional, por si está rescindido)
+            var contrato = await _contratoRepo.GetByIdAsync(m.IdContrato, ct);
+            if (contrato == null || contrato.Rescision.HasValue || contrato.DeletedAt.HasValue)
+            {
+                TempData["Error"] = "No se puede editar un pago de un contrato caducado o rescindido.";
+                return RedirectToAction(nameof(Index));
             }
 
-            // 🔹 Recalcular mes y año si cambió la fecha
-            m.IdMes = m.FechaPago.Month;
-            m.Anio = m.FechaPago.Year;
+            if (!ModelState.IsValid)
+            {
+                
+                var originalPago = await _repo.GetByIdAsync(id, ct);
+                if (originalPago == null) return NotFound();
+                
+                originalPago.IdConcepto = m.IdConcepto;
+                originalPago.Detalle = m.Detalle;
+                originalPago.MotivoAnulacion = m.MotivoAnulacion;
+                
+                await CargarSelectsAsync(originalPago.IdConcepto, originalPago.IdMes, originalPago.Anio, ct);
+                
+                var contratoItem = await _repo.GetContratoItemAsync(originalPago.IdContrato, ct);
+                ViewBag.ContratoTexto = contratoItem?.Text;
 
-            await _repo.UpdateAsync(m, ct);
+                var meses = await _mesRepo.GetAllAsync(ct);
+                ViewBag.MesTexto = meses.FirstOrDefault(mes => mes.IdMes == originalPago.IdMes)?.Nombre;
+
+                ViewBag.AnioTexto = originalPago.Anio.ToString();
+                
+                return View(originalPago);
+            }
+
+            var ok = await _repo.UpdateConceptoAsync(m, ct);
+            if (!ok) return NotFound();
 
             TempData["Mensaje"] = "Pago actualizado correctamente.";
             return RedirectToAction(nameof(Detalles), new { id = m.IdPago });
         }
 
-        [HttpPost("Anular/{id:int}")]
+        [HttpGet("Eliminar/{id:int}")]
+        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
+        {
+            var vm = await _repo.GetDetalleAsync(id, ct);
+            return vm is null ? NotFound() : View(vm);
+        }
+       
+        [HttpPost("Eliminar/{id:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Anular(int id, string motivo, CancellationToken ct = default)
+        public async Task<IActionResult> EliminarConfirmado(int id, string motivo, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(motivo))
             {
@@ -210,18 +243,6 @@ namespace Inmobiliaria10.Controllers
 
             TempData["Mensaje"] = "Pago anulado correctamente.";
             return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost("Editar")]
-        [ValidateAntiForgeryToken]
-        public Task<IActionResult> EditarSinId(Pago m, CancellationToken ct = default)
-            => Editar(m.IdPago, m, ct);
-
-        [HttpGet("Eliminar/{id:int}")]
-        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
-        {
-            var x = await _repo.GetByIdAsync(id, ct);
-            return x is null ? NotFound() : View(x);
         }
 
         [HttpPost("Borrar/{id:int}")]
@@ -264,11 +285,19 @@ namespace Inmobiliaria10.Controllers
         }
 
         // --- Helpers ---
-        private async Task CargarSelectsAsync(int? idConcepto, CancellationToken ct)
+        private async Task CargarSelectsAsync(int? idConcepto, int? idMes, int? anio, CancellationToken ct)
         {
             var conceptos = await _repo.GetConceptosAsync(ct);
-            ViewBag.Conceptos = new SelectList(conceptos.Select(x => new { IdConcepto = x.Id, Nombre = x.Nombre }),
-                                               "IdConcepto", "Nombre", idConcepto);
+            ViewBag.Conceptos = new SelectList(
+                conceptos.Select(c => new { IdConcepto = c.Id, Nombre = c.Nombre }),
+                "IdConcepto", "Nombre", idConcepto);
+
+            var meses = await _mesRepo.GetAllAsync(ct);
+            ViewBag.Meses = new SelectList(meses, "IdMes", "Nombre", idMes);
+
+            var anioActual = DateTime.Today.Year;
+            var anios = Enumerable.Range(anioActual - 5, 11); // ints
+            ViewBag.Anios = new SelectList(anios, anio ?? anioActual);
         }
 
         private int GetUserIdOrDefault()
