@@ -360,7 +360,7 @@ namespace Inmobiliaria10.Data.Repositories
                 list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Nombre"])!));
             return list;
         }
-       
+
         // -----------------------------
         // Auditoría 
         // -----------------------------
@@ -464,6 +464,92 @@ namespace Inmobiliaria10.Data.Repositories
 
             return list;
         }
+        public async Task<(IReadOnlyList<PagoAuditViewModel> Items, int Total)> ListAuditoriaAsync(
+            int? usuarioId = null,
+            int? contratoId = null,
+            int? conceptoId = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var pars = new List<MySqlParameter>();
+            var where = " WHERE 1=1 ";
+
+            if (usuarioId is > 0)
+            {
+                where += " AND a.accion_by = @usuarioId ";
+                pars.Add(new MySqlParameter("@usuarioId", usuarioId));
+            }
+
+            if (contratoId is > 0)
+            {
+                where += " AND p.id_contrato = @contratoId ";
+                pars.Add(new MySqlParameter("@contratoId", contratoId));
+            }
+
+            if (conceptoId is > 0)
+            {
+                where += " AND p.id_concepto = @conceptoId ";
+                pars.Add(new MySqlParameter("@conceptoId", conceptoId));
+            }
+
+            // --- Total
+            var sqlCount = $@"
+                SELECT COUNT(*)
+                FROM pagos_audit a
+                INNER JOIN pagos p ON p.id_pago = a.id_pago
+                {where};";
+
+            using var cmdCount = new MySqlCommand(sqlCount, conn);
+            cmdCount.Parameters.AddRange(pars.ToArray());
+            var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
+
+            // --- Items con paginado
+            var sqlItems = $@"
+                SELECT  a.id_audit   AS IdAudit,
+                        a.id_pago    AS IdPago,
+                        a.accion     AS Accion,
+                        a.accion_at  AS AccionAt,
+                        u.alias      AS Usuario,
+                        a.old_data   AS OldData,
+                        a.new_data   AS NewData
+                FROM pagos_audit a
+                INNER JOIN pagos p ON p.id_pago = a.id_pago
+                LEFT JOIN usuarios u ON u.id_usuario = a.accion_by
+                {where}
+                ORDER BY a.id_audit DESC
+                LIMIT @limit OFFSET @offset;";
+
+            pars.Add(new MySqlParameter("@limit", pageSize));
+            pars.Add(new MySqlParameter("@offset", (pageIndex - 1) * pageSize));
+
+            using var cmdItems = new MySqlCommand(sqlItems, conn);
+            cmdItems.Parameters.AddRange(pars.ToArray());
+
+            var list = new List<PagoAuditViewModel>();
+            using var r = await cmdItems.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+            {
+                var vm = new PagoAuditViewModel
+                {
+                    IdAudit = Convert.ToInt32(r["IdAudit"]),
+                    IdPago = Convert.ToInt32(r["IdPago"]),
+                    Accion = r["Accion"].ToString()!,
+                    AccionAt = Convert.ToDateTime(r["AccionAt"]),
+                    Usuario = r["Usuario"]?.ToString() ?? "(sistema)"
+                };
+
+                vm.OldData = await ParseAndTranslateAsync(r["OldData"] as string, ct);
+                vm.NewData = await ParseAndTranslateAsync(r["NewData"] as string, ct);
+
+                list.Add(vm);
+            }
+
+            return (list, total);
+        }
 
         private async Task<Dictionary<string, string>> ParseAndTranslateAsync(string? json, CancellationToken ct = default)
         {
@@ -511,7 +597,7 @@ namespace Inmobiliaria10.Data.Repositories
         }
         private async Task<string> GetContratoTextoAsync(int id, CancellationToken ct)
         {
-            using var conn = _db.GetConnection();  
+            using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"SELECT CONCAT('C#', c.id_contrato, ' - ', IFNULL(i.direccion,'(sin dirección)'), 
@@ -530,7 +616,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         private async Task<string> GetConceptoTextoAsync(int id, CancellationToken ct)
         {
-            using var conn = _db.GetConnection(); 
+            using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"SELECT denominacion_concepto FROM conceptos WHERE id_concepto = @id";
@@ -543,7 +629,7 @@ namespace Inmobiliaria10.Data.Repositories
 
         private async Task<string> GetMesTextoAsync(int id, CancellationToken ct)
         {
-            using var conn = _db.GetConnection(); 
+            using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"SELECT nombre FROM meses WHERE id_mes = @id";
@@ -554,7 +640,7 @@ namespace Inmobiliaria10.Data.Repositories
             return res?.ToString() ?? $"Mes #{id}";
         }
 
-        
+
         // -----------------------------
         // Select2 — Inquilinos
         // -----------------------------
@@ -862,5 +948,29 @@ namespace Inmobiliaria10.Data.Repositories
             return (list, total);
         }
         
+        public async Task<IReadOnlyList<(int Id, string Text)>> SearchUsuariosAsync(string? term, int take, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT u.id_usuario AS Id,
+                    u.alias AS Text
+                FROM usuarios u
+                WHERE (@q IS NULL OR @q = '' OR u.alias LIKE @q)
+                ORDER BY u.alias
+                LIMIT @take;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@q", $"%{(term ?? "").Trim()}%");
+            cmd.Parameters.AddWithValue("@take", take);
+
+            var list = new List<(int, string)>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+                list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Text"])!));
+            return list;
+        }
+
     }
 }

@@ -271,6 +271,44 @@ namespace Inmobiliaria10.Controllers
             return View(list);
         }
 
+        [HttpGet("data-auditoria")]
+        public async Task<IActionResult> DataAuditoria(
+            int? usuario, int? contrato, int? concepto,
+            int draw, int start = 0, int length = 10,
+            CancellationToken ct = default)
+        {
+            int pageIndex = Math.Max(1, (start / Math.Max(1, length)) + 1);
+            int pageSize  = Math.Max(1, length);
+
+            var (items, total) = await _repo.ListAuditoriaAsync(
+                usuarioId : usuario,
+                contratoId: contrato,
+                conceptoId: concepto,
+                pageIndex : pageIndex,
+                pageSize  : pageSize,
+                ct        : ct
+            );
+
+            var data = items.Select(a => new {
+                accion    = a.Accion == "INSERT" ? "Alta" :
+                        a.Accion == "UPDATE" ? "Modificación" :
+                        a.Accion == "DELETE" ? "Borrado" : a.Accion,
+                fecha     = a.AccionAt.ToString("dd/MM/yyyy HH:mm"),
+                usuario   = a.Usuario,
+                oldData   = string.Join("<br/>", (a.OldData ?? new Dictionary<string,string>())
+                                                .Select(kv => $"<b>{kv.Key}:</b> {kv.Value}")),
+                newData   = string.Join("<br/>", (a.NewData ?? new Dictionary<string,string>())
+                                                .Select(kv => $"<b>{kv.Key}:</b> {kv.Value}"))
+            }).ToList();
+
+            return Json(new {
+                draw,
+                recordsTotal = total,
+                recordsFiltered = total,
+                data
+            });
+        }
+
         // --- Endpoints Select2 ---
 
         [HttpGet("search-contratos")]
@@ -305,6 +343,14 @@ namespace Inmobiliaria10.Controllers
 
             return View(items);
         }
+
+        [HttpGet("BuscarUsuarios")]
+        public async Task<IActionResult> BuscarUsuarios(string? term, int take = 20, CancellationToken ct = default)
+        {
+            var items = await _repo.SearchUsuariosAsync(term, take, ct);
+            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
+        }
+
 
         [HttpGet("BuscarInquilinos")]
         public async Task<IActionResult> BuscarInquilinos(string? term, CancellationToken ct)

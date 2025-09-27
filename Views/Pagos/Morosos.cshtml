@@ -15,7 +15,7 @@
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-6">
         <label for="inquilino" class="form-label">Inquilino</label>
-        <select id="fInquilino" name="inquilino" class="form-select"></select>
+        <select id="fInquilino" name="inquilino" class="form-select">
 
             @if (!string.IsNullOrEmpty(inquilinoSel))
             {
@@ -24,7 +24,8 @@
         </select>
     </div>
     <div class="col-md-2 align-self-end">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <button id="btnLimpiar" class="btn btn-secondary">Limpiar</button>
     </div>
 </form>
 

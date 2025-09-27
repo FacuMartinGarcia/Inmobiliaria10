@@ -22,6 +22,13 @@ namespace Inmobiliaria10.Data.Repositories
         Task<IReadOnlyList<(int Id, string Nombre)>> GetConceptosAsync(CancellationToken ct = default);
         Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaAsync(int idPago, CancellationToken ct = default);
         Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaGeneralAsync(CancellationToken ct = default);
+        Task<(IReadOnlyList<PagoAuditViewModel> Items, int Total)> ListAuditoriaAsync(
+            int? usuarioId = null,
+            int? contratoId = null,
+            int? conceptoId = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Text)>> SearchInquilinosAsync(string? term, int take, CancellationToken ct = default);
         Task<(int Id, string Text)?> GetInquilinoItemAsync(int id, CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Text)>> SearchContratosPorInquilinoAsync(
@@ -34,6 +41,6 @@ namespace Inmobiliaria10.Data.Repositories
             int pageIndex = 1,
             int pageSize = 10,
             CancellationToken ct = default);
-
+        Task<IReadOnlyList<(int Id, string Text)>> SearchUsuariosAsync(string? term, int take, CancellationToken ct = default);
     }
 }

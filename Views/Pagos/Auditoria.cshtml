@@ -4,9 +4,26 @@
     <div class="card-header bg-dark text-white">
         <i class="bi bi-journal-text"></i> Auditoría de Pagos
     </div>
+
+    <!-- 🔹 Filtros dinámicos -->
+    <form id="filtros" class="row g-2 mb-3 px-3 pt-3">
+        <div class="col-md-4">
+            <label for="fUsuario" class="form-label">Usuario</label>
+            <select id="fUsuario" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label for="fContrato" class="form-label">Contrato</label>
+            <select id="fContrato" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label for="fConcepto" class="form-label">Concepto</label>
+            <select id="fConcepto" class="form-select"></select>
+        </div>
+    </form>
+
     <div class="card-body">
-        <table class="table table-striped table-bordered">
-            <thead>
+        <table id="tablaAuditoria" class="table table-striped table-bordered w-100">
+            <thead class="table-light">
                 <tr>
                     <th>Acción</th>
                     <th>Fecha</th>
@@ -15,32 +32,16 @@
                     <th>Datos nuevos</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach (var a in Model)
-                {
-                    <tr>
-                        <td>@(a.Accion == "INSERT" ? "Alta" : a.Accion == "UPDATE" ? "Modificación" : "Borrado")</td>
-                        <td>@a.AccionAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@a.Usuario</td>
-                        <td>
-                            <ul>
-                                @foreach (var kv in a.OldData ?? new Dictionary<string,string>())
-                                {
-                                    <li><strong>@kv.Key:</strong> @kv.Value</li>
-                                }
-                            </ul>
-                        </td>
-                        <td>
-                            <ul>
-                                @foreach (var kv in a.NewData ?? new Dictionary<string,string>())
-                                {
-                                    <li><strong>@kv.Key:</strong> @kv.Value</li>
-                                }
-                            </ul>
-                        </td>
-                    </tr>
-                }
-            </tbody>
+            <!-- 🔹 El tbody queda vacío: lo llena DataTables por AJAX -->
+            <tbody></tbody>
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Pasamos conceptos del ViewBag a JS global
+        window.Conceptos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Conceptos));
+    </script>
+    <script src="~/js/auditoria.js"></script>
+}

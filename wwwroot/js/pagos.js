@@ -206,3 +206,10 @@ $(function () {
         });
     }
 });
+$(function () {
+    $("#btnLimpiar").on("click", function () {
+                
+        $("#fInquilino").val(null).trigger("change");
+        window.location.href = '@Url.Action("Morosos", "Pagos")';
+    });
+});
