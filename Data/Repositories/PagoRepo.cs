@@ -766,43 +766,80 @@ namespace Inmobiliaria10.Data.Repositories
             };
         }
 
-        public async Task<IReadOnlyList<MorosoViewModel>> GetMorososAsync(CancellationToken ct = default)
+        public async Task<(IReadOnlyList<MorosoViewModel> Items, int Total)> GetMorososAsync(
+            int? inquilinoId = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
-            const string sql = @"
-                SELECT 
-                    i.id_inquilino      AS IdInquilino,
-                    i.apellido_nombres  AS Inquilino,
-                    i.telefono          AS Telefono,
-                    im.direccion        AS Inmueble,
-                    c.id_contrato       AS IdContrato,
-                    c.fecha_inicio      AS FechaInicio,
-                    c.fecha_fin         AS FechaFin,
-                    c.monto_mensual     AS MontoMensual,
-                    m.id_mes            AS IdMes,
-                    m.nombre            AS MesAdeudado,
-                    YEAR(CURDATE())     AS AnioAdeudado
+            var pars = new List<MySqlParameter>();
+            var where = @" WHERE CURDATE() BETWEEN c.fecha_inicio AND c.fecha_fin
+                        AND DAY(CURDATE()) > 10 ";
+
+            if (inquilinoId.HasValue)
+            {
+                where += " AND i.id_inquilino = @inq ";
+                pars.Add(new MySqlParameter("@inq", inquilinoId.Value));
+            }
+
+            // total
+            var sqlCount = $@"
+                SELECT COUNT(*)
                 FROM contratos c
                 INNER JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
                 INNER JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
                 INNER JOIN meses m ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
-                WHERE CURDATE() BETWEEN c.fecha_inicio AND c.fecha_fin
+                {where};";
+
+            using var cmdCount = new MySqlCommand(sqlCount, conn);
+            cmdCount.Parameters.AddRange(pars.ToArray());
+            var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
+
+            // items
+            var sql = $@"
+                SELECT 
+                    i.id_inquilino       AS IdInquilino,
+                    i.apellido_nombres   AS Inquilino,
+                    i.telefono           AS Telefono,
+                    CONCAT(im.direccion,
+                        IFNULL(CONCAT(' Piso ', im.piso), ''),
+                        IFNULL(CONCAT(' Depto ', im.depto), '')
+                    ) AS Inmueble,
+                    c.id_contrato        AS IdContrato,
+                    c.fecha_inicio       AS FechaInicio,
+                    c.fecha_fin          AS FechaFin,
+                    m.id_mes             AS IdMes,
+                    m.nombre             AS MesAdeudado,
+                    YEAR(CURDATE())      AS AnioAdeudado,
+                    c.monto_mensual      AS MontoMensual
+                FROM contratos c
+                INNER JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
+                INNER JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
+                INNER JOIN meses m 
+                    ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
+                {where}
                 AND NOT EXISTS (
-                    SELECT 1 
+                    SELECT 1
                     FROM pagos p
                     WHERE p.id_contrato = c.id_contrato
-                        AND p.anio = YEAR(CURDATE())
-                        AND p.id_mes = m.id_mes
-                        AND p.deleted_at IS NULL
+                    AND p.anio = YEAR(CURDATE())
+                    AND p.id_mes = m.id_mes
+                    AND p.id_concepto = 1
+                    AND p.deleted_at IS NULL
                 )
-                AND DAY(CURDATE()) > 10
-                ORDER BY i.apellido_nombres, c.id_contrato, m.id_mes;";
+                ORDER BY i.apellido_nombres, m.id_mes
+                LIMIT @limit OFFSET @offset;";
+
+            pars.Add(new MySqlParameter("@limit", pageSize));
+            pars.Add(new MySqlParameter("@offset", (pageIndex - 1) * pageSize));
 
             using var cmd = new MySqlCommand(sql, conn);
-            var list = new List<MorosoViewModel>();
+            cmd.Parameters.AddRange(pars.ToArray());
 
+            var list = new List<MorosoViewModel>();
             using var r = await cmd.ExecuteReaderAsync(ct);
             while (await r.ReadAsync(ct))
             {
@@ -810,7 +847,7 @@ namespace Inmobiliaria10.Data.Repositories
                 {
                     IdInquilino = Convert.ToInt32(r["IdInquilino"]),
                     Inquilino = r["Inquilino"].ToString()!,
-                    Telefono = r["Telefono"] as string,
+                    Telefono = r["Telefono"].ToString()!,
                     Inmueble = r["Inmueble"].ToString()!,
                     IdContrato = Convert.ToInt32(r["IdContrato"]),
                     FechaInicio = Convert.ToDateTime(r["FechaInicio"]),
@@ -822,8 +859,8 @@ namespace Inmobiliaria10.Data.Repositories
                 });
             }
 
-            return list;
+            return (list, total);
         }
-
+        
     }
 }

@@ -271,13 +271,6 @@ namespace Inmobiliaria10.Controllers
             return View(list);
         }
 
-        [HttpGet("Morosos")]
-        public async Task<IActionResult> Morosos(CancellationToken ct = default)
-        {
-            var list = await _repo.GetMorososAsync(ct);
-            return View(list);
-        }
-
         // --- Endpoints Select2 ---
 
         [HttpGet("search-contratos")]
@@ -296,6 +289,27 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> SearchContratosByInquilino(int idInquilino, string? term, int take = 20, CancellationToken ct = default)
         {
             var items = await _repo.SearchContratosPorInquilinoAsync(idInquilino, term, take, soloVigentesActivos: true, ct);
+            return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
+        }
+
+        [HttpGet("Morosos")]
+        public async Task<IActionResult> Morosos(int? inquilino, int page = 1, CancellationToken ct = default)
+        {
+            const int pageSize = 10;
+            var (items, total) = await _repo.GetMorososAsync(inquilino, page, pageSize, ct);
+
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.Total = total;
+            ViewBag.Inquilino = inquilino; // guardamos el id para reusar en la vista
+
+            return View(items);
+        }
+
+        [HttpGet("BuscarInquilinos")]
+        public async Task<IActionResult> BuscarInquilinos(string? term, CancellationToken ct)
+        {
+            var items = await _repo.SearchInquilinosAsync(term, 20, ct);
             return Json(new { results = items.Select(x => new { id = x.Id, text = x.Text }) });
         }
 

@@ -186,3 +186,23 @@ $(function () {
         }
     }
 });
+$(function () {
+    // Inicializar Select2 de Inquilinos (solo en la vista de Morosos)
+    if ($("#fInquilino").length) {
+        $("#fInquilino").select2({
+            placeholder: "Buscar inquilino...",
+            allowClear: true,
+            ajax: {
+                url: '/Pagos/BuscarInquilinos',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { term: params.term };
+                },
+                processResults: function (data) {
+                    return data;
+                }
+            }
+        });
+    }
+});
