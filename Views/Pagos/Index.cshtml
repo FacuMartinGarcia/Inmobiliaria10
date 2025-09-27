@@ -7,9 +7,17 @@
 <body id="page-pagos-index">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="mb-0">Pagos</h2>
-    <a href="/Pagos/Auditoria" class="btn btn-dark">
-      <i class="bi bi-clock-history"></i> Auditoría
-    </a>
+    <div class="d-flex gap-2">
+      <a href="/Pagos/Auditoria" class="btn btn-dark">
+        <i class="bi bi-clock-history"></i> Auditoría
+      </a>
+      <a asp-action="Morosos" class="btn btn-warning">
+        <i class="fa-solid fa-triangle-exclamation"></i> Morosos
+      </a>
+      <a id="btnNuevo" class="btn btn-success" href="/Pagos/Crear" style="height:38px;">
+        <i class="bi bi-plus-lg"></i> Nuevo pago
+      </a>
+    </div>
   </div>
 
   <form method="get" class="row g-2 mb-3 align-items-end" id="frmFiltros">
@@ -19,18 +27,6 @@
               class="form-select form-select-lg flex-grow-1"
               style="max-width: 400px, height:100px;">
       </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-      <button class="btn btn-dark w-80" type="submit" style="height:32px;">
-        <i class="bi bi-funnel"></i> Buscar
-      </button>
-    </div>
-
-    <div class="col-6 col-md-4 text-md-end">
-      <a id="btnNuevo" class="btn btn-success" href="/Pagos/Crear" style="height:38px;">
-        <i class="bi bi-plus-lg"></i> Nuevo pago
-      </a>
     </div>
   </form>
 

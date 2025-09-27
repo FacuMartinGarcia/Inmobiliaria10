@@ -29,5 +29,6 @@ namespace Inmobiliaria10.Data.Repositories
         Task<IReadOnlyList<(int Id, string Text)>> SearchContratosAsync(string? term, int take, CancellationToken ct = default);
         Task<(int Id, string Text)?> GetContratoItemAsync(int id, CancellationToken ct = default);
         Task<PagoDetalleViewModel?> GetDetalleAsync(int id, CancellationToken ct = default);
+        Task<IReadOnlyList<MorosoViewModel>> GetMorososAsync(CancellationToken ct = default);
     }
 }

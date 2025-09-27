@@ -1,0 +1,39 @@
+@model IEnumerable<Inmobiliaria10.Models.ViewModels.MorosoViewModel>
+@{
+    ViewData["Title"] = "Morosos";
+}
+
+<div class="card">
+  <div class="card-header bg-warning text-dark fw-bold">
+    <i class="fa-solid fa-triangle-exclamation"></i> Inquilinos Morosos
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Inquilino</th>
+          <th>Teléfono</th>
+          <th>Inmueble</th>
+          <th>Contrato</th>
+          <th>Mes Adeudado</th>
+          <th>Año</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.Inquilino</td>
+                <td>@m.Telefono</td>
+                <td>@m.Inmueble</td>
+                <td>C#@m.IdContrato</td>
+                <td>@m.MesAdeudado</td>
+                <td>@m.AnioAdeudado</td>
+                <td class="text-end">@m.MontoMensual.ToString("C")</td>
+            </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

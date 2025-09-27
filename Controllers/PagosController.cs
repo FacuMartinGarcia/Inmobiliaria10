@@ -271,6 +271,12 @@ namespace Inmobiliaria10.Controllers
             return View(list);
         }
 
+        [HttpGet("Morosos")]
+        public async Task<IActionResult> Morosos(CancellationToken ct = default)
+        {
+            var list = await _repo.GetMorososAsync(ct);
+            return View(list);
+        }
 
         // --- Endpoints Select2 ---
 
