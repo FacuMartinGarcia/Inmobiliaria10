@@ -1,6 +1,8 @@
 using Inmobiliaria10.Models;
+using Inmobiliaria10.Models.ViewModels;
 using MySql.Data.MySqlClient;
 using System.Data;
+using System.Text.Json; 
 
 namespace Inmobiliaria10.Data.Repositories
 {
@@ -91,6 +93,145 @@ namespace Inmobiliaria10.Data.Repositories
             }
 
             return null;
+        }
+
+        public async Task<(IReadOnlyList<ContratoAuditViewModel> Items, int Total)> ListAuditoriaAsync(
+            int? usuarioId = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var pars = new List<MySqlParameter>();
+            var where = " WHERE 1=1 ";
+
+            if (usuarioId is > 0)
+            {
+                where += " AND a.accion_by = @usuarioId ";
+                pars.Add(new MySqlParameter("@usuarioId", usuarioId));
+            }
+
+            var sqlCount = $@"
+                SELECT COUNT(*)
+                FROM contratos_audit a
+                {where};";
+
+            using var cmdCount = new MySqlCommand(sqlCount, conn);
+            cmdCount.Parameters.AddRange(pars.ToArray());
+            var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
+
+            var sqlItems = $@"
+                SELECT  a.id_audit   AS IdAudit,
+                        a.id_contrato AS IdContrato,
+                        a.accion     AS Accion,
+                        a.accion_at  AS AccionAt,
+                        u.alias      AS Usuario,
+                        a.old_data   AS OldData,
+                        a.new_data   AS NewData
+                FROM contratos_audit a
+                LEFT JOIN usuarios u ON u.id_usuario = a.accion_by
+                {where}
+                ORDER BY a.id_audit DESC
+                LIMIT @limit OFFSET @offset;";
+
+            pars.Add(new MySqlParameter("@limit", pageSize));
+            pars.Add(new MySqlParameter("@offset", (pageIndex - 1) * pageSize));
+
+            using var cmdItems = new MySqlCommand(sqlItems, conn);
+            cmdItems.Parameters.AddRange(pars.ToArray());
+
+            var list = new List<ContratoAuditViewModel>();
+            using var r = await cmdItems.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+            {
+                var vm = new ContratoAuditViewModel
+                {
+                    IdAudit = Convert.ToInt32(r["IdAudit"]),
+                    IdContrato = Convert.ToInt32(r["IdContrato"]),
+                    Accion = r["Accion"].ToString()!,
+                    AccionAt = Convert.ToDateTime(r["AccionAt"]),
+                    Usuario = r["Usuario"]?.ToString() ?? "(sistema)"
+                };
+
+                // 🔹 Llamadas async después de inicializar el objeto
+                vm.OldData = await ParseAndTranslateContratoAsync(r["OldData"] as string, ct);
+                vm.NewData = await ParseAndTranslateContratoAsync(r["NewData"] as string, ct);
+
+                list.Add(vm);
+
+            }
+
+            return (list, total);
+        }
+
+        private async Task<Dictionary<string, string>> ParseAndTranslateContratoAsync(
+            string? json, CancellationToken ct = default)
+        {
+            var dict = new Dictionary<string, string>();
+            if (string.IsNullOrWhiteSpace(json)) return dict;
+
+            var doc = JsonDocument.Parse(json);
+            foreach (var kv in doc.RootElement.EnumerateObject())
+            {
+                var key = kv.Name;
+                var value = kv.Value.ValueKind == JsonValueKind.Null ? null : kv.Value.ToString();
+
+                switch (key.ToLower())
+                {
+                    case "id_inquilino":
+                        if (int.TryParse(value, out var idInquilino))
+                            value = await GetInquilinoTextoAsync(idInquilino, ct);
+                        break;
+
+                    case "id_inmueble":
+                        if (int.TryParse(value, out var idInmueble))
+                            value = await GetInmuebleTextoAsync(idInmueble, ct);
+                        break;
+
+                    case "fecha_inicio":
+                    case "fecha_fin":
+                        if (DateTime.TryParse(value, out var fecha))
+                            value = fecha.ToString("dd/MM/yyyy");
+                        break;
+
+                    case "monto_mensual":
+                        if (decimal.TryParse(value, out var monto))
+                            value = monto.ToString("C"); // formato moneda
+                        break;
+                }
+
+                dict[key] = value ?? string.Empty;
+            }
+
+            return dict;
+        }
+
+        private async Task<string> GetInquilinoTextoAsync(int id, CancellationToken ct)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT apellido_nombres FROM inquilinos WHERE id_inquilino = @id";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            var res = await cmd.ExecuteScalarAsync(ct);
+            return res?.ToString() ?? $"Inquilino #{id}";
+        }
+
+        private async Task<string> GetInmuebleTextoAsync(int id, CancellationToken ct)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT direccion FROM inmuebles WHERE id_inmueble = @id";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            var res = await cmd.ExecuteScalarAsync(ct);
+            return res?.ToString() ?? $"Inmueble #{id}";
         }
 
 
@@ -227,8 +368,6 @@ namespace Inmobiliaria10.Data.Repositories
             var id = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
             return id;
         }
-
-
         public async Task UpdateAsync(Contrato entity, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();

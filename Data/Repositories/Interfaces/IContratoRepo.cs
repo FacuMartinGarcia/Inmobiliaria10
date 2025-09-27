@@ -1,4 +1,5 @@
 using Inmobiliaria10.Models;
+using Inmobiliaria10.Models.ViewModels;
 
 namespace Inmobiliaria10.Data.Repositories
 {
@@ -6,10 +7,6 @@ namespace Inmobiliaria10.Data.Repositories
     {
         Task<Contrato?> GetByIdAsync(int id, CancellationToken ct = default);
 
-        /// <summary>
-        /// Lista contratos con filtros opcionales (por inmueble, inquilino y estado).
-        /// pageIndex base 1. Si pageSize es 0, devuelve todo sin paginar.
-        /// </summary>
         Task<(IReadOnlyList<Contrato> Items, int Total)> ListAsync(
             int? tipo = null,
             int? idInmueble = null,
@@ -22,15 +19,8 @@ namespace Inmobiliaria10.Data.Repositories
         Task<int> CreateAsync(Contrato entity, CancellationToken ct = default);
         Task UpdateAsync(Contrato entity, CancellationToken ct = default);
 
-        /// <summary>
-        /// Soft delete: marca DeletedAt/DeletedBy.
-        /// </summary>
         Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default);
 
-        /// <summary>
-        /// Verifica si existe solapamiento de fechas para el mismo inmueble.
-        /// excludeContratoId: para ignorar el propio contrato en edición.
-        /// </summary>
         Task<bool> ExistsOverlapAsync(
             int idInmueble,
             DateTime fechaInicio,
@@ -47,5 +37,10 @@ namespace Inmobiliaria10.Data.Repositories
         Task<IReadOnlyList<(int Id, string Direccion, string Inquilino)>>
         GetContratosInfoAsync(IEnumerable<int> ids, CancellationToken ct = default);
         Task<IReadOnlyList<Contrato>> GetContratosPorInmuebleAsync(int idInmueble, CancellationToken ct = default);
+        Task<(IReadOnlyList<ContratoAuditViewModel> Items, int Total)> ListAuditoriaAsync(
+            int? usuarioId = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            CancellationToken ct = default);
     }
 }

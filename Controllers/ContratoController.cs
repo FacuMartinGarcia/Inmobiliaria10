@@ -259,6 +259,58 @@ namespace Inmobiliaria10.Controllers
             return int.TryParse(str, out var id) ? id : 1;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> DataAuditoria(
+            int? usuario, int draw, int start = 0, int length = 10, CancellationToken ct = default)
+        {
+            // 🔹 Calcular página actual y tamaño
+            int pageIndex = Math.Max(1, (start / Math.Max(1, length)) + 1);
+            int pageSize  = Math.Max(1, length);
+
+            // 🔹 Traer datos desde el repositorio
+            var (items, total) = await _repo.ListAuditoriaAsync(
+                usuarioId: usuario,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                ct: ct
+            );
+
+            // 🔹 Adaptar los datos al formato esperado por DataTables
+            var data = items.Select(a => new {
+                accion  = a.Accion switch
+                {
+                    "INSERT" => "Alta",
+                    "UPDATE" => "Modificación",
+                    "DELETE" => "Baja",
+                    _ => a.Accion
+                },
+                fecha   = a.AccionAt.ToString("dd/MM/yyyy HH:mm"),
+                usuario = a.Usuario,
+                oldData = a.OldData != null
+                    ? string.Join("<br/>", a.OldData.Select(kv => $"<b>{kv.Key}:</b> {kv.Value}"))
+                    : "",
+                newData = a.NewData != null
+                    ? string.Join("<br/>", a.NewData.Select(kv => $"<b>{kv.Key}:</b> {kv.Value}"))
+                    : ""
+
+            }).ToList();
+
+            // 🔹 Devolver JSON válido para DataTables
+            return Json(new {
+                draw,
+                recordsTotal = total,
+                recordsFiltered = total,
+                data
+            });
+        }
+
+        [HttpGet]
+        public IActionResult Auditoria()
+        {
+            return View();
+        }
+
+
         // ------------------- CARGA SELECTS -------------------
 
         [HttpGet]
@@ -283,9 +335,7 @@ namespace Inmobiliaria10.Controllers
             return Json(new { results });
         }
 
-
-
-        [HttpGet]
+       [HttpGet]
         public async Task<IActionResult> SearchInmuebles(string? term, int? id, CancellationToken ct = default)
         {
             var inmuebles = await _repoInmueble.ListarTodos();

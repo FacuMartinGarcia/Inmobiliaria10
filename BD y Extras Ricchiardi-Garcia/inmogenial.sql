@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-09-2025 a las 16:26:44
+-- Tiempo de generación: 27-09-2025 a las 23:01:37
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -70,7 +70,80 @@ CREATE TABLE `contratos` (
 --
 
 INSERT INTO `contratos` (`id_contrato`, `fecha_firma`, `id_inmueble`, `id_inquilino`, `fecha_inicio`, `fecha_fin`, `monto_mensual`, `rescision`, `monto_multa`, `created_by`, `created_at`, `deleted_at`, `deleted_by`) VALUES
-(1, NULL, 1, 11, '2025-09-05', '2026-09-05', 120000.00, '2025-09-17', 240000.00, 1, '2025-09-05 18:30:25', NULL, NULL);
+(1, NULL, 1, 11, '2025-09-05', '2026-09-05', 120000.00, '2025-09-17', 240000.00, 1, '2025-09-05 18:30:25', NULL, NULL),
+(2, NULL, 1, 19, '2025-09-25', '2026-09-25', 120000.00, NULL, NULL, 2, '2025-09-25 19:22:09', NULL, NULL),
+(3, NULL, 2, 14, '2025-09-25', '2026-09-25', 17000000.00, NULL, NULL, 2, '2025-09-25 19:23:53', NULL, NULL),
+(4, NULL, 3, 10, '2025-02-27', '2026-09-27', 3000000.00, NULL, NULL, 2, '2025-09-27 14:51:40', NULL, NULL),
+(5, NULL, 4, 4, '2025-09-27', '2026-09-27', 345666434.00, NULL, NULL, 2, '2025-09-27 20:52:42', NULL, NULL),
+(6, NULL, 5, 8, '2025-09-27', '2026-09-27', 2432342.00, NULL, NULL, 2, '2025-09-27 20:58:32', NULL, NULL);
+
+--
+-- Disparadores `contratos`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_contratos_delete` AFTER DELETE ON `contratos` FOR EACH ROW BEGIN
+    INSERT INTO contratos_audit (id_contrato, accion, accion_at, accion_by, old_data)
+    VALUES (
+        OLD.id_contrato,
+        'DELETE',
+        NOW(),
+        OLD.deleted_by,
+        JSON_OBJECT(
+            'id_inquilino', OLD.id_inquilino,
+            'id_inmueble', OLD.id_inmueble,
+            'fecha_inicio', OLD.fecha_inicio,
+            'fecha_fin', OLD.fecha_fin,
+            'monto_mensual', OLD.monto_mensual
+        )
+    );
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_contratos_insert` AFTER INSERT ON `contratos` FOR EACH ROW BEGIN
+    INSERT INTO contratos_audit (id_contrato, accion, accion_at, accion_by, new_data)
+    VALUES (
+        NEW.id_contrato,
+        'INSERT',
+        NOW(),
+        NEW.created_by,
+        JSON_OBJECT(
+            'id_inquilino', NEW.id_inquilino,
+            'id_inmueble', NEW.id_inmueble,
+            'fecha_inicio', NEW.fecha_inicio,
+            'fecha_fin', NEW.fecha_fin,
+            'monto_mensual', NEW.monto_mensual
+        )
+    );
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_contratos_update` AFTER UPDATE ON `contratos` FOR EACH ROW BEGIN
+    INSERT INTO contratos_audit (id_contrato, accion, accion_at, accion_by, old_data, new_data)
+    VALUES (
+        NEW.id_contrato,
+        'UPDATE',
+        NOW(),
+        NEW.created_by,
+        JSON_OBJECT(
+            'id_inquilino', OLD.id_inquilino,
+            'id_inmueble', OLD.id_inmueble,
+            'fecha_inicio', OLD.fecha_inicio,
+            'fecha_fin', OLD.fecha_fin,
+            'monto_mensual', OLD.monto_mensual
+        ),
+        JSON_OBJECT(
+            'id_inquilino', NEW.id_inquilino,
+            'id_inmueble', NEW.id_inmueble,
+            'fecha_inicio', NEW.fecha_inicio,
+            'fecha_fin', NEW.fecha_fin,
+            'monto_mensual', NEW.monto_mensual
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -87,6 +160,13 @@ CREATE TABLE `contratos_audit` (
   `old_data` longtext DEFAULT NULL,
   `new_data` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `contratos_audit`
+--
+
+INSERT INTO `contratos_audit` (`id_audit`, `id_contrato`, `accion`, `accion_at`, `accion_by`, `old_data`, `new_data`) VALUES
+(1, 6, 'INSERT', '2025-09-27 17:58:32', 2, NULL, '{\"id_inquilino\": 8, \"id_inmueble\": 5, \"fecha_inicio\": \"2025-09-27\", \"fecha_fin\": \"2026-09-27\", \"monto_mensual\": 2432342.00}');
 
 -- --------------------------------------------------------
 
@@ -131,7 +211,11 @@ CREATE TABLE `inmuebles` (
 --
 
 INSERT INTO `inmuebles` (`id_inmueble`, `id_propietario`, `id_uso`, `id_tipo`, `direccion`, `piso`, `depto`, `lat`, `lon`, `ambientes`, `precio`, `portada`, `activo`, `created_at`, `updated_at`) VALUES
-(1, 1, 2, 4, 'AV SIEMPREVIVA', '1', '1', NULL, NULL, 1, 120000.00, NULL, 1, '2025-09-05 15:29:44', '2025-09-05 15:29:44');
+(1, 1, 2, 4, 'AV SIEMPREVIVA', '1', '1', NULL, NULL, 1, 120000.00, NULL, 1, '2025-09-05 15:29:44', '2025-09-05 15:29:44'),
+(2, 6, 2, 4, 'LOS OLMOS 365', '1', '5', NULL, NULL, 4, 17000000.00, NULL, 1, '2025-09-25 16:23:39', '2025-09-25 16:23:39'),
+(3, 1, 2, 4, 'PASO DE LOS LIBRES 345', '1', '10', NULL, NULL, 1, 3000000.00, NULL, 1, '2025-09-27 11:50:06', '2025-09-27 11:50:06'),
+(4, 6, 2, 3, 'ALEM 786', NULL, NULL, NULL, NULL, 5, 345666434.00, NULL, 1, '2025-09-27 17:52:15', '2025-09-27 17:52:15'),
+(5, 7, 1, 2, 'AV OESTE', NULL, NULL, NULL, NULL, 1, 2432342.00, NULL, 1, '2025-09-27 17:58:12', '2025-09-27 17:58:12');
 
 -- --------------------------------------------------------
 
@@ -270,10 +354,76 @@ CREATE TABLE `pagos` (
 --
 
 INSERT INTO `pagos` (`id_pago`, `id_contrato`, `numero_pago`, `fecha_pago`, `id_mes`, `anio`, `detalle`, `id_concepto`, `importe`, `motivo_anulacion`, `created_by`, `created_at`, `deleted_at`, `deleted_by`) VALUES
-(1, 1, 4, '2025-09-05', 9, 2025, 'mes comicion', 1, 12000000.00, NULL, 1, '2025-09-05 21:56:39', NULL, NULL),
-(2, 1, 3, '2025-09-06', 9, 2025, 'mes septiembrefvddsf', 1, 6000000.00, NULL, 1, '2025-09-07 00:41:49', '2025-09-07 00:53:46', 1),
-(3, 1, 2, '2025-09-20', 9, 2025, 'fdgdfdfbhdbg', 1, 5000000.00, NULL, 2, '2025-09-20 22:07:07', NULL, NULL),
-(4, 1, 1, '2025-09-20', 9, 2025, 'hbkbhkbj', 1, 46546460.00, NULL, 2, '2025-09-20 22:40:35', NULL, NULL);
+(8, 3, 1, '2025-09-25', 9, 2025, '54646', 1, 684640.00, NULL, 2, '2025-09-25 21:57:09', NULL, NULL),
+(9, 2, 1, '2025-09-26', 9, 2025, '', 2, 5465465.00, NULL, 2, '2025-09-26 15:47:38', NULL, NULL),
+(10, 2, 2, '2025-09-26', 9, 2025, 'uhiu4114', 3, 474217.00, 'porque si', 2, '2025-09-26 17:16:26', '2025-09-26 20:40:15', 2),
+(11, 2, 3, '2025-09-26', 9, 2025, '', 2, 5645654.00, NULL, 2, '2025-09-27 00:07:18', NULL, NULL),
+(12, 3, 2, '2025-09-26', 8, 2025, '456456', 1, 46464.00, NULL, 2, '2025-09-27 00:07:45', NULL, NULL);
+
+--
+-- Disparadores `pagos`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_pagos_delete` AFTER DELETE ON `pagos` FOR EACH ROW INSERT INTO pagos_audit (id_pago, accion, accion_by, old_data, new_data)
+VALUES (
+    OLD.id_pago,
+    'DELETE',
+    OLD.deleted_by,
+    JSON_OBJECT(
+        'id_contrato', OLD.id_contrato,
+        'numero_pago', OLD.numero_pago,
+        'fecha_pago', OLD.fecha_pago,
+        'id_mes', OLD.id_mes,
+        'anio', OLD.anio,
+        'detalle', OLD.detalle,
+        'id_concepto', OLD.id_concepto,
+        'importe', OLD.importe
+    ),
+    NULL
+)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_pagos_insert` AFTER INSERT ON `pagos` FOR EACH ROW INSERT INTO pagos_audit (id_pago, accion, accion_by, old_data, new_data)
+VALUES (
+    NEW.id_pago,
+    'INSERT',
+    NEW.created_by,
+    NULL,
+    JSON_OBJECT(
+        'id_contrato', NEW.id_contrato,
+        'numero_pago', NEW.numero_pago,
+        'fecha_pago', NEW.fecha_pago,
+        'id_mes', NEW.id_mes,
+        'anio', NEW.anio,
+        'detalle', NEW.detalle,
+        'id_concepto', NEW.id_concepto,
+        'importe', NEW.importe
+    )
+)
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_pagos_update` AFTER UPDATE ON `pagos` FOR EACH ROW INSERT INTO pagos_audit (id_pago, accion, accion_by, old_data, new_data)
+VALUES (
+    NEW.id_pago,
+    'UPDATE',
+    NEW.deleted_by, -- o el usuario que corresponda
+    JSON_OBJECT(
+        'detalle', OLD.detalle,
+        'id_concepto', OLD.id_concepto,
+        'importe', OLD.importe,
+        'motivo_anulacion', OLD.motivo_anulacion
+    ),
+    JSON_OBJECT(
+        'detalle', NEW.detalle,
+        'id_concepto', NEW.id_concepto,
+        'importe', NEW.importe,
+        'motivo_anulacion', NEW.motivo_anulacion
+    )
+)
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -290,6 +440,15 @@ CREATE TABLE `pagos_audit` (
   `old_data` longtext DEFAULT NULL,
   `new_data` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `pagos_audit`
+--
+
+INSERT INTO `pagos_audit` (`id_audit`, `id_pago`, `accion`, `accion_at`, `accion_by`, `old_data`, `new_data`) VALUES
+(1, 10, 'UPDATE', '2025-09-26 21:06:49', 2, '{\"detalle\": \"uhiu4114\", \"id_concepto\": 1, \"importe\": 474217.00, \"motivo_anulacion\": \"porque si\"}', '{\"detalle\": \"uhiu4114\", \"id_concepto\": 3, \"importe\": 474217.00, \"motivo_anulacion\": \"porque si\"}'),
+(2, 11, 'INSERT', '2025-09-26 21:07:18', 2, NULL, '{\"id_contrato\": 2, \"numero_pago\": 3, \"fecha_pago\": \"2025-09-26\", \"id_mes\": 9, \"anio\": 2025, \"detalle\": \"\", \"id_concepto\": 2, \"importe\": 5645654.00}'),
+(3, 12, 'INSERT', '2025-09-26 21:07:45', 2, NULL, '{\"id_contrato\": 3, \"numero_pago\": 2, \"fecha_pago\": \"2025-09-26\", \"id_mes\": 8, \"anio\": 2025, \"detalle\": \"456456\", \"id_concepto\": 1, \"importe\": 46464.00}');
 
 -- --------------------------------------------------------
 
@@ -312,7 +471,8 @@ CREATE TABLE `propietarios` (
 
 INSERT INTO `propietarios` (`id_propietario`, `documento`, `apellido_nombres`, `domicilio`, `telefono`, `email`) VALUES
 (1, '24299754', 'QUIROGA VERONICA', 'LAFINUR 1238', NULL, NULL),
-(6, '35842052', 'Ricchiardi Roma', 'AV 1234', '2664750247', 'roma.ricchiardi@gmail.com');
+(6, '35842052', 'Ricchiardi Roma', 'AV 1234', '2664750247', 'roma.ricchiardi@gmail.com'),
+(7, '65465465', 'PUENTES, RAUL', 'CALLE FALSA 987', '2664758546', NULL);
 
 -- --------------------------------------------------------
 
@@ -491,13 +651,13 @@ ALTER TABLE `conceptos`
 -- AUTO_INCREMENT de la tabla `contratos`
 --
 ALTER TABLE `contratos`
-  MODIFY `id_contrato` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_contrato` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `contratos_audit`
 --
 ALTER TABLE `contratos_audit`
-  MODIFY `id_audit` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_audit` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `imagenes`
@@ -509,7 +669,7 @@ ALTER TABLE `imagenes`
 -- AUTO_INCREMENT de la tabla `inmuebles`
 --
 ALTER TABLE `inmuebles`
-  MODIFY `id_inmueble` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_inmueble` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `inmuebles_tipos`
@@ -539,19 +699,19 @@ ALTER TABLE `meses`
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_pago` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos_audit`
 --
 ALTER TABLE `pagos_audit`
-  MODIFY `id_audit` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_audit` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `propietarios`
 --
 ALTER TABLE `propietarios`
-  MODIFY `id_propietario` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_propietario` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
