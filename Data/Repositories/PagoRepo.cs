@@ -2,6 +2,7 @@ using System.Data;
 using Inmobiliaria10.Models;
 using MySql.Data.MySqlClient;
 using Inmobiliaria10.Models.ViewModels;
+using System.Text.Json;
 
 namespace Inmobiliaria10.Data.Repositories
 {
@@ -51,7 +52,8 @@ namespace Inmobiliaria10.Data.Repositories
             AccionAt = Convert.ToDateTime(r["AccionAt"]),
             AccionBy = r["AccionBy"] is DBNull ? null : (int?)Convert.ToInt32(r["AccionBy"]),
             OldData = r["OldData"] as string,
-            NewData = r["NewData"] as string
+            NewData = r["NewData"] as string,
+            UsuarioAlias = r["UsuarioAlias"] as string
         };
 
         // -----------------------------
@@ -358,36 +360,202 @@ namespace Inmobiliaria10.Data.Repositories
                 list.Add((Convert.ToInt32(r["Id"]), Convert.ToString(r["Nombre"])!));
             return list;
         }
-
+       
         // -----------------------------
         // Auditoría 
         // -----------------------------
-        public async Task<IReadOnlyList<PagoAudit>> GetAuditoriaAsync(int idPago, CancellationToken ct = default)
+        public async Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaGeneralAsync(CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
             await conn.OpenAsync(ct);
 
             const string sql = @"
-                SELECT  a.id_audit AS IdAudit,
-                        a.id_pago  AS IdPago,
-                        a.accion   AS Accion,
-                        a.accion_at AS AccionAt,
-                        a.accion_by AS AccionBy,
-                        a.old_data AS OldData,
-                        a.new_data AS NewData
+                SELECT  a.id_audit   AS IdAudit,
+                        a.id_pago    AS IdPago,
+                        a.accion     AS Accion,
+                        a.accion_at  AS AccionAt,
+                        u.alias      AS Usuario,
+                        a.old_data   AS OldData,
+                        a.new_data   AS NewData
                 FROM pagos_audit a
+                LEFT JOIN usuarios u ON u.id_usuario = a.accion_by
+                ORDER BY a.id_audit DESC;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+
+            var list = new List<PagoAuditViewModel>();
+            using var r = await cmd.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+            {
+                var vm = new PagoAuditViewModel
+                {
+                    IdAudit = Convert.ToInt32(r["IdAudit"]),
+                    IdPago = Convert.ToInt32(r["IdPago"]),
+                    Accion = r["Accion"].ToString()!,
+                    AccionAt = Convert.ToDateTime(r["AccionAt"]),
+                    Usuario = r["Usuario"]?.ToString() ?? "(sistema)"
+                };
+
+                vm.OldData = await ParseAndTranslateAsync(r["OldData"] as string, ct);
+                vm.NewData = await ParseAndTranslateAsync(r["NewData"] as string, ct);
+
+
+                list.Add(vm);
+            }
+            return list;
+        }
+
+        public async Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaAsync(int idPago, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT  a.id_audit   AS IdAudit,
+                        a.id_pago    AS IdPago,
+                        a.accion     AS Accion,
+                        a.accion_at  AS AccionAt,
+                        u.alias      AS Usuario,
+                        a.old_data   AS OldData,
+                        a.new_data   AS NewData
+                FROM pagos_audit a
+                LEFT JOIN usuarios u ON u.id_usuario = a.accion_by
                 WHERE a.id_pago = @id
                 ORDER BY a.id_audit DESC;";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", idPago);
 
-            var list = new List<PagoAudit>();
-            using var r = await cmd.ExecuteReaderAsync(ct);
-            while (await r.ReadAsync(ct)) list.Add(MapAudit(r));
+            // 1. Leer todo del DataReader y guardarlo en memoria
+            var tempList = new List<(int IdAudit, int IdPago, string Accion, DateTime AccionAt, string Usuario, string? OldData, string? NewData)>();
+            using (var r = await cmd.ExecuteReaderAsync(ct))
+            {
+                while (await r.ReadAsync(ct))
+                {
+                    tempList.Add((
+                        Convert.ToInt32(r["IdAudit"]),
+                        Convert.ToInt32(r["IdPago"]),
+                        r["Accion"].ToString()!,
+                        Convert.ToDateTime(r["AccionAt"]),
+                        r["Usuario"]?.ToString() ?? "(sistema)",
+                        r["OldData"] as string,
+                        r["NewData"] as string
+                    ));
+                }
+            } // 🔹 Ahora se cierra el DataReader
+
+            // 2. Traducir después de haber cerrado el DataReader
+            var list = new List<PagoAuditViewModel>();
+            foreach (var item in tempList)
+            {
+                var vm = new PagoAuditViewModel
+                {
+                    IdAudit = item.IdAudit,
+                    IdPago = item.IdPago,
+                    Accion = item.Accion,
+                    AccionAt = item.AccionAt,
+                    Usuario = item.Usuario,
+                    OldData = await ParseAndTranslateAsync(item.OldData, ct),
+                    NewData = await ParseAndTranslateAsync(item.NewData, ct)
+                };
+
+                list.Add(vm);
+            }
+
             return list;
         }
 
+
+        private async Task<Dictionary<string, string>> ParseAndTranslateAsync(string? json, CancellationToken ct = default)
+        {
+            var dict = new Dictionary<string, string>();
+            if (string.IsNullOrWhiteSpace(json)) return dict;
+
+            var doc = JsonDocument.Parse(json);
+            foreach (var kv in doc.RootElement.EnumerateObject())
+            {
+                var key = kv.Name;
+                var value = kv.Value.ValueKind == JsonValueKind.Null ? null : kv.Value.ToString();
+
+                switch (key.ToLower())
+                {
+                    case "id_contrato":
+                        if (int.TryParse(value, out var idContrato))
+                            value = await GetContratoTextoAsync(idContrato, ct);
+                        break;
+
+                    case "id_concepto":
+                        if (int.TryParse(value, out var idConcepto))
+                            value = await GetConceptoTextoAsync(idConcepto, ct);
+                        break;
+
+                    case "id_mes":
+                        if (int.TryParse(value, out var idMes))
+                            value = await GetMesTextoAsync(idMes, ct);
+                        break;
+
+                    case "fecha_pago":
+                        if (DateTime.TryParse(value, out var fecha))
+                            value = fecha.ToString("dd/MM/yyyy");
+                        break;
+
+                    case "importe":
+                        if (decimal.TryParse(value, out var importe))
+                            value = importe.ToString("C"); // formato moneda
+                        break;
+                }
+
+                dict[key] = value ?? string.Empty;
+            }
+
+            return dict;
+        }
+        private async Task<string> GetContratoTextoAsync(int id, CancellationToken ct)
+        {
+            using var conn = _db.GetConnection();  
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT CONCAT('C#', c.id_contrato, ' - ', IFNULL(i.direccion,'(sin dirección)'), 
+                                ' · ', IFNULL(inq.apellido_nombres,'')) 
+                                FROM contratos c
+                                LEFT JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                                LEFT JOIN inquilinos inq ON inq.id_inquilino = c.id_inquilino
+                                WHERE c.id_contrato = @id";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            var res = await cmd.ExecuteScalarAsync(ct);
+            return res?.ToString() ?? $"Contrato #{id}";
+        }
+
+        private async Task<string> GetConceptoTextoAsync(int id, CancellationToken ct)
+        {
+            using var conn = _db.GetConnection(); 
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT denominacion_concepto FROM conceptos WHERE id_concepto = @id";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            var res = await cmd.ExecuteScalarAsync(ct);
+            return res?.ToString() ?? $"Concepto #{id}";
+        }
+
+        private async Task<string> GetMesTextoAsync(int id, CancellationToken ct)
+        {
+            using var conn = _db.GetConnection(); 
+            await conn.OpenAsync(ct);
+
+            const string sql = @"SELECT nombre FROM meses WHERE id_mes = @id";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            var res = await cmd.ExecuteScalarAsync(ct);
+            return res?.ToString() ?? $"Mes #{id}";
+        }
+
+        
         // -----------------------------
         // Select2 — Inquilinos
         // -----------------------------

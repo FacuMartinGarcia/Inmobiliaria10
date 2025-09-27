@@ -255,13 +255,22 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("Auditoria/{id:int}")]
-        public async Task<IActionResult> Auditoria(int id, CancellationToken ct = default)
+        [HttpGet("Auditoria")]
+        public async Task<IActionResult> Auditoria(
+            [FromServices] IMesRepo mesRepo, 
+            CancellationToken ct = default)
         {
-            var eventos = await _repo.GetAuditoriaAsync(id, ct);
-            ViewBag.IdPago = id;
-            return View(eventos);
+            var list = await _repo.GetAuditoriaGeneralAsync(ct);
+
+            ViewBag.Conceptos = (await _repo.GetConceptosAsync(ct))
+                .ToDictionary(x => x.Id.ToString(), x => x.Nombre);
+
+            ViewBag.Meses = (await mesRepo.GetAllAsync(ct))
+                .ToDictionary(x => x.IdMes.ToString(), x => x.Nombre);
+
+            return View(list);
         }
+
 
         // --- Endpoints Select2 ---
 

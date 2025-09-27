@@ -46,5 +46,16 @@ namespace Inmobiliaria10.Models
         public int? AccionBy { get; set; }           // NULL FK usuarios
         public string? OldData { get; set; }         // longtext
         public string? NewData { get; set; }         // longtext
+        public string? UsuarioAlias { get; set; }
+        public string AccionTraducida =>
+        Accion switch
+        {
+            "INSERT" => "Creación",
+            "UPDATE" => "Modificación",
+            "DELETE" => "Eliminación",
+            _ => Accion
+        };
+
+        
     }
 }

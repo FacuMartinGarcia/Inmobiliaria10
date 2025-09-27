@@ -16,12 +16,12 @@ namespace Inmobiliaria10.Data.Repositories
             int? idInquilino = null);
         Task<int> CreateAsync(Pago e, CancellationToken ct = default);
         Task<bool> UpdateConceptoAsync(Pago e, CancellationToken ct = default);
-        Task<int> RegistrarMultaAsync(int contratoId, DateTime fecha, int userId, CancellationToken ct = default);
         Task<int> GetNextNumeroPagoAsync(int idContrato, CancellationToken ct = default);
         Task<bool> AnularPagoAsync(int id, string motivo, int? userId, CancellationToken ct = default);
         Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Nombre)>> GetConceptosAsync(CancellationToken ct = default);
-        Task<IReadOnlyList<PagoAudit>> GetAuditoriaAsync(int idPago, CancellationToken ct = default);
+        Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaAsync(int idPago, CancellationToken ct = default);
+        Task<IReadOnlyList<PagoAuditViewModel>> GetAuditoriaGeneralAsync(CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Text)>> SearchInquilinosAsync(string? term, int take, CancellationToken ct = default);
         Task<(int Id, string Text)?> GetInquilinoItemAsync(int id, CancellationToken ct = default);
         Task<IReadOnlyList<(int Id, string Text)>> SearchContratosPorInquilinoAsync(
