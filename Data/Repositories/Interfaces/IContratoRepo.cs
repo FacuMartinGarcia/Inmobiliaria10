@@ -17,15 +17,14 @@ namespace Inmobiliaria10.Data.Repositories
             CancellationToken ct = default);
 
         Task<(IReadOnlyList<Contrato> Items, int Total)> ListByFechasAsync(
-                    int? tipo = null,
-                    int? idInmueble = null,
-                    int? idInquilino = null,
-                    bool? soloActivos = null,
-                    DateTime? fechaDesde = null,
-                    DateTime? fechaHasta = null,
-                    int pageIndex = 1,
-                    int pageSize = 20,
-                    CancellationToken ct = default);
+                int? tipo = null,
+                int? idInmueble = null,
+                int? idInquilino = null,
+                DateTime? fechaDesde = null,
+                DateTime? fechaHasta = null,
+                int pageIndex = 1,
+                int pageSize = 20,
+                CancellationToken ct = default);
         Task<int> CreateAsync(Contrato entity, CancellationToken ct = default);
         Task UpdateAsync(Contrato entity, CancellationToken ct = default);
 

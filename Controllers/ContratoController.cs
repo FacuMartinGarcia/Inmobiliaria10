@@ -34,13 +34,12 @@ namespace Inmobiliaria10.Controllers
             int? tipo,
             int? inmueble,
             int? inquilino,
-            bool? soloActivos,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta,
             int page = 1,
             int pageSize = 20,
             CancellationToken ct = default)
-
         {
-            // Selects para filtro del index
             await CargarSelectsIndexAsync(tipo, inmueble, inquilino, ct);
 
             ViewBag.TipoSel = tipo;
@@ -49,26 +48,34 @@ namespace Inmobiliaria10.Controllers
             ViewBag.TipoMap = inmuebles.ToDictionary(
                 i => i.IdInmueble.ToString(),
                 i => i.Tipo?.DenominacionTipo ?? "-"
-);
+            );
 
-
-            var (items, total) = await _repo.ListAsync(
+            var (items, total) = await _repo.ListByFechasAsync(
                 tipo: tipo,
                 idInmueble: inmueble,
                 idInquilino: inquilino,
-                soloActivos: soloActivos,
+                fechaDesde: fechaDesde,
+                fechaHasta: fechaHasta,
                 pageIndex: page,
                 pageSize: pageSize,
                 ct);
 
-
             ViewBag.Total = total;
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
-            ViewBag.SoloActivos = soloActivos;
+
+            bool hayFiltros =
+                (tipo.HasValue && tipo.Value > 0) ||
+                (inmueble.HasValue && inmueble.Value > 0) ||
+                (inquilino.HasValue && inquilino.Value > 0) ||
+                fechaDesde.HasValue ||
+                fechaHasta.HasValue;
+
+            ViewBag.HayFiltros = hayFiltros;
 
             return View(items);
         }
+
 
         // ------------------- CREAR -------------------
         [HttpGet]
