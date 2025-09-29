@@ -80,6 +80,7 @@ namespace Inmobiliaria10.Controllers
             {
                 IdInmueble = inmueble ?? 0,
                 IdInquilino = inquilino ?? 0,
+                FechaFirma = DateTime.Today,
                 FechaInicio = DateTime.Today,
                 FechaFin = DateTime.Today.AddYears(1)
             });

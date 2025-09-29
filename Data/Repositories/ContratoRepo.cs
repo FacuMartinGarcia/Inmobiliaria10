@@ -334,6 +334,119 @@ namespace Inmobiliaria10.Data.Repositories
             }
         }
 
+        public async Task<(IReadOnlyList<Contrato> Items, int Total)> ListByFechasAsync(
+            int? tipo = null,
+            int? idInmueble = null,
+            int? idInquilino = null,
+            bool? soloActivos = null,
+            DateTime? fechaDesde = null,
+            DateTime? fechaHasta = null,
+            int pageIndex = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            var where = " WHERE c.deleted_at IS NULL ";
+            var pars = new List<MySqlParameter>();
+
+            if (tipo.HasValue && tipo.Value > 0)
+            {
+                where += " AND i.id_tipo = @Tipo ";
+                pars.Add(new MySqlParameter("@Tipo", MySqlDbType.Int32) { Value = tipo.Value });
+            }
+
+            if (idInmueble.HasValue && idInmueble.Value > 0)
+            {
+                where += " AND c.id_inmueble = @idInmueble ";
+                pars.Add(new MySqlParameter("@idInmueble", MySqlDbType.Int32) { Value = idInmueble.Value });
+            }
+
+            if (idInquilino.HasValue && idInquilino.Value > 0)
+            {
+                where += " AND c.id_inquilino = @idInquilino ";
+                pars.Add(new MySqlParameter("@idInquilino", MySqlDbType.Int32) { Value = idInquilino.Value });
+            }
+
+            if (soloActivos.HasValue)
+            {
+                var hoy = DateTime.Today;
+                pars.Add(new MySqlParameter("@Hoy", MySqlDbType.Date) { Value = hoy });
+
+                if (soloActivos.Value)
+                    where += " AND c.fecha_fin >= @Hoy ";
+                else
+                    where += " AND c.fecha_fin < @Hoy ";
+            }
+
+            if (fechaDesde.HasValue)
+            {
+                where += " AND c.fecha_inicio >= @fechaDesde ";
+                pars.Add(new MySqlParameter("@fechaDesde", MySqlDbType.Date) { Value = fechaDesde.Value });
+            }
+
+            if (fechaHasta.HasValue)
+            {
+                where += " AND c.fecha_fin <= @fechaHasta ";
+                pars.Add(new MySqlParameter("@fechaHasta", MySqlDbType.Date) { Value = fechaHasta.Value });
+            }
+
+            // Count
+            var sqlCount = $@"
+                SELECT COUNT(*)
+                FROM contratos c
+                INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                {where};";
+
+            using var cmdCount = new MySqlCommand(sqlCount, conn);
+            cmdCount.Parameters.AddRange(pars.ToArray());
+            var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
+
+            // Items
+            var sqlItems = $@"
+                SELECT  c.id_contrato   AS IdContrato,
+                        c.fecha_firma   AS FechaFirma,
+                        c.id_inmueble   AS IdInmueble,
+                        c.id_inquilino  AS IdInquilino,
+                        c.fecha_inicio  AS FechaInicio,
+                        c.fecha_fin     AS FechaFin,
+                        c.monto_mensual AS MontoMensual,
+                        c.rescision     AS Rescision,
+                        c.monto_multa   AS MontoMulta,
+                        c.created_by    AS CreatedBy,
+                        c.created_at    AS CreatedAt,
+                        c.deleted_at    AS DeletedAt,
+                        c.deleted_by    AS DeletedBy
+                FROM contratos c
+                INNER JOIN inmuebles i ON i.id_inmueble = c.id_inmueble
+                {where}
+                ORDER BY c.created_at DESC";
+
+            if (pageSize > 0)
+            {
+                int offset = Math.Max(0, (pageIndex - 1) * pageSize);
+                sqlItems += " LIMIT @limit OFFSET @offset;";
+                pars.Add(new MySqlParameter("@limit", MySqlDbType.Int32) { Value = pageSize });
+                pars.Add(new MySqlParameter("@offset", MySqlDbType.Int32) { Value = offset });
+            }
+            else
+            {
+                sqlItems += ";";
+            }
+
+            using var cmdItems = new MySqlCommand(sqlItems, conn);
+            cmdItems.Parameters.AddRange(pars.ToArray());
+
+            var items = new List<Contrato>();
+            using var r = await cmdItems.ExecuteReaderAsync(ct);
+            while (await r.ReadAsync(ct))
+                items.Add(MapContrato((MySqlDataReader)r));
+
+            return (items, total);
+        }
+
+
         public async Task<int> CreateAsync(Contrato entity, CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();

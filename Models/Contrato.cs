@@ -8,6 +8,7 @@ namespace Inmobiliaria10.Models
         public int IdContrato { get; set; }
 
         [DataType(DataType.Date)]
+        [Display(Name = "Fecha de Firma")]
         public DateTime? FechaFirma { get; set; }
 
         [Required(ErrorMessage = "Debe seleccionar un inmueble válido.")]
@@ -17,22 +18,27 @@ namespace Inmobiliaria10.Models
         public int IdInquilino { get; set; }
 
         [Required, DataType(DataType.Date)]
+        [Display(Name = "Fecha Inicio")]
         public DateTime FechaInicio { get; set; }
 
         [Required, DataType(DataType.Date)]
+        [Display(Name = "Fecha Fin")]
         public DateTime FechaFin { get; set; }
         
         [Required(ErrorMessage = "El monto mensual es obligatorio")]
         [Range(0, double.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a 0")]
         [Column(TypeName = "decimal(15,2)")]
+        [Display(Name = "Monto Mensual")]
+
         public decimal MontoMensual { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime? Rescision { get; set; }
 
         [Column(TypeName = "decimal(15,2)")]
-        [Range(typeof(decimal), "0", "79228162514264337593543950335", 
-            ErrorMessage = "La multa no puede ser negativa.")]
+        [Range(typeof(decimal), "0", "79228162514264337593543950335",
+                    ErrorMessage = "La multa no puede ser negativa.")]
+        [Display(Name = "Multa Aplicada")]
         public decimal? MontoMulta { get; set; }
 
         public int CreatedBy { get; set; }

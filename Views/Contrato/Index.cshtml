@@ -22,7 +22,6 @@
     var inqList = (IEnumerable<SelectListItem>)ViewBag.Inquilinos;
     var inqMap = inqList?.ToDictionary(x => x.Value, x => x.Text) ?? new Dictionary<string,string>();
 
-
     var firstId = 0;
     foreach (var row in Model) { firstId = row.IdContrato; break; }
     var hayContratos = firstId > 0;
@@ -50,14 +49,14 @@
     </div>
 </div>
 
-
+<!-- Filtros -->
 <form method="get" class="row g-2 mb-3">
     <div class="col-12 col-md-2">
         <label class="form-label">Tipo</label>
         @Html.DropDownList("tipo", (SelectList)ViewBag.Tipos, "Todos",
             new { @class="form-select", id="tipoSelect" })
     </div>
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <label class="form-label">Inmueble</label>
         @Html.DropDownList("inmueble", (SelectList)ViewBag.Inmuebles, "Todos",
             new { @class="form-select", id="inmuebleSelect" })
@@ -67,12 +66,25 @@
         @Html.DropDownList("inquilino", (SelectList)ViewBag.Inquilinos, "Todos",
             new { @class="form-select", id="inquilinoSelect" })
     </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" name="fechaDesde"
+               value="@Context.Request.Query["fechaDesde"]" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" name="fechaHasta"
+               value="@Context.Request.Query["fechaHasta"]" />
+    </div>
     <div class="col-6 col-md-2 d-flex align-items-end">
         <div class="form-check">
             @{
-                var soloActivosSel = (bool?)ViewBag.SoloActivos ?? true;
+                var soloActivosSelChecked = (bool?)ViewBag.SoloActivos ?? true;
             }
-            <input class="form-check-input" type="checkbox" name="soloActivos" value="true" @(soloActivosSel ? "checked" : "") />
+            <input class="form-check-input" type="checkbox" name="soloActivos" value="true"
+                   @(soloActivosSelChecked ? "checked" : "")
+                   data-bs-toggle="tooltip" data-bs-placement="top"
+                   title="Muestra únicamente los contratos vigentes al día de hoy (no vencidos ni rescindidos)" />
             <label class="form-check-label">Solo Vigentes</label>
         </div>
     </div>
@@ -81,6 +93,7 @@
     </div>
 </form>
 
+<!-- Tabla de resultados -->
 <table class="table table-striped align-middle">
     <thead>
         <tr>
@@ -99,31 +112,28 @@
         var inmTxt = inmMap.TryGetValue(c.IdInmueble.ToString(), out var _inm) ? _inm : c.IdInmueble.ToString();
         var inqTxt = inqMap.TryGetValue(c.IdInquilino.ToString(), out var _inq) ? _inq : c.IdInquilino.ToString();
         var tipoInmuebleTxt = ViewBag.TipoMap[c.IdInmueble.ToString()];
-        
 
         <tr>
             <td>@tipoInmuebleTxt</td> 
             <td>@inmTxt</td>
             <td>@inqTxt</td>
-            <td>@c.FechaInicio.ToString("yyyy-MM-dd")</td>
-            <td>@c.FechaFin.ToString("yyyy-MM-dd")</td>
-            <td>@(c.Rescision?.ToString("yyyy-MM-dd") ?? "-")</td>
+            <td>@c.FechaInicio.ToString("dd-MM-yyyy")</td>
+            <td>@c.FechaFin.ToString("dd-MM-yyyy")</td>
+            <td>@(c.Rescision?.ToString("dd-MM-yyyy") ?? "-")</td>
             <td class="text-end">
                 <div aria-label="acciones">
                     <a class="btn btn-sm btn-warning" title="Editar"
-                    asp-action="Editar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-pen"></i></a>
+                       asp-action="Editar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-pen"></i></a>
                     <a class="btn btn-sm btn-primary" title="Ver"
-                    asp-action="Detalles" asp-route-id="@c.IdContrato"><i class="fa-solid fa-eye"></i></a>
+                       asp-action="Detalles" asp-route-id="@c.IdContrato"><i class="fa-solid fa-eye"></i></a>
                     <a class="btn btn-sm btn-danger" title="Dar de baja"
-                    asp-action="Eliminar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-trash-can"></i></a>
+                       asp-action="Eliminar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-trash-can"></i></a>
                     <a class="btn btn-sm btn-info" title="Renovar Contrato" 
-                    asp-action="Renovar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-file-circle-plus"></i></a>
+                       asp-action="Renovar" asp-route-id="@c.IdContrato"><i class="fa-solid fa-file-circle-plus"></i></a>
                 </div>
             </td>
         </tr>
     }
-
-
     </tbody>
 </table>
 
@@ -135,13 +145,15 @@
             {
                 <li class="page-item @(i==page ? "active" : "")">
                     <a class="page-link"
-                    asp-action="Index"
-                    asp-route-page="@i"
-                    asp-route-pageSize="@pageSize"
-                    asp-route-tipo="@tipoSel"
-                    asp-route-inmueble="@inmuebleSel"
-                    asp-route-inquilino="@inquilinoSel"
-                    asp-route-soloActivos="@soloActivosRoute">@i</a>
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@pageSize"
+                       asp-route-tipo="@tipoSel"
+                       asp-route-inmueble="@inmuebleSel"
+                       asp-route-inquilino="@inquilinoSel"
+                       asp-route-soloActivos="@soloActivosRoute"
+                       asp-route-fechaDesde="@Context.Request.Query["fechaDesde"]"
+                       asp-route-fechaHasta="@Context.Request.Query["fechaHasta"]">@i</a>
                 </li>
             }
         </ul>

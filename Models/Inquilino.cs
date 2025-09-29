@@ -2,19 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Inmobiliaria10.Models;
 
-/*
-CREATE TABLE inquilinos (
-  id_inquilino INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  documento VARCHAR(20) NOT NULL,
-  apellido_nombres VARCHAR(100) NOT NULL,
-  domicilio VARCHAR(255) DEFAULT NULL,
-  telefono VARCHAR(50) DEFAULT NULL,
-  email VARCHAR(100) DEFAULT NULL,
-  PRIMARY KEY (id_inquilino),
-  UNIQUE KEY uq_inq_documento (documento)
-);
-
-*/
 public class Inquilino
 {
     private string _apellidoNombres = string.Empty;
