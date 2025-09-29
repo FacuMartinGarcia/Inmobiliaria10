@@ -16,39 +16,36 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    
           integrity="sha512-SWLK..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
     <link rel="stylesheet" href="~/css/form.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    
 </head>
-<body  id="@ViewData["bodyId"]" class="d-flex flex-column min-vh-100">
+<body id="@ViewData["bodyId"]" class="d-flex flex-column min-vh-100">
 
-    <!-- NAVBAR -->
-    <header>
-        <nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
-            <div class="container-fluid">
+    @if (isAuth)
+    {
+        <!-- NAVBAR -->
+        <header>
+            <nav class="navbar navbar-expand navbar-light text-white border-bottom box-shadow">
+                <div class="container-fluid">
 
-                <!-- Botón para plegar/mostrar sidebar -->
-                <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
-                        type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
-                        aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+                    <!-- Botón para plegar/mostrar sidebar -->
+                    <button class="btn btn-outline-secondary me-2" id="btnSidebarToggle"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
+                            aria-controls="sidebar" aria-expanded="false" aria-label="Alternar menú">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
 
-                <!-- Brand -->
-                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                    <span class="fw-bold">@appName</span>
-                    <img src="~/img/logoOk.png" alt="Logo" style="height:40px;" />
-                </a>
+                    <!-- Brand -->
+                    <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                        <span class="fw-bold">@appName</span>
+                        <img src="~/img/logoOk.png" alt="Logo" style="height:40px;" />
+                    </a>
 
-                <div class="ms-auto d-flex align-items-center">
-                    @if (User?.Identity?.IsAuthenticated ?? false)
-                    {
+                    <div class="ms-auto d-flex align-items-center">
                         <div class="dropdown">
                             <a class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
-                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 
                                 @{
                                     var foto = User.FindFirst("Foto")?.Value ?? "/img/user.png";
@@ -68,118 +65,119 @@
                                 </li>
                             </ul>
                         </div>
-                    }
-                    else
-                    {
-                        <a class="btn btn-outline-light" asp-controller="Usuario" asp-action="Login">Iniciar sesión</a>
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container-fluid flex-grow-1">
-        <div class="row flex-nowrap">
-            <!-- SIDEBAR (colapsable horizontal) -->
-            <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
-                <div class="sidebar-inner d-flex flex-column h-100">
-                    <ul class="nav nav-pills flex-column p-2">
-                        <!-- Menús principales -->
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
-                                <i class="fa-solid fa-user-tie"></i>
-                                <span>Propietarios</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilino" asp-action="Index">
-                                <i class="fa-solid fa-people-roof"></i>
-                                <span>Inquilinos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inmueble" asp-action="Index">
-                                <i class="fa-solid fa-building"></i>
-                                <span>Inmuebles</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Contratos" asp-action="Index">
-                                <i class="fa-solid fa-file-signature"></i>
-                                <span>Contratos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Pagos" asp-action="Index">
-                                <i class="fa-solid fa-dollar-sign"></i>
-                                <span>Pagos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuario" asp-action="Index">
-                                <i class="fa-solid fa-users"></i>
-                                <span>Usuarios</span>
-                            </a>
-                        </li>
-
-                        <!-- Submenú Sistema -->
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2 collapsed" 
-                            data-bs-toggle="collapse" href="#menuSistema" 
-                            role="button" aria-expanded="false" aria-controls="menuSistema">
-                                <i class="fa-solid fa-cogs"></i>
-                                <span>Sistema</span>
-                                <i class="fa-solid fa-chevron-down ms-auto"></i>
-                            </a>
-                            <div class="collapse" id="menuSistema">
-                                <ul class="nav flex-column ms-3">
-                                    <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Rol" asp-action="Index">
-                                            <i class="fa-solid fa-key"></i>
-                                            <span>Roles</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleTipo" asp-action="Index">
-                                            <i class="fa-solid fa-building-circle-check"></i>
-                                            <span>Tipos de Inmuebles</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleUso" asp-action="Index">
-                                            <i class="fa-solid fa-toolbox"></i>
-                                            <span>Usos de Inmuebles</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link d-flex align-items-center gap-2" asp-controller="Conceptos" asp-action="Index">
-                                            <i class="fa-solid fa-receipt"></i>
-                                            <span>Conceptos de Pago</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
+                    </div>
                 </div>
             </nav>
+        </header>
 
-            <!-- CONTENIDO -->
-            <main id="content" class="col py-3"
-                style="
-                    background:
-                    linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)),
-                    url('/img/edificio1.webp') center/cover no-repeat;
-                    min-height: 100vh;">
-                @RenderBody()
-            </main>
+        <div class="container-fluid flex-grow-1">
+            <div class="row flex-nowrap">
+                <!-- SIDEBAR (colapsable horizontal) -->
+                <nav id="sidebar" class="sidebar collapse collapse-horizontal show d-md-block">
+                    <div class="sidebar-inner d-flex flex-column h-100">
+                        <ul class="nav nav-pills flex-column p-2">
+                            <!-- Menús principales -->
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Propietario" asp-action="Index">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                    <span>Propietarios</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inquilino" asp-action="Index">
+                                    <i class="fa-solid fa-people-roof"></i>
+                                    <span>Inquilinos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Inmueble" asp-action="Index">
+                                    <i class="fa-solid fa-building"></i>
+                                    <span>Inmuebles</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Contratos" asp-action="Index">
+                                    <i class="fa-solid fa-file-signature"></i>
+                                    <span>Contratos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Pagos" asp-action="Index">
+                                    <i class="fa-solid fa-dollar-sign"></i>
+                                    <span>Pagos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" asp-controller="Usuario" asp-action="Index">
+                                    <i class="fa-solid fa-users"></i>
+                                    <span>Usuarios</span>
+                                </a>
+                            </li>
+
+                            <!-- Submenú Sistema -->
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2 collapsed" 
+                                   data-bs-toggle="collapse" href="#menuSistema" 
+                                   role="button" aria-expanded="false" aria-controls="menuSistema">
+                                    <i class="fa-solid fa-cogs"></i>
+                                    <span>Sistema</span>
+                                    <i class="fa-solid fa-chevron-down ms-auto"></i>
+                                </a>
+                                <div class="collapse" id="menuSistema">
+                                    <ul class="nav flex-column ms-3">
+                                        <li class="nav-item">
+                                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Rol" asp-action="Index">
+                                                <i class="fa-solid fa-key"></i>
+                                                <span>Roles</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleTipo" asp-action="Index">
+                                                <i class="fa-solid fa-building-circle-check"></i>
+                                                <span>Tipos de Inmuebles</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="InmuebleUso" asp-action="Index">
+                                                <i class="fa-solid fa-toolbox"></i>
+                                                <span>Usos de Inmuebles</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link d-flex align-items-center gap-2" asp-controller="Conceptos" asp-action="Index">
+                                                <i class="fa-solid fa-receipt"></i>
+                                                <span>Conceptos de Pago</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- CONTENIDO -->
+                <main id="content" class="col py-3"
+                      style="background: linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)), 
+                             url('/img/edificio1.webp') center/cover no-repeat;
+                             min-height: 100vh;">
+                    @RenderBody()
+                </main>
+            </div>
         </div>
-    </div>
-    
-    <input type="hidden" id="mensajeTemp" value="@TempData["Ok"]" />
-    <input type="hidden" id="errorTemp"   value="@TempData["Err"]" />
-    <input type="hidden" id="infoTemp"    value="@TempData["Info"]" />
+    }
+    else
+    {
+        <!-- Si NO está logueado, solo muestro el contenido de la vista -->
+        <main class="container py-4">
+            @RenderBody()
+        </main>
+    }
 
-    
+    <input type="hidden" id="mensajeTemp" value="@TempData["Ok"]" />
+    <input type="hidden" id="errorTemp" value="@TempData["Err"]" />
+    <input type="hidden" id="infoTemp" value="@TempData["Info"]" />
+
     <footer class="bg-dark text-white text-center py-3 mt-auto shadow-sm">
         <div class="container">
             <p class="mb-0">© @DateTime.Now.Year - InnovaPropiedades | Todos los derechos reservados</p>
@@ -209,12 +207,11 @@
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 
     <!-- Scripts propios -->
-   
-
     <script src="~/js/layout.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
     <!-- TempData para SweetAlert2 -->
     @if (TempData["Mensaje"] != null)
     {
