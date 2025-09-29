@@ -82,6 +82,7 @@ public class PropietarioController : Controller
     }
 
     // GET: /Propietarios/Delete/5
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Borrar(int id)
     {
         var p = await _repo.ObtenerPorId(id);
@@ -90,6 +91,7 @@ public class PropietarioController : Controller
     }
 
     // POST: /Propietarios/DeleteConfirmed/5
+    [Authorize(Roles = "Administrador")]
     [HttpPost, ActionName("Borrar"), ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {

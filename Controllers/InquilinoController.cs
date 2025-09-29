@@ -100,6 +100,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // GET: /Inquilino/Eliminar/5
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
         {
             var inq = await _repo.ObtenerPorIdAsync(id, ct);
@@ -110,6 +111,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // POST: /Inquilino/Eliminar/5
+        [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Borrar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BorrarConfirmado(int id, CancellationToken ct = default)

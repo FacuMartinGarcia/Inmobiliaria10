@@ -194,6 +194,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // ------------------- ELIMINAR -------------------
+        [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
@@ -204,6 +205,7 @@ namespace Inmobiliaria10.Controllers
             return View(contrato);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
@@ -259,6 +261,7 @@ namespace Inmobiliaria10.Controllers
             return int.TryParse(str, out var id) ? id : 1;
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpGet]
         public async Task<IActionResult> DataAuditoria(
             int? usuario, int draw, int start = 0, int length = 10, CancellationToken ct = default)
@@ -304,6 +307,7 @@ namespace Inmobiliaria10.Controllers
             });
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpGet]
         public IActionResult Auditoria()
         {

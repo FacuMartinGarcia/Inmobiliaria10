@@ -221,13 +221,15 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Detalles), new { id = m.IdPago });
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpGet("Eliminar/{id:int}")]
         public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
             var vm = await _repo.GetDetalleAsync(id, ct);
             return vm is null ? NotFound() : View(vm);
         }
-       
+
+        [Authorize(Roles = "Administrador")]
         [HttpPost("Eliminar/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarConfirmado(int id, string motivo, CancellationToken ct = default)
@@ -245,6 +247,7 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost("Borrar/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
@@ -255,6 +258,7 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpGet("Auditoria")]
         public async Task<IActionResult> Auditoria(
             [FromServices] IMesRepo mesRepo, 
@@ -271,6 +275,7 @@ namespace Inmobiliaria10.Controllers
             return View(list);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpGet("data-auditoria")]
         public async Task<IActionResult> DataAuditoria(
             int? usuario, int? contrato, int? concepto,

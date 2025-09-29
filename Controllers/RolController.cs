@@ -46,7 +46,7 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Rol/Editar/5
+        // GET: Rol/Editar
         public async Task<IActionResult> Editar(int id)
         {
             var rol = await _repo.ObtenerPorId(id);
@@ -56,7 +56,7 @@ namespace Inmobiliaria10.Controllers
             return View(rol);
         }
 
-        // POST: Rol/Editar/5
+        // POST: Rol/Editar
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, Rol rol)
@@ -77,7 +77,8 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Rol/Eliminar/5
+        // GET: Rol/Eliminar
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var rol = await _repo.ObtenerPorId(id);
@@ -87,7 +88,8 @@ namespace Inmobiliaria10.Controllers
             return View(rol);
         }
 
-        // POST: Rol/Eliminar/5
+        // POST: Rol/Eliminar
+        [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarConfirmado(int id)

@@ -104,6 +104,7 @@ namespace Inmobiliaria10.Controllers
             return View(inmueble);
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var inmueble = await _repoInmueble.ObtenerPorId(id);
@@ -113,6 +114,7 @@ namespace Inmobiliaria10.Controllers
             return View(inmueble);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarConfirmado(int id)
@@ -147,9 +149,6 @@ namespace Inmobiliaria10.Controllers
                     Text = t.DenominacionTipo
                 }).ToList();
         }
-
-        // CODIGO PARA EL MANEJO DE IMAGENES
-        // GET: Inmueble/Imagenes/5
 
         public async Task<IActionResult> Imagenes(int id)
         {
@@ -199,7 +198,7 @@ namespace Inmobiliaria10.Controllers
 
         }
 
-        // POST: Inmueble/EliminarPortada
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarPortada(int InmuebleId, [FromServices] IWebHostEnvironment environment)

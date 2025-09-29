@@ -81,6 +81,7 @@ namespace Inmobiliaria10.Controllers
             }
         }
 
+        [Authorize(Roles = "Administrador")]
         public IActionResult Eliminar(int id)
         {
             var tipo = repo.ObtenerPorId(id);
@@ -90,6 +91,7 @@ namespace Inmobiliaria10.Controllers
             return View(tipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
         public IActionResult EliminarConfirmado(int id)

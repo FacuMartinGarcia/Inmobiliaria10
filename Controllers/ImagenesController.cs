@@ -62,9 +62,8 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction("Imagenes", "Inmueble", new { id = id });
         }
 
-        // POST: Imagenes/Eliminar
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
-        //[Authorize(Policy = "Administrador")]
         public async Task<IActionResult> Eliminar(int id, [FromServices] IWebHostEnvironment environment)
         {
             try

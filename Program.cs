@@ -20,7 +20,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Administrador", policy =>
-        policy.RequireClaim(System.Security.Claims.ClaimTypes.Role, "Administrador"));
+        policy.RequireRole("Administrador"));
+});
+builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
 });
 builder.Services.AddScoped<IConceptoRepo, ConceptoRepo>();
 builder.Services.AddScoped<IContratoRepo, ContratoRepo>();

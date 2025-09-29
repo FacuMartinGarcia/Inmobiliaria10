@@ -45,7 +45,7 @@ namespace Inmobiliaria10.Controllers
             return View(usuarios);
         }
 
-        // DETALLE
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Detalle(int id, CancellationToken ct = default)
         {
             var usu = await _repo.ObtenerPorId(id, ct);
@@ -55,13 +55,14 @@ namespace Inmobiliaria10.Controllers
             return View(usu);
         }
 
-        // CREAR
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Crear()
         {
             ViewBag.Roles = await ObtenerRolesSelectList();
             return View();
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Usuario u)
@@ -86,6 +87,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // EDITAR (GET)
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Editar(int id)
         {
             var usuario = await _repo.ObtenerPorId(id);
@@ -106,6 +108,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // EDITAR (POST)
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(UsuarioEditViewModel vm)
@@ -146,6 +149,7 @@ namespace Inmobiliaria10.Controllers
         }
 
         // ELIMINAR
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var u = await _repo.ObtenerPorId(id);
@@ -155,6 +159,7 @@ namespace Inmobiliaria10.Controllers
             return View(u);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarConfirmado(int id)
@@ -212,7 +217,7 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction("Perfil");
         }
 
-        // RECUPERAR PASSWORD
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult RecuperarPassword()
         {
@@ -325,17 +330,20 @@ namespace Inmobiliaria10.Controllers
                 }
             }
 
-            // Claims
+            var rolDb = usuario.Rol?.DenominacionRol;
+            var rol = !string.IsNullOrWhiteSpace(rolDb)
+                ? char.ToUpper(rolDb[0]) + rolDb.Substring(1).ToLower()
+                : "Empleado";
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
                 new Claim(ClaimTypes.Name, usuario.Alias),
                 new Claim(ClaimTypes.Email, usuario.Email ?? string.Empty),
                 new Claim("FullName", usuario.ApellidoNombres ?? string.Empty),
-                new Claim(ClaimTypes.Role, usuario.Rol?.DenominacionRol ?? "Empleado"),
+                new Claim(ClaimTypes.Role, rol),
                 new Claim("Foto", fotoPerfil)
             };
-
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 

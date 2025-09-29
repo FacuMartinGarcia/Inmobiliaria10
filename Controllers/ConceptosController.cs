@@ -78,13 +78,12 @@ namespace Inmobiliaria10.Controllers
             return RedirectToAction(nameof(Index), new { id });
         }
 
-        // alias por si el form no pone el id en la URL (igual reusa la de arriba)
         [HttpPost("Editar")]
         [ValidateAntiForgeryToken]
         public Task<IActionResult> EditarSinId(Concepto m, CancellationToken ct = default)
             => Editar(m.IdConcepto, m, ct);
 
-        // GET /Conceptos/Eliminar/5
+        [Authorize(Roles = "Administrador")]
         [HttpGet("Eliminar/{id:int}")]
         public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
@@ -92,7 +91,7 @@ namespace Inmobiliaria10.Controllers
             return x is null ? NotFound() : View(x);
         }
 
-        // POST /Conceptos/Borrar/5
+        [Authorize(Roles = "Administrador")]
         [HttpPost("Borrar/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Borrar(int id, CancellationToken ct = default)
