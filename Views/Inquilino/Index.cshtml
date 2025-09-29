@@ -52,15 +52,16 @@
                     <td>@item.Telefono</td>
                     <td>@item.Email</td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
+                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
                             <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
+                            <i class="fa-solid fa-eye"></i>
                         </a>
                         <a class="btn btn-sm btn-danger" asp-action="Borrar" asp-route-id="@item.IdInquilino" title="Borrar">
                             <i class="fa-solid fa-trash-can"></i>
                         </a>                
-                        <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
+                        
                     </td>
                 </tr>
             }

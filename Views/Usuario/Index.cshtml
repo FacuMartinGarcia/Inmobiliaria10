@@ -52,15 +52,16 @@
                     <td>@item.Email</td>
                     <td>@item.Rol?.DenominacionRol</td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdUsuario" title="Editar">
+                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdUsuario" title="Editar">
                             <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdUsuario" title="Detalles">
+                            <i class="fa-solid fa-eye"></i>
                         </a>
                         <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdUsuario" title="Eliminar">
                             <i class="fa-solid fa-trash-can"></i>
                         </a>
-                        <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdUsuario" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
+                        
                     </td>
                 </tr>
             }

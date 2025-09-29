@@ -58,15 +58,15 @@
                     <td>@item.Precio?.ToString("C")</td>
                     <td>@item.Propietario?.ApellidoNombres</td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
+                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
                             <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
+                            <i class="fa-solid fa-eye"></i>
                         </a>
                         <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble" title="Eliminar">
                             <i class="fa-solid fa-trash-can"></i>
-                        </a>
-                        <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
+                        </a>                        
                         <a class="btn btn-sm btn-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble" title="Imágenes">
                             <i class="fa-solid fa-image"></i>
                         </a>

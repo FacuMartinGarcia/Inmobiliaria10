@@ -75,8 +75,8 @@ $(function () {
                     orderable: false,
                     className: 'text-end text-nowrap',
                     render: id => !id ? '' : `
-                        <a href="/Pagos/Detalles/${id}" class="btn btn-sm btn-secondary"><i class="fa-solid fa-eye"></i></a>
-                        <a href="/Pagos/Editar/${id}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></a>
+                        <a href="/Pagos/Editar/${id}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen"></i></a>    
+                        <a href="/Pagos/Detalles/${id}" class="btn btn-sm btn-primary"><i class="fa-solid fa-eye"></i></a>
                         <form action="/Pagos/Eliminar/${id}" method="post" class="d-inline form-delete"
                               data-msg="¿Confirmás eliminar el pago #${id}?">
                             <input type="hidden" name="__RequestVerificationToken" value="${$('input[name="__RequestVerificationToken"]').val()}"/>

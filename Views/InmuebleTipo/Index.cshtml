@@ -34,15 +34,15 @@ else
                         <td>@item.IdTipo</td>
                         <td>@item.DenominacionTipo</td>
                         <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-primary" asp-action="Editar" asp-route-id="@item.IdTipo" title="Editar">
+                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdTipo" title="Editar">
                                 <i class="fa-solid fa-pen"></i>
+                            </a>      
+                            <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdTipo" title="Detalle">
+                                <i class="fa-solid fa-eye"></i>
                             </a>
                             <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdTipo" title="Eliminar">
                                 <i class="fa-solid fa-trash-can"></i>
-                            </a>                
-                            <a class="btn btn-sm btn-info" asp-action="Detalle" asp-route-id="@item.IdTipo" title="Detalle">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
+                            </a>  
                         </td>
                     </tr>
                 }
