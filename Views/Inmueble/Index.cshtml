@@ -3,122 +3,179 @@
 @{
     ViewData["Title"] = "Inmuebles";
     Layout = "_Layout";
-    int paginaActual = ViewData["PaginaActual"] != null ? Convert.ToInt32(ViewData["PaginaActual"]) : 1;
-    int totalPaginas = ViewData["TotalPaginas"] != null ? Convert.ToInt32(ViewData["TotalPaginas"]) : 1;
+
+    int paginaActual = ViewData["PaginaActual"] as int? ?? 1;
+    int totalPaginas = ViewData["TotalPaginas"] as int? ?? 1;
+    bool soloDisponibles = ViewData["SoloDisponibles"] as bool? ?? false;
+
+    bool filtrosAplicados = !string.IsNullOrEmpty(ViewData["SearchString"]?.ToString())
+                            || soloDisponibles
+                            || !string.IsNullOrEmpty(ViewData["FechaInicio"]?.ToString())
+                            || !string.IsNullOrEmpty(ViewData["FechaFin"]?.ToString());
 }
 
-<div class="text-center mb-3">
-    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Inmuebles</h2>
-</div>
-
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="d-flex justify-content-center mb-3">
-        <div class="input-group w-50">
-            <input type="text" name="searchString" value="@ViewData["SearchString"]"
-                   class="form-control"
-                   autocomplete="off"
-                   placeholder="Buscar inmueble por dirección, tipo o nombre del propietario..." />
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
+<div class="filtrosForm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Listado de Inmuebles</h2>  
+        <a asp-action="Crear" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i> Nuevo Inmueble
+        </a>
     </div>
-</form>
+    <br><br>
+    <form asp-action="Index" method="get" class="mb-3 inmueble-index">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 w-100">
 
-<div class="d-flex justify-content-end mb-3">
-    <a asp-action="Crear" class="btn btn-dark">
-        <i class="fa-solid fa-plus"></i> Nuevo Inmueble
-    </a>
-</div>
+            <div class="d-flex align-items-end gap-2">
+                <input type="text" 
+                    name="searchString" 
+                    value="@ViewData["SearchString"]"
+                    class="form-control search-input"
+                    autocomplete="off"
+                    placeholder="Ingrese texto a buscar.." 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    title="El texto ingresado se buscará en dirección, propietario y tipo de inmueble" />
+                <button type="submit" class="btn btn-primary" name="buscarTexto" value="true">
+                    Buscar
+                </button>
+            </div>
+            
+            <div class="d-flex flex-column align-items-center">
+                <label class="form-label mb-1 small">Ver inmuebles disponibles hoy día:</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" name="soloDisponibles" value="true"
+                        data-bs-toggle="tooltip" 
+                        data-bs-placement="top"
+                        title="Mostrar solo los inmuebles que no tienen contratos vigentes. Presione Filtrar para ver los resultados"
+                        @(soloDisponibles ? "checked" : "") />
+                </div>
+            </div>
 
-<table class="table table-hover table-striped align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>@Html.DisplayNameFor(m => m.Direccion)</th>
-            <th>@Html.DisplayNameFor(m => m.Piso)</th>
-            <th>@Html.DisplayNameFor(m => m.Depto)</th>
-            <th>Uso</th>
-            <th>Tipo</th>
-            <th>@Html.DisplayNameFor(m => m.Ambientes)</th>
-            <th>@Html.DisplayNameFor(m => m.Precio)</th>
-            <th>@Html.DisplayNameFor(m => m.Propietario)</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
+            <div class="d-flex align-items-end gap-2 flex-wrap">
+                <div>
+                    <label class="form-label mb-0 small">Disponible entre la fecha:</label>
+                    <input type="date" name="fechaInicio" class="form-control" value="@ViewData["FechaInicio"]" />
+                </div>
+
+                <div>
+                    <label class="form-label mb-0 small">y la fecha:</label>
+                    <input type="date" name="fechaFin" class="form-control" value="@ViewData["FechaFin"]" />
+                </div>
+
+                <button type="submit" class="btn btn-secondary" name="filtrar" value="true">
+                    <i class="fa fa-filter"></i> Filtrar
+                </button>
+
+                @if (filtrosAplicados)
+                {
+                    <a asp-action="Index" class="btn btn-dark">Quitar filtros</a>
+                }
+            </div>
+        </div>
+    </form>
+
+
+
+    <table class="table table-hover table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.Direccion)</th>
+                <th>@Html.DisplayNameFor(m => m.Piso)</th>
+                <th>@Html.DisplayNameFor(m => m.Depto)</th>
+                <th>Uso</th>
+                <th>Tipo</th>
+                <th>@Html.DisplayNameFor(m => m.Ambientes)</th>
+                <th>@Html.DisplayNameFor(m => m.Precio)</th>
+                <th>@Html.DisplayNameFor(m => m.Propietario)</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Direccion</td>
+                        <td>@item.Piso</td>
+                        <td>@item.Depto</td>
+                        <td>@item.Uso?.DenominacionUso</td>
+                        <td>@item.Tipo?.DenominacionTipo</td>
+                        <td>@item.Ambientes</td>
+                        <td>@item.Precio?.ToString("C")</td>
+                        <td>@item.Propietario?.ApellidoNombres</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble" title="Eliminar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                            <a class="btn btn-sm btn-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble" title="Imágenes">
+                                <i class="fa-solid fa-image"></i>
+                            </a>
+                            <a class="btn btn-sm btn-success" asp-controller="Contratos" asp-action="VerContratos" asp-route-id="@item.IdInmueble" title="Ver Contratos">
+                                <i class="fa-solid fa-ticket-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.Direccion</td>
-                    <td>@item.Piso</td>
-                    <td>@item.Depto</td>
-                    <td>@item.Uso?.DenominacionUso</td>
-                    <td>@item.Tipo?.DenominacionTipo</td>
-                    <td>@item.Ambientes</td>
-                    <td>@item.Precio?.ToString("C")</td>
-                    <td>@item.Propietario?.ApellidoNombres</td>
-                    <td class="text-center">
-                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInmueble" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInmueble" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble" title="Eliminar">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>                        
-                        <a class="btn btn-sm btn-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble" title="Imágenes">
-                            <i class="fa-solid fa-image"></i>
-                        </a>
-                        <a class="btn btn-sm btn-success" asp-controller="Contratos" asp-action="VerContratos" asp-route-id="@item.IdInmueble" title="Ver Contratos">
-                            <i class="fa-solid fa-image"></i>
-                        </a>
-                    </td>
+                    <td colspan="9" class="text-center text-muted">No hay inmuebles registrados</td>
                 </tr>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="9" class="text-center text-muted">No hay inmuebles registrados</td>
-            </tr>
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-@if (totalPaginas > 1)
-{
-    <nav>
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-pagina="@(paginaActual - 1)"
-                   asp-route-searchString="@ViewData["SearchString"]">
-                    « Anterior
-                </a>
-            </li>
-
-            @for (int i = 1; i <= totalPaginas; i++)
-            {
-                <li class="page-item @(i == paginaActual ? "active" : "")">
+    @if (totalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
                     <a class="page-link"
-                       asp-action="Index"
-                       asp-route-pagina="@i"
-                       asp-route-searchString="@ViewData["SearchString"]">
-                        @i
+                    asp-action="Index"
+                    asp-route-pagina="@(paginaActual - 1)"
+                    asp-route-searchString="@ViewData["SearchString"]"
+                    asp-route-soloDisponibles="@soloDisponibles"
+                    asp-route-fechaInicio="@ViewData["FechaInicio"]"
+                    asp-route-fechaFin="@ViewData["FechaFin"]">
+                    « Anterior
                     </a>
                 </li>
-            }
 
-            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-pagina="@(paginaActual + 1)"
-                   asp-route-searchString="@ViewData["SearchString"]">
+                @for (int i = 1; i <= totalPaginas; i++)
+                {
+                    <li class="page-item @(i == paginaActual ? "active" : "")">
+                        <a class="page-link"
+                        asp-action="Index"
+                        asp-route-pagina="@i"
+                        asp-route-searchString="@ViewData["SearchString"]"
+                        asp-route-soloDisponibles="@soloDisponibles"
+                        asp-route-fechaInicio="@ViewData["FechaInicio"]"
+                        asp-route-fechaFin="@ViewData["FechaFin"]">
+                        @i
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                    <a class="page-link"
+                    asp-action="Index"
+                    asp-route-pagina="@(paginaActual + 1)"
+                    asp-route-searchString="@ViewData["SearchString"]"
+                    asp-route-soloDisponibles="@soloDisponibles"
+                    asp-route-fechaInicio="@ViewData["FechaInicio"]"
+                    asp-route-fechaFin="@ViewData["FechaFin"]">
                     Siguiente »
-                </a>
-            </li>
-        </ul>
-    </nav>
-}  
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

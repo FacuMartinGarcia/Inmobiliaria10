@@ -106,24 +106,59 @@ namespace Inmobiliaria10.Data.Repositories
             }
             return lista;
         }
-
         public async Task<(List<Inmueble> registros, int totalRegistros)> ListarTodosPaginado(
-            int pagina, int cantidadPorPagina, string? searchString = null)
+            int pagina,
+            int cantidadPorPagina,
+            string? searchString = null,
+            bool soloDisponibles = false,
+            DateTime? fechaInicio = null,
+            DateTime? fechaFin = null)
         {
             var lista = new List<Inmueble>();
             using var conn = _db.GetConnection();
+            await conn.OpenAsync();
 
             int offset = (pagina - 1) * cantidadPorPagina;
 
-            string where = "";
+            var condiciones = new List<string>();
+
+
             if (!string.IsNullOrEmpty(searchString))
             {
-                where = @"WHERE i.direccion LIKE @search 
-                        OR i.ambientes LIKE @search
-                        OR t.denominacion_tipo LIKE @search 
-                        OR p.apellido_nombres LIKE @search";
+                condiciones.Add(@"(i.direccion LIKE @search 
+                                OR i.ambientes LIKE @search
+                                OR t.denominacion_tipo LIKE @search 
+                                OR p.apellido_nombres LIKE @search)");
             }
 
+
+            if (soloDisponibles)
+            {
+                condiciones.Add($@"NOT EXISTS (
+                    SELECT 1 
+                    FROM contratos c2
+                    WHERE c2.id_inmueble = i.id_inmueble
+                    AND (c2.rescision IS NULL OR c2.rescision > @hoy)
+                    AND c2.fecha_fin >= @hoy
+                )");
+            }
+
+
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                condiciones.Add($@"NOT EXISTS (
+                    SELECT 1 
+                    FROM contratos c2
+                    WHERE c2.id_inmueble = i.id_inmueble
+                    AND c2.fecha_inicio <= @fechaFin
+                    AND c2.fecha_fin >= @fechaInicio
+                    AND (c2.rescision IS NULL OR c2.rescision > @fechaInicio)
+                )");
+            }
+
+            string where = condiciones.Any() ? "WHERE " + string.Join(" AND ", condiciones) : "";
+
+            // SQL principal
             var sql = $@"
                 SELECT i.*,
                     u.id_uso AS uso_id_uso, u.denominacion_uso AS denominacion_uso,
@@ -146,7 +181,15 @@ namespace Inmobiliaria10.Data.Repositories
             if (!string.IsNullOrEmpty(searchString))
                 cmd.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
-            await conn.OpenAsync();
+            if (soloDisponibles || fechaInicio.HasValue)
+                cmd.Parameters.AddWithValue("@hoy", DateTime.Today);
+
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                cmd.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+                cmd.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
+            }
+
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -154,23 +197,34 @@ namespace Inmobiliaria10.Data.Repositories
             }
             await reader.CloseAsync();
 
+
             var sqlTotal = $@"
-                SELECT COUNT(*) 
+                SELECT COUNT(DISTINCT i.id_inmueble)
                 FROM inmuebles i
+                LEFT JOIN inmuebles_usos u ON i.id_uso = u.id_uso
                 LEFT JOIN inmuebles_tipos t ON i.id_tipo = t.id_tipo
                 LEFT JOIN propietarios p ON i.id_propietario = p.id_propietario
-                {where}";
+                {where}
+            ";
 
             using var cmdTotal = new MySqlCommand(sqlTotal, conn);
 
             if (!string.IsNullOrEmpty(searchString))
                 cmdTotal.Parameters.AddWithValue("@search", "%" + searchString + "%");
 
+            if (soloDisponibles || fechaInicio.HasValue)
+                cmdTotal.Parameters.AddWithValue("@hoy", DateTime.Today);
+
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                cmdTotal.Parameters.AddWithValue("@fechaInicio", fechaInicio.Value);
+                cmdTotal.Parameters.AddWithValue("@fechaFin", fechaFin.Value);
+            }
+
             int totalRegistros = Convert.ToInt32(await cmdTotal.ExecuteScalarAsync());
 
             return (lista, totalRegistros);
         }
-
         public async Task<Inmueble?> ObtenerPorId(int id)
         {
             Inmueble? i = null;

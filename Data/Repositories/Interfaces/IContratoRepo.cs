@@ -30,6 +30,8 @@ namespace Inmobiliaria10.Data.Repositories
 
         Task<bool> SoftDeleteAsync(int id, int deletedBy, CancellationToken ct = default);
 
+        Task<bool> ExisteContratoParaInmueble(int idInmueble);
+
         Task<bool> ExistsOverlapAsync(
             int idInmueble,
             DateTime fechaInicio,

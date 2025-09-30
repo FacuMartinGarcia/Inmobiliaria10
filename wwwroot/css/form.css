@@ -142,6 +142,29 @@ body {
   align-items: center;
 }
 
-#filtroContratos .select2-container--default .select2-selection--single .select2-selection__rendered {
+#filtrosContratos .select2-container--default .select2-selection--single .select2-selection__rendered {
   line-height: 45px !important;
+}
+
+.filtrosForm {
+  background: rgba(255, 255, 255, 0.6); 
+  backdrop-filter: blur(6px);            
+  -webkit-backdrop-filter: blur(6px);    
+  border-radius: 0.5rem;                 
+  padding: 1rem;                        
+}
+
+.inmueble-index__titulo { color: black; }
+.inmueble-index .form-label { color: black; font-weight: bold; }
+.inmueble-index .form-switch .form-check-input {
+    width: 2.5em;
+    height: 1.3em;
+}
+.inmueble-index .search-input {
+    width: 100%;
+}
+.inmueble-index .form-switch .form-check-label {
+    font-weight: bold;
+    color: black;
+    margin-left: 0.5em;
 }
