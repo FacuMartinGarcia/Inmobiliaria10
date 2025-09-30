@@ -11,7 +11,9 @@ namespace Inmobiliaria10.Data.Repositories
         Task<Inmueble?> ObtenerPorId(int id);
         Task<List<Inmueble>> ListarTodos();
         Task<(List<Inmueble> registros, int totalRegistros)> ListarTodosPaginado(
-            int pagina, int cantidadPorPagina, string? searchString = null);
+            int pagina, int cantidadPorPagina, string? searchString = null,
+            bool soloDisponibles = false, DateTime? fechaInicio = null,
+            DateTime? fechaFin = null);
         Task<(List<Inmueble> registros, int totalRegistros)> ListarPorPropietario(
         int idPropietario, int pagina, int cantidadPorPagina, string? searchString = null);
     }

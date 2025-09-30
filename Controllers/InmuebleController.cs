@@ -13,8 +13,9 @@ namespace Inmobiliaria10.Controllers
         private readonly IPropietarioRepo _repoPropietario;
         private readonly IInmuebleUsoRepo _repoUso;
         private readonly IInmuebleTipoRepo _repoTipo;
-
         private readonly IImagenRepo _repoImagen;
+        private readonly IContratoRepo _repoContrato;
+
 
         public InmuebleController(
 
@@ -22,7 +23,8 @@ namespace Inmobiliaria10.Controllers
             IPropietarioRepo repoPropietario,
             IInmuebleUsoRepo repoUso,
             IInmuebleTipoRepo repoTipo,
-            IImagenRepo repoImagen
+            IImagenRepo repoImagen,
+            IContratoRepo repoContrato
             )
         {
             _repoInmueble = repoInmueble;
@@ -30,20 +32,52 @@ namespace Inmobiliaria10.Controllers
             _repoUso = repoUso;
             _repoTipo = repoTipo;
             _repoImagen = repoImagen;
+            _repoContrato = repoContrato;
         }
 
-        public async Task<IActionResult> Index(int pagina = 1, string? searchString = null)
+        public async Task<IActionResult> Index(
+            int pagina = 1, 
+            string? searchString = null,
+            bool soloDisponibles = false,
+            DateTime? fechaInicio = null,
+            DateTime? fechaFin = null)
         {
             int cantidadPorPagina = 8;
 
-            var resultado = await _repoInmueble.ListarTodosPaginado(pagina, cantidadPorPagina, searchString);
+
+            if ((fechaInicio.HasValue && !fechaFin.HasValue) ||
+                (!fechaInicio.HasValue && fechaFin.HasValue))
+            {
+                TempData["Error"] = "Debe completar ambas fechas para aplicar el filtro.";
+                fechaInicio = null;
+                fechaFin = null;
+            }
+            else if (fechaInicio.HasValue && fechaFin.HasValue && fechaInicio > fechaFin)
+            {
+                TempData["Error"] = "La fecha de inicio no puede ser posterior a la fecha de fin.";
+                fechaInicio = null;
+                fechaFin = null;
+            }
+
+            var resultado = await _repoInmueble.ListarTodosPaginado(
+                pagina,
+                cantidadPorPagina,
+                searchString,
+                soloDisponibles,
+                fechaInicio,
+                fechaFin
+            );
 
             ViewData["TotalPaginas"] = (int)Math.Ceiling((double)resultado.totalRegistros / cantidadPorPagina);
             ViewData["PaginaActual"] = pagina;
             ViewData["SearchString"] = searchString;
+            ViewData["SoloDisponibles"] = soloDisponibles;
+            ViewData["FechaInicio"] = fechaInicio?.ToString("yyyy-MM-dd");
+            ViewData["FechaFin"] = fechaFin?.ToString("yyyy-MM-dd");
 
             return View(resultado.registros);
         }
+
 
         public async Task<IActionResult> Detalle(int id)
         {
@@ -111,8 +145,16 @@ namespace Inmobiliaria10.Controllers
             if (inmueble == null)
                 return NotFound();
 
+            if (await _repoContrato.ExisteContratoParaInmueble(id))
+            {
+                Console.WriteLine($"Existe contrato");
+                TempData["Err"] = "No se puede eliminar el inmueble porque tiene contratos asociados.";
+                return RedirectToAction(nameof(Index));
+            }
+
             return View(inmueble);
         }
+
 
         [Authorize(Roles = "Administrador")]
         [HttpPost, ActionName("Eliminar")]
@@ -120,7 +162,7 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> EliminarConfirmado(int id)
         {
             await _repoInmueble.Eliminar(id);
-            TempData["Mensaje"] = "Inmueble eliminado correctamente";
+            TempData["Ok"] = "Inmueble eliminado correctamente";
             return RedirectToAction("Index");
         }
 
