@@ -6,6 +6,6 @@ namespace Inmobiliaria10.Models.ViewModels
     {
         [Required(ErrorMessage = "Debe ingresar un correo electrónico")]
         [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
-        public string Email { get; set; } = "";
+        public string Email { get; set; } = string.Empty;
     }
 }

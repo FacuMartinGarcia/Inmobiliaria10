@@ -237,7 +237,11 @@ namespace Inmobiliaria10.Controllers
                 TempData["Error"] = "No existe ningún usuario con ese correo.";
                 return View(vm);
             }
-
+            if (string.IsNullOrWhiteSpace(vm.Email))
+            {
+                TempData["Error"] = "Debe ingresar un correo válido.";
+                return View(vm);
+            }
             var token = Guid.NewGuid().ToString("N");
             await _repo.GuardarTokenReset(usuario.IdUsuario, token, DateTime.UtcNow.AddHours(1));
 
@@ -247,7 +251,7 @@ namespace Inmobiliaria10.Controllers
             await _emailService.Enviar(vm.Email, "Recuperar contraseña",
                 $"<p>Hacé click en el siguiente enlace para restablecer tu contraseña:</p><p><a href='{link}'>Restablecer Contraseña</a></p>");
 
-            TempData["Mensaje"] = "Se ha enviado un enlace a tu correo.";
+            TempData["Mensaje"] ="Si el correo existe en nuestra base, recibirás un enlace de recuperación.";
             return RedirectToAction("Login");
         }
 
