@@ -86,17 +86,38 @@ public class PropietarioController : Controller
     public async Task<IActionResult> Borrar(int id)
     {
         var p = await _repo.ObtenerPorId(id);
-        if (p == null) return NotFound();
+        if (p == null) 
+            return NotFound();
+
+        var tieneInmuebles = await _repoInmueble
+            .ListarPorPropietario(id, 1, 1);
+
+        if (tieneInmuebles.registros.Any())
+        {
+            TempData["Err"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
+            return RedirectToAction(nameof(Index));
+        }
+
         return View(p);
     }
+
 
     // POST: /Propietarios/DeleteConfirmed/5
     [Authorize(Roles = "Administrador")]
     [HttpPost, ActionName("Borrar"), ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+
+        var tieneInmuebles = await _repoInmueble.ListarPorPropietario(id, 1, 1);
+        if (tieneInmuebles.registros.Any())
+        {
+            TempData["Err"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var ok = await _repo.Borrar(id);
         if (!ok) return NotFound();
+
         TempData["Mensaje"] = "Propietario eliminado.";
         return RedirectToAction(nameof(Index));
     }

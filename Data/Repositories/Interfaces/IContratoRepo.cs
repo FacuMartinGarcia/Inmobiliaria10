@@ -53,5 +53,7 @@ namespace Inmobiliaria10.Data.Repositories
             int pageIndex = 1,
             int pageSize = 10,
             CancellationToken ct = default);
+        Task<bool> ExisteContratoPorInquilinoAsync(int idInquilino, CancellationToken ct = default);
+
     }
 }

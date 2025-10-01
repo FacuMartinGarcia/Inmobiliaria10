@@ -9,10 +9,16 @@ namespace Inmobiliaria10.Controllers
     public class InquilinoController : Controller
     {
         private readonly IInquilinoRepo _repo;
+        private readonly IContratoRepo _repoContratos;
 
-        public InquilinoController(IInquilinoRepo repo)
+        public InquilinoController(
+            IInquilinoRepo repo,
+            IContratoRepo repoContratos
+        )
         {
             _repo = repo;
+            _repoContratos = repoContratos;
+            
         }
 
         // GET: /Inquilino - paginado
@@ -106,6 +112,13 @@ namespace Inmobiliaria10.Controllers
             var inq = await _repo.ObtenerPorIdAsync(id, ct);
             if (inq == null)
                 return NotFound();
+
+            var tieneContratos = await _repoContratos.ExisteContratoPorInquilinoAsync(id, ct);
+            if (tieneContratos)
+            {
+                TempData["Err"] = "No se puede eliminar el inquilino porque tiene contratos asociados.";
+                return RedirectToAction("Index");
+            }
 
             return View(inq);
         }

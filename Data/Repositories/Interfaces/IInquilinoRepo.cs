@@ -12,7 +12,6 @@ namespace Inmobiliaria10.Data.Repositories
         Task<Inquilino?> ObtenerPorIdAsync(int id, CancellationToken ct = default);
         Task<Inquilino?> ObtenerPorDocumentoAsync(string documento, CancellationToken ct = default);
         Task<int> BorrarAsync(int id, CancellationToken ct = default);
-
         Task<List<Inquilino>> BuscarInquilino(string term, CancellationToken ct = default);
     }
 }

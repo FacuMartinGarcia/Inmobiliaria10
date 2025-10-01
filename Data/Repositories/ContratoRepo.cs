@@ -798,5 +798,24 @@ namespace Inmobiliaria10.Data.Repositories
             return count > 0;
         }
 
+        public async Task<bool> ExisteContratoPorInquilinoAsync(int idInquilino, CancellationToken ct = default)
+        {
+            using var conn = _db.GetConnection();
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT COUNT(*)
+                FROM contratos
+                WHERE id_inquilino = @IdInquilino
+                AND deleted_at IS NULL;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@IdInquilino", idInquilino);
+
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync(ct));
+            return count > 0;
+        }
+
+
     }
 }

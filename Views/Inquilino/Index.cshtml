@@ -7,74 +7,75 @@
     
 }
 
-<div class="text-center mb-3">
-    <h2 class="fw-bold mb-0" style="color: black;">Listado de Inquilinos</h2>
-</div>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="d-flex justify-content-center mb-3">
-        <div class="input-group w-50">
-            <input type="text" name="searchString" value="@ViewData["SearchString"]"
-                class="form-control"
-                autocomplete="off"
-                placeholder="Buscar por documento, apellido y nombres..."/>
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
+<div class="filtrosForm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Inquilinos</h2>  
+        <a asp-action="Crear" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i> Nuevo Inquilino
+        </a>
     </div>
-</form>
+    <br><br>
+    <form asp-action="Index" method="get" class="row g-2 mb-3 inmueble-index">
+        <div class="d-flex justify-content-left mb-3">
+            <div class="input-group w-50">
+                <input type="text" name="searchString" value="@ViewData["SearchString"]"
+                    class="form-control"
+                    autocomplete="off"
+                    placeholder="Buscar por documento, apellido y nombres..."/>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
 
-<div class="d-flex justify-content-end mb-3">
-    <a asp-action="Crear" class="btn btn-dark">
-        <i class="fa-solid fa-plus"></i> Nuevo Inquilino
-    </a>
-</div>
 
-<table class="table table-hover table-striped align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>@Html.DisplayNameFor(m => m.Documento)</th> 
-            <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th> 
-            <th>@Html.DisplayNameFor(m => m.Domicilio)</th> 
-            <th>@Html.DisplayNameFor(m => m.Telefono)</th> 
-            <th>@Html.DisplayNameFor(m => m.Email)</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
+
+    <table class="table table-hover table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.Documento)</th> 
+                <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th> 
+                <th>@Html.DisplayNameFor(m => m.Domicilio)</th> 
+                <th>@Html.DisplayNameFor(m => m.Telefono)</th> 
+                <th>@Html.DisplayNameFor(m => m.Email)</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Documento</td>
+                        <td>@item.ApellidoNombres</td>
+                        <td>@item.Domicilio</td>
+                        <td>@item.Telefono</td>
+                        <td>@item.Email</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" asp-action="Borrar" asp-route-id="@item.IdInquilino" title="Borrar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>                
+                            
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.Documento</td>
-                    <td>@item.ApellidoNombres</td>
-                    <td>@item.Domicilio</td>
-                    <td>@item.Telefono</td>
-                    <td>@item.Email</td>
-                    <td class="text-center">
-                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdInquilino" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdInquilino" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <a class="btn btn-sm btn-danger" asp-action="Borrar" asp-route-id="@item.IdInquilino" title="Borrar">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>                
-                        
-                    </td>
+                    <td colspan="6" class="text-center text-muted">No hay inquilinos registrados</td>
                 </tr>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="6" class="text-center text-muted">No hay inquilinos registrados</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
+        </tbody>
+    </table>
+</div>
 @if (totalPaginas > 1)
 {
     <nav>

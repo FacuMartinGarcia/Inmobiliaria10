@@ -4,123 +4,125 @@
     var pr = Model.Data;
     Layout = "_Layout";
 }
-
-<div class="text-center mb-3">
-    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Propietarios</h2>
-</div>
-
-<form method="get" class="row g-2 align-items-center mb-3">
-
-    <!-- Campo de búsqueda -->
-    <div class="col-md-4">
-        <input type="text" name="q" value="@pr.Query" class="form-control" placeholder="Buscar por nombre o documento" />
-    </div>
-
-    <!-- Selección de tamaño de página -->
-    <div class="col-md-2">
-        <select name="pageSize" class="form-select" onchange="this.form.submit()">
-            @foreach (var size in Model.PageSizeOptions)
-            {
-                <option value="@size" selected="@(size == pr.PageSize ? "selected" : null)">
-                    @size por página
-                </option>
-            }
-        </select>
-    </div>
-
-    <!-- Botones de acción -->
-    <div class="col-md-6 text-end">
-        <button class="btn btn-primary me-2" type="submit">
-            <i class="fa fa-search"></i> Buscar
-        </button>
-        <a class="btn btn-outline-secondary me-2" href="@Url.Action("Index","Propietario")">
-            <i class="fa fa-eraser"></i> Limpiar
-        </a>
+<div class="filtrosForm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Propietarios</h2>  
         <a asp-action="Crear" class="btn btn-success">
-            <i class="fa fa-plus"></i> Nuevo Propietario
+            <i class="fa-solid fa-plus"></i> Nuevo Propietario
         </a>
     </div>
-</form>
+    <br><br>
+    <form method="get" class="row g-2 align-items-center mb-3 inmueble-index">
+
+        <!-- Campo de búsqueda -->
+        <div class="d-flex align-items-end gap-2">
+            <input type="text" name="q" value="@pr.Query" 
+                class="form-control w-50" 
+                placeholder="Buscar por nombre o documento" />
+            <button class="btn btn-primary me-2" type="submit">
+                <i class="fa fa-search"></i> Buscar
+            </button>
+            <a class="btn btn-outline-secondary me-2" href="@Url.Action("Index","Propietario")">
+                <i class="fa fa-eraser"></i> Limpiar
+            </a>
+        </div>
+
+    </form>
 
 
-@if (pr.Items.Count == 0)
-{
-    <div class="alert alert-info">No se encontraron propietarios.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-sm table-striped align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>DNI</th>
-                    <th>Apellido y Nombres</th>
-                    <th>Domicilio</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in pr.Items)
-                {
+    @if (pr.Items.Count == 0)
+    {
+        <div class="alert alert-info">No se encontraron propietarios.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@p.Documento</td>
-                        <td>@p.ApellidoNombres</td>
-                        <td>@p.Domicilio</td>
-                        <td>@p.Telefono</td>
-                        <td>@p.Email</td>
-                        <td class="text-end">
-                            <a class="btn btn-sm btn-warning" href="@Url.Action("Editar","Propietario", 
-                            new { id = p.IdPropietario })"><i class="fa-solid fa-pen"></i></a>
-                            <a class="btn btn-sm btn-primary" href="@Url.Action("Detalles","Propietario", 
-                            new { id = p.IdPropietario })"><i class="fa-solid fa-eye"></i></a>
-                            <a class="btn btn-sm btn-danger" href="@Url.Action("Borrar","Propietario", 
-                            new { id = p.IdPropietario })"><i class="fa-solid fa-trash-can"></i></a>
-                            <a class="btn btn-sm btn-dark" href="@Url.Action("VerInmuebles","Propietario", new { id = p.IdPropietario })" title="Ver Inmuebles">
-                                <i class="fa-solid fa-house"></i>
-                            </a>
-                        </td>
+                        <th>DNI</th>
+                        <th>Apellido y Nombres</th>
+                        <th>Domicilio</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in pr.Items)
+                    {
+                        <tr>
+                            <td>@p.Documento</td>
+                            <td>@p.ApellidoNombres</td>
+                            <td>@p.Domicilio</td>
+                            <td>@p.Telefono</td>
+                            <td>@p.Email</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-warning" href="@Url.Action("Editar","Propietario", 
+                                new { id = p.IdPropietario })"><i class="fa-solid fa-pen"></i></a>
+                                <a class="btn btn-sm btn-primary" href="@Url.Action("Detalles","Propietario", 
+                                new { id = p.IdPropietario })"><i class="fa-solid fa-eye"></i></a>
+                                <a class="btn btn-sm btn-danger" href="@Url.Action("Borrar","Propietario", 
+                                new { id = p.IdPropietario })"><i class="fa-solid fa-trash-can"></i></a>
+                                <a class="btn btn-sm btn-dark" href="@Url.Action("VerInmuebles","Propietario", new { id = p.IdPropietario })" title="Ver Inmuebles">
+                                    <i class="fa-solid fa-house"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Paginación">
+            <ul class="pagination">
+                @{
+                    string qs(int page)
+                    {
+                        var qp = new Dictionary<string, string?> {
+                            ["q"] = pr.Query,
+                            ["page"] = page.ToString(),
+                            ["pageSize"] = pr.PageSize.ToString()
+                        };
+                        var query = string.Join("&", qp.Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+                                                    .Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value!)}"));
+                        return Url.Action("Index","Propietario") + "?" + query;
+                    }
+
+                    var prevDisabled = pr.Page <= 1 ? "disabled" : "";
+                    var nextDisabled = pr.Page >= pr.TotalPages ? "disabled" : "";
                 }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Paginación -->
-    <nav aria-label="Paginación">
-        <ul class="pagination">
-            @{
-                string qs(int page)
-                {
-                    var qp = new Dictionary<string, string?> {
-                        ["q"] = pr.Query,
-                        ["page"] = page.ToString(),
-                        ["pageSize"] = pr.PageSize.ToString()
-                    };
-                    var query = string.Join("&", qp.Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
-                                                   .Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value!)}"));
-                    return Url.Action("Index","Propietario") + "?" + query;
-                }
-
-                var prevDisabled = pr.Page <= 1 ? "disabled" : "";
-                var nextDisabled = pr.Page >= pr.TotalPages ? "disabled" : "";
-            }
-            <li class="page-item @prevDisabled">
-                <a class="page-link" href="@(pr.Page <= 1 ? "#" : qs(pr.Page - 1))">Anterior</a>
-            </li>
-
-            @for (int i = 1; i <= pr.TotalPages; i++)
-            {
-                var active = pr.Page == i ? "active" : "";
-                <li class="page-item @active">
-                    <a class="page-link" href="@qs(i)">@i</a>
+                <li class="page-item @prevDisabled">
+                    <a class="page-link" href="@(pr.Page <= 1 ? "#" : qs(pr.Page - 1))">Anterior</a>
                 </li>
-            }
 
-            <li class="page-item @nextDisabled">
-                <a class="page-link" href="@(pr.Page >= pr.TotalPages ? "#" : qs(pr.Page + 1))">Siguiente</a>
-            </li>
-        </ul>
-    </nav>
-}
+                @for (int i = 1; i <= pr.TotalPages; i++)
+                {
+                    var active = pr.Page == i ? "active" : "";
+                    <li class="page-item @active">
+                        <a class="page-link" href="@qs(i)">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @nextDisabled">
+                    <a class="page-link" href="@(pr.Page >= pr.TotalPages ? "#" : qs(pr.Page + 1))">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+
+        @*@"
+        <div class="col-md-2">
+            <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                @foreach (var size in Model.PageSizeOptions)
+                {
+                    <option value="@size" selected="@(size == pr.PageSize ? "selected" : null)">
+                        @size por página
+                    </option>
+                }
+            </select>
+        </div>
+        *@
+
+    }
+</div>        
