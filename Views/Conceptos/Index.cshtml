@@ -9,75 +9,78 @@
     var q = (string?)ViewBag.Query ?? "";
 }
 @using System.Text.Json
-
-<h2 class="mb-3">Conceptos</h2>
-
-<form method="get" class="row g-2 mb-3">
-    <div class="col-sm-6 col-md-4">
-        <input name="q" value="@q" class="form-control" placeholder="Buscar por denominación..." />
+<div class="filtrosForm">
+    <div class="text-center mb-3">
+        <h2 class="fw-bold mb-0" style="color:#b78309;">Conceptos</h2>
     </div>
-    <div class="col-auto">
-        <button class="btn btn-dark" type="submit">
-            <i class="bi bi-funnel"></i> Filtrar
-        </button>
-    </div>
-    <div class="col-auto ms-auto">
-        <a class="btn btn-success" asp-action="Crear">
-            <i class="bi bi-plus-lg"></i> Nuevo concepto
-        </a>
-    </div>
-</form>
 
-@if (Model is null || !Model.Any())
-{
-    <div class="alert alert-info">No se encontraron conceptos.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-            <tr>
-                <th>Concepto</th>
-                <th style="width:220px;" class="text-end">Acciones</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var c in Model)
-            {
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-sm-6 col-md-4">
+            <input name="q" value="@q" class="form-control" placeholder="Buscar por denominación..." />
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-dark" type="submit">
+                <i class="bi bi-funnel"></i> Filtrar
+            </button>
+        </div>
+        <div class="col-auto ms-auto">
+            <a class="btn btn-success" asp-action="Crear">
+                <i class="bi bi-plus-lg"></i> Nuevo concepto
+            </a>
+        </div>
+    </form>
+
+    @if (Model is null || !Model.Any())
+    {
+        <div class="alert alert-info">No se encontraron conceptos.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
                 <tr>
-                    <td>@c.DenominacionConcepto</td>
-                    <td class="text-end text-nowrap">
-                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@c.IdConcepto">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@c.IdConcepto">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>
-                    </td>
+                    <th>Concepto</th>
+                    <th style="width:220px;" class="text-end">Acciones</th>
                 </tr>
-            }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.DenominacionConcepto</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@c.IdConcepto">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@c.IdConcepto">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Paginación -->
-    <nav aria-label="Paginación">
-        <ul class="pagination">
-            <li class="page-item @(page<=1?"disabled":"")">
-                <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@(Math.Max(1,page-1))" asp-route-pageSize="@pageSize">Anterior</a>
-            </li>
-
-            @for (var i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
-            {
-                <li class="page-item @(i==page?"active":"")">
-                    <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@i" asp-route-pageSize="@pageSize">@i</a>
+        <!-- Paginación -->
+        <nav aria-label="Paginación">
+            <ul class="pagination">
+                <li class="page-item @(page<=1?"disabled":"")">
+                    <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@(Math.Max(1,page-1))" asp-route-pageSize="@pageSize">Anterior</a>
                 </li>
-            }
 
-            <li class="page-item @(page>=totalPages?"disabled":"")">
-                <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@(Math.Min(totalPages,page+1))" asp-route-pageSize="@pageSize">Siguiente</a>
-            </li>
-        </ul>
-    </nav>
-}
+                @for (var i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
+                {
+                    <li class="page-item @(i==page?"active":"")">
+                        <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@i" asp-route-pageSize="@pageSize">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(page>=totalPages?"disabled":"")">
+                    <a class="page-link" asp-action="Index" asp-route-q="@q" asp-route-page="@(Math.Min(totalPages,page+1))" asp-route-pageSize="@pageSize">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

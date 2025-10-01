@@ -7,67 +7,68 @@
     var totalPages = (int)Math.Ceiling((double)total / pageSize);
     var inquilinoSel = ViewBag.Inquilino as string;
 }
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Morosos</h2>
-</div>
-
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-6">
-        <label for="inquilino" class="form-label">Inquilino</label>
-        <select id="fInquilino" name="inquilino" class="form-select">
-
-            @if (!string.IsNullOrEmpty(inquilinoSel))
-            {
-                <option value="@inquilinoSel" selected>@inquilinoSel</option>
-            }
-        </select>
+<div class="filtrosForm">
+    <div class="text-center mb-3">
+        <h2 class="fw-bold mb-0" style="color:#b78309;">Morosos</h2>
     </div>
-    <div class="col-md-2 align-self-end">
-      <button type="submit" class="btn btn-primary">Buscar</button>
-      <button id="btnLimpiar" class="btn btn-secondary">Limpiar</button>
-    </div>
-</form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Inquilino</th>
-            <th>Teléfono</th>
-            <th>Inmueble</th>
-            <th>Mes adeudado</th>
-            <th>Año</th>
-            <th>Monto</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var m in Model)
-        {
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-6">
+            <label for="inquilino" class="form-label">Inquilino</label>
+            <select id="fInquilino" name="inquilino" class="form-select">
+
+                @if (!string.IsNullOrEmpty(inquilinoSel))
+                {
+                    <option value="@inquilinoSel" selected>@inquilinoSel</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button id="btnLimpiar" class="btn btn-secondary">Limpiar</button>
+        </div>
+    </form>
+
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@m.Inquilino</td>
-                <td>@m.Telefono</td>
-                <td>@m.Inmueble</td>
-                <td>@m.MesAdeudado</td>
-                <td>@m.AnioAdeudado</td>
-                <td class="text-end">@m.MontoMensual.ToString("C")</td>
+                <th>Inquilino</th>
+                <th>Teléfono</th>
+                <th>Inmueble</th>
+                <th>Mes adeudado</th>
+                <th>Año</th>
+                <th>Monto</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Inquilino</td>
+                    <td>@m.Telefono</td>
+                    <td>@m.Inmueble</td>
+                    <td>@m.MesAdeudado</td>
+                    <td>@m.AnioAdeudado</td>
+                    <td class="text-end">@m.MontoMensual.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<nav>
-    <ul class="pagination justify-content-center">
-        @for (int p = 1; p <= totalPages; p++)
-        {
-            <li class="page-item @(p == page ? "active" : "")">
-                <a class="page-link" href="?page=@p&inquilino=@inquilinoSel">@p</a>
-            </li>
-        }
-    </ul>
-</nav>
+    <nav>
+        <ul class="pagination justify-content-center">
+            @for (int p = 1; p <= totalPages; p++)
+            {
+                <li class="page-item @(p == page ? "active" : "")">
+                    <a class="page-link" href="?page=@p&inquilino=@inquilinoSel">@p</a>
+                </li>
+            }
+        </ul>
+    </nav>
 
 
-@section Scripts {
-    <script src="~/js/pagos.js" asp-append-version="true"></script>
-}
+    @section Scripts {
+        <script src="~/js/pagos.js" asp-append-version="true"></script>
+    }
 
+</div>

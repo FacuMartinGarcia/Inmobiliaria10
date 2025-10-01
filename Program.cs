@@ -16,7 +16,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Usuario/Logout";     // logout
         options.AccessDeniedPath = "/Home/AccesoDenegado"; // acceso denegado
      // Tiempo de expiración de la cookie (inactividad)
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
         // Renovar si hay actividad (sliding window)
         options.SlidingExpiration = true;

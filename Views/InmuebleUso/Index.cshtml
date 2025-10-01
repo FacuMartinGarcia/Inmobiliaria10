@@ -3,50 +3,51 @@
     ViewData["Title"] = "Usos de Inmuebles";
     Layout = "_Layout";
 }
-
-<h2 class="mb-3">Usos de Inmuebles</h2>
-
-<div class="d-flex justify-content-end mb-3">
-    <a asp-action="Crear" class="btn btn-success">
-        <i class="fa-solid fa-plus"></i> Nuevo Uso de Inmueble
-    </a>
-</div>
-
-@if (Model is null || !Model.Any())
-{
-    <div class="alert alert-info">No se encontraron usos de inmuebles.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Uso</th>
-                    <th style="width:220px;" class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var uso in Model)
-                {
-                    <tr>
-                        <td>@uso.IdUso</td>
-                        <td>@uso.DenominacionUso</td>
-                        <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@uso.IdUso" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>     
-                            <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@uso.IdUso" title="Detalle">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-                            <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@uso.IdUso" title="Eliminar">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </a> 
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="filtrosForm">
+    <div class="text-center mb-3">
+        <h2 class="fw-bold mb-0" style="color:#b78309;">Usos de Inmuebles</h2>
     </div>
-}
+
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Crear" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i> Nuevo Uso de Inmueble
+        </a>
+    </div>
+
+    @if (Model is null || !Model.Any())
+    {
+        <div class="alert alert-info">No se encontraron usos de inmuebles.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Uso</th>
+                        <th style="width:220px;" class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var uso in Model)
+                    {
+                        <tr>
+                            <td>@uso.DenominacionUso</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@uso.IdUso" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>     
+                                <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@uso.IdUso" title="Detalle">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@uso.IdUso" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a> 
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

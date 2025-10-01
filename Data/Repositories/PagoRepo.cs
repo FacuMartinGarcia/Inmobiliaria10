@@ -862,8 +862,21 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync(ct);
 
             var pars = new List<MySqlParameter>();
-            var where = @" WHERE CURDATE() BETWEEN c.fecha_inicio AND c.fecha_fin
-                        AND DAY(CURDATE()) > 10 ";
+            var where = @" WHERE c.fecha_inicio <= CURDATE()
+                        AND c.fecha_fin >= CURDATE()
+                        AND (
+                                m.id_mes < MONTH(CURDATE()) 
+                                OR (m.id_mes = MONTH(CURDATE()) AND DAY(CURDATE()) > 10)
+                        )
+                        AND NOT EXISTS (
+                                SELECT 1
+                                FROM pagos p
+                                WHERE p.id_contrato = c.id_contrato
+                                AND p.anio = YEAR(CURDATE())
+                                AND p.id_mes = m.id_mes
+                                AND p.id_concepto = 1   -- ⚠️ ajustar ID del concepto de alquiler
+                                AND p.deleted_at IS NULL
+                        )";
 
             if (inquilinoId.HasValue)
             {
@@ -871,7 +884,9 @@ namespace Inmobiliaria10.Data.Repositories
                 pars.Add(new MySqlParameter("@inq", inquilinoId.Value));
             }
 
-            // total
+            // -------------------------
+            // total (para paginación)
+            // -------------------------
             var sqlCount = $@"
                 SELECT COUNT(*)
                 FROM contratos c
@@ -884,7 +899,9 @@ namespace Inmobiliaria10.Data.Repositories
             cmdCount.Parameters.AddRange(pars.ToArray());
             var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
 
-            // items
+            // -------------------------
+            // items (con paginado)
+            // -------------------------
             var sql = $@"
                 SELECT 
                     i.id_inquilino       AS IdInquilino,
@@ -904,18 +921,8 @@ namespace Inmobiliaria10.Data.Repositories
                 FROM contratos c
                 INNER JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
                 INNER JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
-                INNER JOIN meses m 
-                    ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
+                INNER JOIN meses m ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
                 {where}
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM pagos p
-                    WHERE p.id_contrato = c.id_contrato
-                    AND p.anio = YEAR(CURDATE())
-                    AND p.id_mes = m.id_mes
-                    AND p.id_concepto = 1
-                    AND p.deleted_at IS NULL
-                )
                 ORDER BY i.apellido_nombres, m.id_mes
                 LIMIT @limit OFFSET @offset;";
 
@@ -933,7 +940,7 @@ namespace Inmobiliaria10.Data.Repositories
                 {
                     IdInquilino = Convert.ToInt32(r["IdInquilino"]),
                     Inquilino = r["Inquilino"].ToString()!,
-                    Telefono = r["Telefono"].ToString()!,
+                    Telefono = r["Telefono"]?.ToString(),
                     Inmueble = r["Inmueble"].ToString()!,
                     IdContrato = Convert.ToInt32(r["IdContrato"]),
                     FechaInicio = Convert.ToDateTime(r["FechaInicio"]),
@@ -947,6 +954,7 @@ namespace Inmobiliaria10.Data.Repositories
 
             return (list, total);
         }
+
         
         public async Task<IReadOnlyList<(int Id, string Text)>> SearchUsuariosAsync(string? term, int take, CancellationToken ct = default)
         {

@@ -8,93 +8,93 @@
     int totalRegistros = ViewBag.TotalRegistros != null ? Convert.ToInt32(ViewBag.TotalRegistros) : 0;
     int totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
 }
-
-<div class="text-center mb-3">
-    <h2 class="fw-bold mb-0" style="color:#e6dabe;">Listado de Usuarios</h2>
-</div>
-
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="d-flex justify-content-center mb-3">
-        <div class="input-group w-50">
-            <input type="text" name="search" value="@ViewBag.Search"
-                class="form-control"
-                autocomplete="off"
-                placeholder="Buscar usuario por nombre, alias o email..." />
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
+<div class="filtrosForm">
+    <div class="text-center mb-3">
+        <h2 class="fw-bold mb-0" style="color:#b78309;">Listado de Usuarios</h2>
     </div>
-</form>
 
-<div class="d-flex justify-content-end mb-3">
-    <a asp-action="Crear" class="btn btn-dark">
-        <i class="fa-solid fa-plus"></i> Nuevo Usuario
-    </a>
-</div>
+    <form asp-action="Index" method="get" class="mb-3">
+        <div class="d-flex justify-content-center mb-3">
+            <div class="input-group w-50">
+                <input type="text" name="search" value="@ViewBag.Search"
+                    class="form-control"
+                    autocomplete="off"
+                    placeholder="Buscar usuario por nombre, alias o email..." />
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
 
-<table class="table table-hover table-striped align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th>
-            <th>@Html.DisplayNameFor(m => m.Alias)</th>
-            <th>@Html.DisplayNameFor(m => m.Email)</th>
-            <th>Rol</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Crear" class="btn btn-dark">
+            <i class="fa-solid fa-plus"></i> Nuevo Usuario
+        </a>
+    </div>
+
+    <table class="table table-hover table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.ApellidoNombres)</th>
+                <th>@Html.DisplayNameFor(m => m.Alias)</th>
+                <th>@Html.DisplayNameFor(m => m.Email)</th>
+                <th>Rol</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ApellidoNombres</td>
+                        <td>@item.Alias</td>
+                        <td>@item.Email</td>
+                        <td>@item.Rol?.DenominacionRol</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdUsuario" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdUsuario" title="Detalles">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdUsuario" title="Eliminar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                            
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.ApellidoNombres</td>
-                    <td>@item.Alias</td>
-                    <td>@item.Email</td>
-                    <td>@item.Rol?.DenominacionRol</td>
-                    <td class="text-center">
-                        <a class="btn btn-sm btn-warning" asp-action="Editar" asp-route-id="@item.IdUsuario" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
-                        <a class="btn btn-sm btn-primary" asp-action="Detalle" asp-route-id="@item.IdUsuario" title="Detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <a class="btn btn-sm btn-danger" asp-action="Eliminar" asp-route-id="@item.IdUsuario" title="Eliminar">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>
-                        
-                    </td>
+                    <td colspan="5" class="text-center text-muted">No hay usuarios registrados</td>
                 </tr>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="5" class="text-center text-muted">No hay usuarios registrados</td>
-            </tr>
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-@if (totalPaginas > 1)
-{
-    <nav>
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)" asp-route-search="@ViewBag.Search">« Anterior</a>
-            </li>
-
-            @for (int i = 1; i <= totalPaginas; i++)
-            {
-                <li class="page-item @(i == paginaActual ? "active" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-search="@ViewBag.Search">@i</a>
+    @if (totalPaginas > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)" asp-route-search="@ViewBag.Search">« Anterior</a>
                 </li>
-            }
 
-            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)" asp-route-search="@ViewBag.Search">Siguiente »</a>
-            </li>
-        </ul>
-    </nav>
-}
+                @for (int i = 1; i <= totalPaginas; i++)
+                {
+                    <li class="page-item @(i == paginaActual ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-search="@ViewBag.Search">@i</a>
+                    </li>
+                }
 
+                <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)" asp-route-search="@ViewBag.Search">Siguiente »</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
 
