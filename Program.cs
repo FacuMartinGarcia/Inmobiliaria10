@@ -14,7 +14,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Usuario/Login";       // redirigir si no está logueado
         options.LogoutPath = "/Usuario/Logout";     // logout
-        options.AccessDeniedPath = "/Home/Restringido"; // acceso denegado
+        options.AccessDeniedPath = "/Home/AccesoDenegado"; // acceso denegado
      // Tiempo de expiración de la cookie (inactividad)
         options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
 
@@ -35,6 +35,8 @@ builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(option
 {
     options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
 });
+
+
 builder.Services.AddScoped<IConceptoRepo, ConceptoRepo>();
 builder.Services.AddScoped<IContratoRepo, ContratoRepo>();
 builder.Services.AddScoped<IInquilinoRepo, InquilinoRepo>();
@@ -66,10 +68,20 @@ app.UseStaticFiles();
 app.UseRouting();
 
 //app.UseAuthorization();
-app.UseStatusCodePagesWithReExecute("/Home/MostrarCodigo", "?code={0}");
+//app.UseStatusCodePagesWithReExecute("/Home/MostrarCodigo", "?code={0}");
 
 app.UseAuthentication(); // habilitar autenticación
 app.UseAuthorization();  // habilitar autorización
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    if (response.StatusCode == 404)
+    {
+        response.Redirect("/Home/MostrarCodigo?code=404");
+    }
+});
+
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
