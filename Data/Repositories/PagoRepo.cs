@@ -851,7 +851,6 @@ namespace Inmobiliaria10.Data.Repositories
                 MotivoAnulacion = r["MotivoAnulacion"] as string
             };
         }
-
         public async Task<(IReadOnlyList<MorosoViewModel> Items, int Total)> GetMorososAsync(
             int? inquilinoId = null,
             int pageIndex = 1,
@@ -862,47 +861,56 @@ namespace Inmobiliaria10.Data.Repositories
             await conn.OpenAsync(ct);
 
             var pars = new List<MySqlParameter>();
-            var where = @" WHERE c.fecha_inicio <= CURDATE()
-                        AND c.fecha_fin >= CURDATE()
-                        AND (
-                                m.id_mes < MONTH(CURDATE()) 
-                                OR (m.id_mes = MONTH(CURDATE()) AND DAY(CURDATE()) > 10)
-                        )
-                        AND NOT EXISTS (
-                                SELECT 1
-                                FROM pagos p
-                                WHERE p.id_contrato = c.id_contrato
-                                AND p.anio = YEAR(CURDATE())
-                                AND p.id_mes = m.id_mes
-                                AND p.id_concepto = 1   -- ⚠️ ajustar ID del concepto de alquiler
-                                AND p.deleted_at IS NULL
-                        )";
-
             if (inquilinoId.HasValue)
-            {
-                where += " AND i.id_inquilino = @inq ";
                 pars.Add(new MySqlParameter("@inq", inquilinoId.Value));
-            }
 
-            // -------------------------
-            // total (para paginación)
-            // -------------------------
-            var sqlCount = $@"
+            pars.Add(new MySqlParameter("@limit", pageSize));
+            pars.Add(new MySqlParameter("@offset", (pageIndex - 1) * pageSize));
+
+            // ------------------------
+            // COUNT (total de registros)
+            // ------------------------
+            var sqlCount = @"
                 SELECT COUNT(*)
                 FROM contratos c
                 INNER JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
                 INNER JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
-                INNER JOIN meses m ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
-                {where};";
+                -- Generar últimos 5 años (se puede ampliar)
+                JOIN (
+                    SELECT YEAR(CURDATE()) as anio
+                    UNION SELECT YEAR(CURDATE())-1
+                    UNION SELECT YEAR(CURDATE())-2
+                    UNION SELECT YEAR(CURDATE())-3
+                    UNION SELECT YEAR(CURDATE())-4
+                    UNION SELECT YEAR(CURDATE())-5
+                ) y
+                JOIN meses m ON 1=1
+                WHERE STR_TO_DATE(CONCAT(y.anio,'-',m.id_mes,'-01'),'%Y-%m-%d')
+                    BETWEEN c.fecha_inicio AND c.fecha_fin
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM pagos p
+                    WHERE p.id_contrato = c.id_contrato
+                        AND p.anio = y.anio
+                        AND p.id_mes = m.id_mes
+                        AND p.id_concepto = 1   
+                        AND p.deleted_at IS NULL
+                )
+                AND (
+                    y.anio < YEAR(CURDATE())
+                    OR (y.anio = YEAR(CURDATE()) AND m.id_mes < MONTH(CURDATE()))
+                    OR (y.anio = YEAR(CURDATE()) AND m.id_mes = MONTH(CURDATE()) AND DAY(CURDATE()) > 10)
+                )
+                " + (inquilinoId.HasValue ? " AND i.id_inquilino = @inq" : "");
 
             using var cmdCount = new MySqlCommand(sqlCount, conn);
-            cmdCount.Parameters.AddRange(pars.ToArray());
+            cmdCount.Parameters.AddRange(pars.Where(p => p.ParameterName == "@inq").ToArray());
             var total = Convert.ToInt32(await cmdCount.ExecuteScalarAsync(ct));
 
-            // -------------------------
-            // items (con paginado)
-            // -------------------------
-            var sql = $@"
+            // ------------------------
+            // ITEMS (con paginado)
+            // ------------------------
+            var sqlItems = @"
                 SELECT 
                     i.id_inquilino       AS IdInquilino,
                     i.apellido_nombres   AS Inquilino,
@@ -916,20 +924,41 @@ namespace Inmobiliaria10.Data.Repositories
                     c.fecha_fin          AS FechaFin,
                     m.id_mes             AS IdMes,
                     m.nombre             AS MesAdeudado,
-                    YEAR(CURDATE())      AS AnioAdeudado,
+                    y.anio               AS AnioAdeudado,
                     c.monto_mensual      AS MontoMensual
                 FROM contratos c
                 INNER JOIN inquilinos i ON i.id_inquilino = c.id_inquilino
                 INNER JOIN inmuebles im ON im.id_inmueble = c.id_inmueble
-                INNER JOIN meses m ON m.id_mes BETWEEN MONTH(c.fecha_inicio) AND MONTH(CURDATE())
-                {where}
-                ORDER BY i.apellido_nombres, m.id_mes
+                JOIN (
+                    SELECT YEAR(CURDATE()) as anio
+                    UNION SELECT YEAR(CURDATE())-1
+                    UNION SELECT YEAR(CURDATE())-2
+                    UNION SELECT YEAR(CURDATE())-3
+                    UNION SELECT YEAR(CURDATE())-4
+                    UNION SELECT YEAR(CURDATE())-5
+                ) y
+                JOIN meses m ON 1=1
+                WHERE STR_TO_DATE(CONCAT(y.anio,'-',m.id_mes,'-01'),'%Y-%m-%d')
+                    BETWEEN c.fecha_inicio AND c.fecha_fin
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM pagos p
+                    WHERE p.id_contrato = c.id_contrato
+                        AND p.anio = y.anio
+                        AND p.id_mes = m.id_mes
+                        AND p.id_concepto = 1
+                        AND p.deleted_at IS NULL
+                )
+                AND (
+                    y.anio < YEAR(CURDATE())
+                    OR (y.anio = YEAR(CURDATE()) AND m.id_mes < MONTH(CURDATE()))
+                    OR (y.anio = YEAR(CURDATE()) AND m.id_mes = MONTH(CURDATE()) AND DAY(CURDATE()) > 10)
+                )
+                " + (inquilinoId.HasValue ? " AND i.id_inquilino = @inq" : "") + @"
+                ORDER BY Inquilino, AnioAdeudado, IdMes
                 LIMIT @limit OFFSET @offset;";
 
-            pars.Add(new MySqlParameter("@limit", pageSize));
-            pars.Add(new MySqlParameter("@offset", (pageIndex - 1) * pageSize));
-
-            using var cmd = new MySqlCommand(sql, conn);
+            using var cmd = new MySqlCommand(sqlItems, conn);
             cmd.Parameters.AddRange(pars.ToArray());
 
             var list = new List<MorosoViewModel>();
@@ -954,7 +983,6 @@ namespace Inmobiliaria10.Data.Repositories
 
             return (list, total);
         }
-
         
         public async Task<IReadOnlyList<(int Id, string Text)>> SearchUsuariosAsync(string? term, int take, CancellationToken ct = default)
         {
