@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Acceso Restringido";
+    Layout = "_Layout";
+}
+
+<div class="acceso-denegado-card">
+
+    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-slash-circle" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0-1A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
+        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L11 10.293a.5.5 0 0 1-.708.708L4.646 5.354a.5.5 0 0 1 0-.708z"/>
+    </svg>
+
+    <h2>Acceso Restringido</h2>
+    <p>No tienes permisos para acceder a esta sección del sistema. Contacta al Administrador si consideras que es un error.</p>
+    <a class="btn btn-primary" href="@Url.Action("Index", "Home")">Volver al Inicio</a>
+</div>

@@ -37,6 +37,15 @@ public class HomeController : Controller
             return View("EnConstruccion");
         }
 
+        if (code == 403) {
+            return View("403"); 
+        }
+
         return View("Error");
+    }
+
+    public IActionResult AccesoDenegado()
+    {
+        return View("403"); 
     }
 }
