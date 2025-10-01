@@ -15,6 +15,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Usuario/Login";       // redirigir si no está logueado
         options.LogoutPath = "/Usuario/Logout";     // logout
         options.AccessDeniedPath = "/Home/Restringido"; // acceso denegado
+     // Tiempo de expiración de la cookie (inactividad)
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+
+        // Renovar si hay actividad (sliding window)
+        options.SlidingExpiration = true;
+
+        // Opcional: endurecer la cookie
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization(options =>
