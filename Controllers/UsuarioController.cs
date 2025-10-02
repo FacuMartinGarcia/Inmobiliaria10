@@ -224,36 +224,60 @@ namespace Inmobiliaria10.Controllers
             return View();
         }
 
-        [AllowAnonymous]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm)
+[AllowAnonymous]
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm)
+{
+    if (!ModelState.IsValid) return View(vm);
+
+    if (string.IsNullOrWhiteSpace(vm.Email))
+    {
+        TempData["Err"] = "Debe ingresar un correo válido.";
+        return View(vm);
+    }
+
+    var usuario = await _repo.ObtenerPorEmail(vm.Email);
+    if (usuario == null)
+    {
+        TempData["Err"] = "No existe ningún usuario con ese correo.";
+        return View(vm);
+    }
+
+    var token = Guid.NewGuid().ToString("N");
+    await _repo.GuardarTokenReset(usuario.IdUsuario, token, DateTime.UtcNow.AddHours(1));
+
+    var link = Url.Action("ResetPassword", "Usuario",
+        new { token }, protocol: HttpContext.Request.Scheme);
+
+    try
+    {
+        await _emailService.Enviar(vm.Email, "Recuperar contraseña",
+            $"<p>Hacé click en el siguiente enlace para restablecer tu contraseña:</p><p><a href='{link}'>Restablecer Contraseña</a></p>");
+    }
+    catch (InvalidOperationException ex)
+    {
+        // Capturamos el caso de SMTP_FROM no configurado
+        if (ex.Message.Contains("SMTP_FROM") || ex.Message.Contains("no configurado"))
         {
-            if (!ModelState.IsValid) return View(vm);
-
-            var usuario = await _repo.ObtenerPorEmail(vm.Email);
-            if (usuario == null)
-            {
-                TempData["Error"] = "No existe ningún usuario con ese correo.";
-                return View(vm);
-            }
-            if (string.IsNullOrWhiteSpace(vm.Email))
-            {
-                TempData["Error"] = "Debe ingresar un correo válido.";
-                return View(vm);
-            }
-            var token = Guid.NewGuid().ToString("N");
-            await _repo.GuardarTokenReset(usuario.IdUsuario, token, DateTime.UtcNow.AddHours(1));
-
-            var link = Url.Action("ResetPassword", "Usuario",
-                new { token }, protocol: HttpContext.Request.Scheme);
-
-            await _emailService.Enviar(vm.Email, "Recuperar contraseña",
-                $"<p>Hacé click en el siguiente enlace para restablecer tu contraseña:</p><p><a href='{link}'>Restablecer Contraseña</a></p>");
-
-            TempData["Mensaje"] ="Si el correo existe en nuestra base, recibirás un enlace de recuperación.";
-            return RedirectToAction("Login");
+            TempData["Err"] = "No se ha configurado la cuenta de correo electrónico para poder usar el servicio de envío.";
+            return View(vm);
         }
+
+        // Si es otra InvalidOperationException
+        TempData["Err"] = "Ocurrió un error enviando el correo.";
+        return View(vm);
+    }
+    catch (Exception)
+    {
+        TempData["Err"] = "Ocurrió un error inesperado al enviar el correo.";
+        return View(vm);
+    }
+
+    TempData["Mensaje"] = "Si el correo existe en nuestra base, recibirás un enlace de recuperación.";
+    return RedirectToAction("Login");
+}
+
 
         [AllowAnonymous]
         [HttpGet]
@@ -261,7 +285,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (string.IsNullOrEmpty(token))
             {
-                TempData["Error"] = "El enlace de recuperación no es válido.";
+                TempData["Err"] = "El enlace de recuperación no es válido.";
                 return RedirectToAction("RecuperarPassword");
             }
 
@@ -279,7 +303,7 @@ namespace Inmobiliaria10.Controllers
             var usuario = await _repo.ObtenerPorToken(vm.Token);
             if (usuario == null || usuario.ResetTokenExpira <= DateTime.UtcNow)
             {
-                TempData["Error"] = "El enlace de recuperación es inválido o ha expirado.";
+                TempData["Err"] = "El enlace de recuperación es inválido o ha expirado.";
                 return RedirectToAction("RecuperarPassword");
             }
 
@@ -395,7 +419,7 @@ namespace Inmobiliaria10.Controllers
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (idClaim == null)
             {
-                TempData["Error"] = "Debes iniciar sesión para ver tu perfil.";
+                TempData["Err"] = "Debes iniciar sesión para ver tu perfil.";
                 return RedirectToAction("Login");
             }
 
@@ -438,7 +462,7 @@ namespace Inmobiliaria10.Controllers
 
                 if (filas == 0)
                 {
-                    TempData["Error"] = "No se guardaron cambios (0 filas afectadas).";
+                    TempData["Err"] = "No se guardaron cambios (0 filas afectadas).";
                     return View(vm);
                 }
 
@@ -471,7 +495,7 @@ namespace Inmobiliaria10.Controllers
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (idClaim == null)
             {
-                TempData["Error"] = "Debes iniciar sesión para cambiar la foto de perfil.";
+                TempData["Err"] = "Debes iniciar sesión para cambiar la foto de perfil.";
                 return RedirectToAction("Login");
             }
 
@@ -490,7 +514,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (AvatarFile == null || AvatarFile.Length == 0)
             {
-                TempData["Error"] = "Debe seleccionar una imagen válida.";
+                TempData["Err"] = "Debe seleccionar una imagen válida.";
                 return RedirectToAction(nameof(Perfil));
             }
 
