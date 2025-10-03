@@ -94,7 +94,7 @@ public class PropietarioController : Controller
 
         if (tieneInmuebles.registros.Any())
         {
-            TempData["Err"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
+            TempData["Error"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -111,7 +111,7 @@ public class PropietarioController : Controller
         var tieneInmuebles = await _repoInmueble.ListarPorPropietario(id, 1, 1);
         if (tieneInmuebles.registros.Any())
         {
-            TempData["Err"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
+            TempData["Error"] = "No es posible eliminar al propietario, ya que posee al menos un inmueble asociado.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -72,14 +72,19 @@ app.UseRouting();
 
 app.UseAuthentication(); // habilitar autenticación
 app.UseAuthorization();  // habilitar autorización
-app.UseStatusCodePages(async context =>
+app.UseStatusCodePages(context =>
 {
     var response = context.HttpContext.Response;
+
     if (response.StatusCode == 404)
-    {
         response.Redirect("/Home/MostrarCodigo?code=404");
-    }
+
+    if (response.StatusCode == 403)
+        response.Redirect("/Home/MostrarCodigo?code=403");
+
+    return System.Threading.Tasks.Task.CompletedTask;
 });
+
 
 
 app.MapControllerRoute(

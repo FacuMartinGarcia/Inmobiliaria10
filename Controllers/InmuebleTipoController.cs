@@ -20,6 +20,7 @@ namespace Inmobiliaria10.Controllers
             var tipos = repo.MostrarTodosInmuebleTipos();
             return View(tipos);
         }
+
         public IActionResult Detalle(int id)
         {
             var tipo = repo.ObtenerPorId(id);
@@ -44,11 +45,12 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 repo.Agregar(tipo);
+                TempData["Mensaje"] = "Tipo de inmueble creado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DenominacionTipo", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(tipo);
             }
         }
@@ -72,11 +74,12 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 repo.Editar(tipo);
+                TempData["Mensaje"] = "Tipo de inmueble modificado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DenominacionTipo", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(tipo);
             }
         }
@@ -96,8 +99,22 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult EliminarConfirmado(int id)
         {
-            repo.Eliminar(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                repo.Eliminar(id);
+                TempData["Mensaje"] = "Tipo de inmueble eliminado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex) when (ex.Number == 1451)
+            {
+                TempData["Error"] = "No se puede eliminar el tipo porque tiene inmuebles asociados.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
 
     }

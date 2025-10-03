@@ -116,7 +116,7 @@ namespace Inmobiliaria10.Controllers
             var tieneContratos = await _repoContratos.ExisteContratoPorInquilinoAsync(id, ct);
             if (tieneContratos)
             {
-                TempData["Err"] = "No se puede eliminar el inquilino porque tiene contratos asociados.";
+                TempData["Error"] = "No se puede eliminar el inquilino porque tiene contratos asociados.";
                 return RedirectToAction("Index");
             }
 

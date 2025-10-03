@@ -25,7 +25,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (imagenes == null || imagenes.Count == 0)
             {
-                TempData["MensajeError"] = "No se recibieron archivos.";
+                TempData["Error"] = "No se recibieron archivos.";
                 return RedirectToAction("Imagenes", "Inmueble", new { id });
             }
 
@@ -71,7 +71,7 @@ namespace Inmobiliaria10.Controllers
                 var entidad = await _repositorio.ObtenerPorId(id);
                 if (entidad == null)
                 {
-                    TempData["MensajeError"] = "Imagen no encontrada.";
+                    TempData["Error"] = "Imagen no encontrada.";
                     return RedirectToAction("Imagenes", "Inmueble", new { id = id });
                 }
 
@@ -90,7 +90,7 @@ namespace Inmobiliaria10.Controllers
             }
             catch (Exception ex)
             {
-                TempData["MensajeError"] = $"Error al eliminar la imagen: {ex.Message}";
+                TempData["Error"] = $"Error al eliminar la imagen: {ex.Message}";
                 return RedirectToAction("Imagenes", "Inmueble", new { id });
             }
         }
@@ -100,7 +100,7 @@ namespace Inmobiliaria10.Controllers
         {
             if (AvatarFile == null || AvatarFile.Length == 0)
             {
-                TempData["MensajeError"] = "No se recibió ninguna imagen.";
+                TempData["Error"] = "No se recibió ninguna imagen.";
                 return RedirectToAction("Perfil", "Usuario");
             }
 

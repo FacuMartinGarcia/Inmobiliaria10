@@ -45,11 +45,12 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 repo.Agregar(uso);
+                TempData["Mensaje"] = "Uso de inmueble creado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DenominacionUso", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(uso);
             }
         }
@@ -73,11 +74,12 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 repo.Editar(uso);
+                TempData["Mensaje"] = "Uso de inmueble modificado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DenominacionUso", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(uso);
             }
         }
@@ -87,7 +89,10 @@ namespace Inmobiliaria10.Controllers
         {
             var uso = repo.ObtenerPorId(id);
             if (uso == null)
-                return NotFound();
+            {
+                TempData["Error"] = "El uso de inmueble no existe.";
+                return RedirectToAction(nameof(Index));
+            }
 
             return View(uso);
         }
@@ -97,8 +102,23 @@ namespace Inmobiliaria10.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult EliminarConfirmado(int id)
         {
-            repo.Eliminar(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                repo.Eliminar(id);
+                TempData["Mensaje"] = "Uso de inmueble eliminado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex) when (ex.Number == 1451)
+            {
+                TempData["Error"] = "No se puede eliminar este uso porque tiene inmuebles asociados.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
+
     }
 }

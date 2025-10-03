@@ -233,14 +233,14 @@ public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm
 
     if (string.IsNullOrWhiteSpace(vm.Email))
     {
-        TempData["Err"] = "Debe ingresar un correo válido.";
+        TempData["Error"] = "Debe ingresar un correo válido.";
         return View(vm);
     }
 
     var usuario = await _repo.ObtenerPorEmail(vm.Email);
     if (usuario == null)
     {
-        TempData["Err"] = "No existe ningún usuario con ese correo.";
+        TempData["Error"] = "No existe ningún usuario con ese correo.";
         return View(vm);
     }
 
@@ -260,17 +260,17 @@ public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm
         // Capturamos el caso de SMTP_FROM no configurado
         if (ex.Message.Contains("SMTP_FROM") || ex.Message.Contains("no configurado"))
         {
-            TempData["Err"] = "No se ha configurado la cuenta de correo electrónico para poder usar el servicio de envío.";
+            TempData["Error"] = "No se ha configurado la cuenta de correo electrónico para poder usar el servicio de envío.";
             return View(vm);
         }
 
         // Si es otra InvalidOperationException
-        TempData["Err"] = "Ocurrió un error enviando el correo.";
+        TempData["Error"] = "Ocurrió un error enviando el correo.";
         return View(vm);
     }
     catch (Exception)
     {
-        TempData["Err"] = "Ocurrió un error inesperado al enviar el correo.";
+        TempData["Error"] = "Ocurrió un error inesperado al enviar el correo.";
         return View(vm);
     }
 
@@ -285,7 +285,7 @@ public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm
         {
             if (string.IsNullOrEmpty(token))
             {
-                TempData["Err"] = "El enlace de recuperación no es válido.";
+                TempData["Error"] = "El enlace de recuperación no es válido.";
                 return RedirectToAction("RecuperarPassword");
             }
 
@@ -303,7 +303,7 @@ public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel vm
             var usuario = await _repo.ObtenerPorToken(vm.Token);
             if (usuario == null || usuario.ResetTokenExpira <= DateTime.UtcNow)
             {
-                TempData["Err"] = "El enlace de recuperación es inválido o ha expirado.";
+                TempData["Error"] = "El enlace de recuperación es inválido o ha expirado.";
                 return RedirectToAction("RecuperarPassword");
             }
 

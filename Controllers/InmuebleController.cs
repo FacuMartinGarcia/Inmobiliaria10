@@ -148,7 +148,7 @@ namespace Inmobiliaria10.Controllers
             if (await _repoContrato.ExisteContratoParaInmueble(id))
             {
                 Console.WriteLine($"Existe contrato");
-                TempData["Err"] = "No se puede eliminar el inmueble porque tiene contratos asociados.";
+                TempData["Error"] = "No se puede eliminar el inmueble porque tiene contratos asociados.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -162,7 +162,7 @@ namespace Inmobiliaria10.Controllers
         public async Task<IActionResult> EliminarConfirmado(int id)
         {
             await _repoInmueble.Eliminar(id);
-            TempData["Ok"] = "Inmueble eliminado correctamente";
+            TempData["Mensaje"] = "Inmueble eliminado correctamente";
             return RedirectToAction("Index");
         }
 

@@ -171,6 +171,8 @@ namespace Inmobiliaria10.Controllers
                         {
                             IdContrato = model.IdContrato,
                             IdConcepto = 2,
+                            IdMes = DateTime.Today.Month,
+                            Anio = DateTime.Today.Year,
                             FechaPago = DateTime.Today,
                             Importe = model.MontoMulta.GetValueOrDefault(),
                             Detalle = $"Multa por rescisión del contrato {model.IdContrato}",
@@ -181,8 +183,8 @@ namespace Inmobiliaria10.Controllers
                     }
                 }
 
-                TempData["Ok"] = "Contrato actualizado correctamente.";
-                return RedirectToAction("Detalles", new { id = model.IdContrato });
+                TempData["Mensaje"] = "Contrato actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -220,7 +222,7 @@ namespace Inmobiliaria10.Controllers
         {
             var ok = await _repo.SoftDeleteAsync(id, GetUserIdOrDefault(), ct);
 
-            TempData[ok ? "Ok" : "Err"] = ok
+            TempData[ok ? "Mensaje" : "Error"] = ok
                 ? "Contrato eliminado correctamente."
                 : "El contrato no existe o ya fue eliminado.";
 
@@ -494,7 +496,7 @@ namespace Inmobiliaria10.Controllers
 
             if (hoy < inicioVentana || hoy >= contrato.FechaFin)
             {
-                TempData["Err"] = $"El contrato sólo puede renovarse con {ContratoConstantes.DiasAnticipacionRenovacion} dias de anticipacion antes de su vencimiento.";
+                TempData["Error"] = $"El contrato sólo puede renovarse con {ContratoConstantes.DiasAnticipacionRenovacion} dias de anticipacion antes de su vencimiento.";
                 return RedirectToAction(nameof(Index), new { id });
             }
 
@@ -580,7 +582,7 @@ namespace Inmobiliaria10.Controllers
             try
             {
                 var nuevoId = await _repo.CreateAsync(nuevoContrato, ct);
-                TempData["Ok"] = $"Contrato renovado por {vm.PlazoAnios} año(s).";
+                TempData["Mensaje"] = $"Contrato renovado por {vm.PlazoAnios} año(s).";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
