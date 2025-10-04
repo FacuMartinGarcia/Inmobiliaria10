@@ -5,11 +5,9 @@
 ## 🚀 Tecnologías utilizadas
 
 - **ASP.NET Core 7 / C#**
-- **Entity Framework Core (ORM)**
 - **MySQL / MariaDB** 
 - **Bootstrap 5** + **Font Awesome**
-- **Razor (cshtml)** 
-- **Patrón Repository (LINQ)** 
+- **Razor (cshtml)**
 - **bcrypt** (encriptación de contraseñas)
 - **Soft Delete en contratos** 
 
@@ -175,7 +173,7 @@ Inmobiliaria10/
 ```
 dotnet run
 ```
-Luego accede a: https://localhost:5265
+Luego accede a: https://localhost:7267
 
 ---
 
