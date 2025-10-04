@@ -1,106 +1,210 @@
-📘 Proyecto Inmobiliaria10
+# 🏠 Sistema Inmobiliario
 
-Sistema web para la gestión de propiedades en alquiler desarrollado en ASP.NET Core MVC con base de datos MySQL/MariaDB.
-Permite administrar Propietarios, Inquilinos, Inmuebles y Contratos de alquiler, incluyendo ABM completo, validaciones y reglas de negocio (como evitar solapamiento de contratos).
+**InnovaPropiedades** es una aplicación web desarrollada en **ASP.NET Core MVC con Entity Framework Core y MySQL/MariaDB**, diseñada para gestionar propietarios, inquilinos, inmuebles y contratos de alquiler. El sistema ofrece una experiencia fluida para la administración de la cartera inmobiliaria, adaptándose a escenarios reales.
+---
+## 🚀 Tecnologías utilizadas
 
-🚀 Tecnologías utilizadas
+- **ASP.NET Core 7 / C#**
+- **Entity Framework Core (ORM)**
+- **MySQL / MariaDB** 
+- **Bootstrap 5** + **Font Awesome**
+- **Razor (cshtml)** 
+- **Patrón Repository (LINQ)** 
+- **bcrypt** (encriptación de contraseñas)
+- **Soft Delete en contratos** 
 
-Backend: ASP.NET Core 7 / C#
+## 📑 Tabla de Contenidos
 
-Frontend: Razor Pages (cshtml), Bootstrap 5, Font Awesome
+1. [Introducción](#-introducción)  
+2. [Características](#-características)  
+3. [Arquitectura](#-arquitectura)  
+4. [Requisitos](#-requisitos)  
+5. [Instalación](#-instalación)  
+6. [Estructura del Proyecto](#-estructura-del-proyecto)  
+7. [Uso](#-uso)  
+8. [Credenciales de Acceso](#-credenciales-de-acceso)  
+9. [Licencia](#-licencia)  
 
-ORM: Entity Framework Core
+---
 
-Base de Datos: MySQL / MariaDB
+## 📌 Introducción
 
-IDE recomendado: Visual Studio 2022 o VS Code con extensión C#
+**Sistema InnovaPropiedades**  permite:
 
-📂 Estructura del proyecto
+- **Registrar y gestionar propietarios e inquilinos.**  
+- **Administrar inmuebles**, con disponibilidad y características. 
+- **Gestionar contratos** con validaciones de fechas, rescisión y control de solapamientos. 
+- **Controlar el ciclo de vida de contratos**, (vigentes, rescindidos, finalizados).
+
+Construido bajo arquitectura MVC, utiliza Entity Framework Core para la persistencia y Bootstrap 5 para la interfaz moderna y responsiva.
+---
+
+## 🚀 Características
+
+- ✅ **Gestión de Propietarios e Inquilinos**
+
+- ✅ **Gestión de Inmuebles** con disponibilidad
+
+- ✅ **Contratos con validación de fechas**
+
+- ✅ **Prevención de contratos solapados en un mismo inmueble** 
+
+- ✅ **Sistema de Usuarios con Roles** (administrador, empleado.)
+
+- ✅ **Soft Delete en contratos** (con DeletedAt, DeletedBy)
+
+- ✅ **Interfaz Web con Bootstrap**
+
+- ✅ **Autenticación y Sesiones**: alta, baja, edición de usuarios.  
+  Control de acceso según rol.
+
+- ✅ **Base de Datos MySQL** usando Sequelize
+
+- ✅ **Recuperación de contraseña** con envío de token por correo.
+
+- ✅ **Paginación y búsqueda en listados** 
+
+---
+
+## 🏗️ Arquitectura
+
+El proyecto está organizado en una estructura **MVC**:
+
+- **Modelos (EF Core):** Propietario, Inquilino, Inmueble, Contrato
+
+- **Controladores:** lógica de negocio desacoplada, conexión con modelos.
+
+- **Vistas (Razor):** componentes y formularios renderizados desde el servidor.
+
+- **Repositorio:** acceso a datos mediante Repository + LINQ.
+
+- **DbContext:** configuración de EF Core y mapeos a MySQL/MariaDB.
+
+---
+
+## ⚙️ Requisitos
+
+- .NET 7 SDK
+- MySQL/MariaDB 
+- Git  
+- Editor de texto (recomendado: VS Code)  
+
+---
+
+## 📥 Instalación
+
+### 1️⃣ Clonar este repositorio
+
+
+git clone https://github.com/FacuMartinGarcia/Inmobiliaria10.git
+
+cd Inmobiliaria10
+
+
+### 2️⃣ Instalar dependencias
+
+
+dotnet restore
+
+
+### 3️⃣ Configurar entorno 
+
+Editar appsettings.json con la cadena de conexión:
+
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "server=localhost;port=3306;database=inmobiliaria10;user=root;password=tu_password;"
+  }
+}
+
+
+### 4️⃣ Inicializar base de datos
+
+Ejecutar el archivo SQL:
+
+```sql
+BD/inmogenial.sql
+```
+
+Asegúrate de tener creado el schema `inmogenial`.
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
 Inmobiliaria10/
 │
-├── Controllers/        # Controladores MVC
-│   ├── PropietarioController.cs
-│   ├── InquilinoController.cs
-│   ├── ContratoController.cs
-│   └── InmuebleController.cs
+├── Data/                         # Configuración de EF Core y repos
+│   ├── AppDbContext.cs
+│   └── Repositories/
+│       ├── IContratoRepo.cs
+│       └── ContratoRepo.cs
 │
-├── Models/             # Entidades de dominio
+├── Models/                       # Entidades de dominio
 │   ├── Propietario.cs
 │   ├── Inquilino.cs
 │   ├── Inmueble.cs
 │   └── Contrato.cs
 │
-├── Data/               
-│   ├── AppDbContext.cs # Configuración EF Core
-│   └── Repositories/   # Patrón repositorio
-│       ├── IContratoRepo.cs
-│       └── ContratoRepo.cs
+├── Controllers/                  # Lógica de negocio (MVC)
+│   ├── PropietarioController.cs
+│   ├── InquilinoController.cs
+│   ├── InmuebleController.cs
+│   └── ContratoController.cs
 │
-├── Views/              # Vistas Razor
-│   ├── Shared/         # Layout y partials
-│   └── Propietario/    # CRUD Propietario
+├── Views/                        # Vistas Razor (cshtml)
+│   ├── Shared/                   # Layout, partials
+│   ├── Propietario/
+│   ├── Inquilino/
+│   ├── Inmueble/
+│   └── Contrato/
 │
-├── wwwroot/            # Archivos estáticos (CSS, JS, imágenes)
-│   └── css/site.css    # Estilos personalizados (form-card, form-title, etc.)
+├── wwwroot/                      # JS, CSS, imágenes
+│   └── css/site.css              # Estilos (form-card, form-title, etc.)
 │
-└── README.md
+├── appsettings.json              # Configuración (conexión a BD)
+└── Program.cs / Startup.cs       # Punto de entrada
 
-⚙️ Configuración inicial
-1. Clonar el repo
-git clone https://github.com/tuusuario/Inmobiliaria10.git
-cd Inmobiliaria10
+```
 
-2. Configurar la base de datos
+---
 
-Crear una base de datos MySQL:
+## ▶️ Uso
 
-CREATE DATABASE inmobiliaria10 CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci;
+```
+dotnet run
+```
+Luego accede a: https://localhost:5265
 
+---
 
-Configurar la conexión en appsettings.json:
+## 🔐 Credenciales de Acceso
 
-"ConnectionStrings": {
-  "DefaultConnection": "server=localhost;port=3306;database=inmobiliaria10;user=root;password=tu_password;"
-}
-
-3. Aplicar migraciones
-dotnet ef database update
-
-4. Ejecutar la aplicación
-dotnet watch run
+| Usuario  | Contraseña | Tipo          |
+|----------|------------|---------------|
+| admin    | admin      | Administrador |
+| RamonC   | RamonC     | Empleado      |
 
 
-La app estará disponible en https://localhost:5265.
+---
+## 👨‍💻 Autor
 
-📋 Funcionalidades principales
+Romanela Ricchiardi - Backend/Frontend & DB-- Contacto: roma.ricchiardi@gmail.com
+Facundo Garcia – Backend/Frontend & DB-- Contacto:
 
-✅ Gestión de Propietarios (alta, baja, modificación, listado).
-✅ Gestión de Inquilinos.
-✅ Gestión de Inmuebles.
-✅ Gestión de Contratos:
+Carrera: Desarrollo de Software – Universidad de La Punta
 
-Validación de fechas de inicio/fin.
+Materia: Laboratorio de Programacion II (2025)
 
-Control de rescisión.
+## 🖼️ Galería del Sistema
 
-Evita contratos solapados en el mismo inmueble.
+👥 Propietarios e Inquilinos
 
-Soft delete (con DeletedAt y DeletedBy).
 
-✅ Formularios unificados con estilos modernos (form-card, form-title, btn-save, btn-back).
-✅ Paginación y búsqueda en listados.
+📑 Gestión de Contratos
 
-🎨 Estilos personalizados
 
-Se incluye un theme CSS en wwwroot/css/site.css con:
+## 📜 Licencia
 
-.form-card: fondo sólido, bordes redondeados, sombra.
-
-.form-title: título centrado y destacado.
-
-.btn-save, .btn-back: botones de acción consistentes en todos los formularios.
-
-👥 Autores
-
-Ricchiardi, Maria Romanela y Garcia Facundo – Desarrollo backend/frontend y diseño de base de datos.
-
+Este proyecto está licenciado bajo la Licencia MIT. Puedes usarlo, modificarlo y distribuirlo libremente bajo los términos de esta licencia.
