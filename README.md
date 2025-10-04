@@ -191,6 +191,7 @@ Luego accede a: https://localhost:5265
 ## 👨‍💻 Autor
 
 Romanela Ricchiardi - Backend/Frontend & DB-- Contacto: roma.ricchiardi@gmail.com
+
 Facundo Garcia – Backend/Frontend & DB-- Contacto:
 
 Carrera: Desarrollo de Software – Universidad de La Punta
@@ -198,11 +199,23 @@ Carrera: Desarrollo de Software – Universidad de La Punta
 Materia: Laboratorio de Programacion II (2025)
 
 ## 🖼️ Galería del Sistema
+<img width="1096" height="579" alt="image" src="https://github.com/user-attachments/assets/63c4e7d0-245c-4788-a689-cf881795e501" />
+
+<img width="1103" height="578" alt="image" src="https://github.com/user-attachments/assets/995af580-b8f9-4266-a3f6-25816f25fe46" />
+
 
 👥 Propietarios e Inquilinos
 
+<img width="1099" height="555" alt="image" src="https://github.com/user-attachments/assets/061cf787-5c9e-4991-9dbe-2b4634f8f0f9" />
+
+<img width="1160" height="680" alt="image" src="https://github.com/user-attachments/assets/7ba01d7b-35fe-4aca-b2b4-31e71167221c" />
+
 
 📑 Gestión de Contratos
+
+<img width="1206" height="704" alt="image" src="https://github.com/user-attachments/assets/662d6bbf-bf20-47ba-aead-72eac1cc16c7" />
+
+<img width="1201" height="836" alt="image" src="https://github.com/user-attachments/assets/dcf08c48-c451-4155-b357-3581d72f0230" />
 
 
 ## 📜 Licencia
