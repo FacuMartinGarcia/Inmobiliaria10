@@ -7,7 +7,7 @@
 
     var total = (int?)ViewBag.Total ?? 0;
     var page = (int?)ViewBag.Page ?? 1;
-    var pageSize = (int?)ViewBag.PageSize ?? 20;
+    var pageSize = (int?)ViewBag.PageSize ?? 8;
     var totalPages = (int)Math.Ceiling((double)total / pageSize);
 
     var tipoSel      = Context.Request.Query["tipo"].ToString();
@@ -135,15 +135,30 @@
             </tbody>
         </table>
     </form>
-</div>
+
 
 @if (totalPages > 1)
 {
     <nav aria-label="Paginación">
-        <ul class="pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(page == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(page - 1)"
+                   asp-route-pageSize="@pageSize"
+                   asp-route-tipo="@tipoSel"
+                   asp-route-inmueble="@inmuebleSel"
+                   asp-route-inquilino="@inquilinoSel"
+                   asp-route-soloActivos="@soloActivosRoute"
+                   asp-route-fechaDesde="@Context.Request.Query["fechaDesde"]"
+                   asp-route-fechaHasta="@Context.Request.Query["fechaHasta"]">
+                   « Anterior
+                </a>
+            </li>
+
             @for (int i = 1; i <= totalPages; i++)
             {
-                <li class="page-item @(i==page ? "active" : "")">
+                <li class="page-item @(i == page ? "active" : "")">
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-page="@i"
@@ -153,12 +168,30 @@
                        asp-route-inquilino="@inquilinoSel"
                        asp-route-soloActivos="@soloActivosRoute"
                        asp-route-fechaDesde="@Context.Request.Query["fechaDesde"]"
-                       asp-route-fechaHasta="@Context.Request.Query["fechaHasta"]">@i</a>
+                       asp-route-fechaHasta="@Context.Request.Query["fechaHasta"]">@i
+                    </a>
                 </li>
             }
+
+            <li class="page-item @(page == totalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@(page + 1)"
+                   asp-route-pageSize="@pageSize"
+                   asp-route-tipo="@tipoSel"
+                   asp-route-inmueble="@inmuebleSel"
+                   asp-route-inquilino="@inquilinoSel"
+                   asp-route-soloActivos="@soloActivosRoute"
+                   asp-route-fechaDesde="@Context.Request.Query["fechaDesde"]"
+                   asp-route-fechaHasta="@Context.Request.Query["fechaHasta"]">
+                   Siguiente »
+                </a>
+            </li>
         </ul>
     </nav>
 }
+
+</div>
 
 @section Scripts {
     <script src="~/js/contrato-index.js"></script>

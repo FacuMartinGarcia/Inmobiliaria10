@@ -37,7 +37,7 @@ namespace Inmobiliaria10.Controllers
             DateTime? fechaDesde,
             DateTime? fechaHasta,
             int page = 1,
-            int pageSize = 20,
+            int pageSize = 8,
             CancellationToken ct = default)
         {
             await CargarSelectsIndexAsync(tipo, inmueble, inquilino, ct);

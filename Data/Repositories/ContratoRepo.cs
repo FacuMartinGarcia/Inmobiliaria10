@@ -241,7 +241,7 @@ namespace Inmobiliaria10.Data.Repositories
             int? idInquilino = null,
             bool? soloActivos = null,
             int pageIndex = 1,
-            int pageSize = 20,
+            int pageSize = 8,
             CancellationToken ct = default)
         {
             using var conn = _db.GetConnection();
@@ -341,7 +341,7 @@ namespace Inmobiliaria10.Data.Repositories
         DateTime? fechaDesde = null,
         DateTime? fechaHasta = null,
         int pageIndex = 1,
-        int pageSize = 20,
+        int pageSize = 8,
         CancellationToken ct = default)
     {
         using var conn = _db.GetConnection();
