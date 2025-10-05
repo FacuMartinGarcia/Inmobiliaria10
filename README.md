@@ -56,7 +56,7 @@ Construido bajo arquitectura MVC, utiliza Entity Framework Core para la persiste
 - ✅ **Autenticación y Sesiones**: alta, baja, edición de usuarios.  
   Control de acceso según rol.
 
-- ✅ **Base de Datos MySQL** usando Sequelize
+- ✅ **Base de Datos MySQL**
 
 - ✅ **Recuperación de contraseña** con envío de token por correo.
 
@@ -179,10 +179,10 @@ Luego accede a: https://localhost:7267
 
 ## 🔐 Credenciales de Acceso
 
-| Usuario  | Contraseña | Tipo          |
-|----------|------------|---------------|
-| admin    | admin      | Administrador |
-| RamonC   | RamonC     | Empleado      |
+|     Usuario        | Contraseña | Tipo          |
+|--------------------|------------|---------------|
+| admin@gmail.com    | 1          | Administrador |
+| empleado@gmail.com | 2          | Empleado      |
 
 
 ---
@@ -190,7 +190,7 @@ Luego accede a: https://localhost:7267
 
 Romanela Ricchiardi - Backend/Frontend & DB-- Contacto: roma.ricchiardi@gmail.com
 
-Facundo Garcia – Backend/Frontend & DB-- Contacto:
+Manuel Facundo Martin Garcia – Backend/Frontend & DB-- Contacto: elfaculee@gmail.com
 
 Carrera: Desarrollo de Software – Universidad de La Punta
 
